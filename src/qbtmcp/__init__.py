@@ -1,7 +1,7 @@
 """
-qBTMCP - qBittorrent MCP Server
+RTorrent MCP Server
 
-A FastMCP 2.10 compliant server for anime torrenting automation with Austrian legal compliance.
+A FastMCP 2.12 compliant server for anime torrenting automation with Austrian legal compliance.
 """
 
 __version__ = "1.0.0"

@@ -1,71 +1,83 @@
-# qBTMCP - qBittorrent MCP Server 🇦🇹🎌
+# RTorrent MCP Server 🇦🇹🎌
 
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastMCP](https://img.shields.io/badge/FastMCP-2.10-brightgreen)](https://fastmcp.anthropic.com)
+[![FastMCP](https://img.shields.io/badge/FastMCP-2.12-brightgreen)](https://fastmcp.anthropic.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-FastMCP 2.10 compliant server for anime torrenting automation with Austrian legal compliance.
+FastMCP 2.12 compliant server for anime torrenting automation with Austrian legal compliance using rTorrent.
 
 ## Features 🎯
 
-- **FastMCP 2.10 Compatible**: Latest standards and performance improvements
+- **FastMCP 2.12 Compatible**: Latest standards and stdio transport for Claude Desktop
+- **rTorrent Integration**: Full SCGI API control (add/pause/resume/delete torrents)
 - **nyaa.si Anime Search**: Automated search with ASW release group prioritization
-- **qBittorrent Integration**: Full Web UI API control (add/pause/resume/delete)
 - **Austrian Legal Compliance**: Built-in legal risk assessment for Austrian users
 - **Natural Language Commands**: Process Sandra's anime requests in English/German
 - **Quality Scoring**: Intelligent ranking of releases by group reputation
+- **Self-Documenting Tools**: Comprehensive tool descriptions with input/output schemas
+- **Repository Analysis**: Deep codebase analysis and recommendations
+- **System Status Monitoring**: Detailed server health and metrics
 - **Configuration Management**: Environment variables and .env file support
 - **Comprehensive Testing**: Unit and integration tests for all components
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Python 3.9 or higher
-- qBittorrent with Web UI enabled
+- rTorrent with SCGI enabled (port 5000)
+- Claude Desktop (for MCP integration)
 - (Optional) Virtual environment (recommended)
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/sandraschi/qbtmcp.git
    cd qbtmcp
    ```
 
 2. **Set up a virtual environment (recommended)**
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
-   
+
    For development:
+
    ```bash
    pip install -r requirements.txt[dev]
    ```
 
 ### Configuration
 
-1. **Configure qBittorrent Web UI**
-   - Open qBittorrent
-   - Go to Tools → Options → Web UI
-   - Enable Web UI and set username/password
-   - Default: http://localhost:8080, admin/adminadmin
+1. **Configure rTorrent SCGI**
+   - Install rTorrent with SCGI support
+   - Configure SCGI port in `.rtorrent.rc`:
+     ```
+     scgi_port = localhost:5000
+     ```
+   - Start rTorrent daemon
 
 2. **Create a `.env` file** (or set environment variables)
+
    ```env
-   # qBittorrent settings
-   QBITTORRENT_URL=http://localhost:8080
-   QBITTORRENT_USERNAME=admin
-   QBITTORRENT_PASSWORD=adminadmin
-   
+   # rTorrent settings
+   RTORRENT_HOST=localhost
+   RTORRENT_PORT=5000
+   RTORRENT_PATH=/var/lib/rtorrent/session
+
    # Nyaa.si settings
    NYAA_BASE_URL=https://nyaa.si
-   
+
    # Application settings
    DEBUG=false
    LOG_LEVEL=INFO
@@ -75,18 +87,33 @@ FastMCP 2.10 compliant server for anime torrenting automation with Austrian lega
 
 ```bash
 # Run with stdio transport (for Claude Desktop)
-python server.py
+python -m qbtmcp.server --transport stdio
 
 # Or with HTTP transport
-python server.py --transport http
+python -m qbtmcp.server --transport http
 
 # Custom config file
-python server.py --config /path/to/config.env
+python -m qbtmcp.server --config /path/to/config.env
+
+# Direct module execution
+python src/qbtmcp/server.py
+```
+
+### MCPB Package Installation
+
+For easy installation, use the pre-built MCPB package:
+
+```bash
+# Build the MCPB package (requires MCPB CLI)
+.\scripts\build-dxt-package.ps1
+
+# Then drag dist/rtorrent-mcp-1.0.0.mcpb to Claude Desktop
 ```
 
 ## 📦 Development
 
 ### Testing
+
 ```bash
 # Run all tests
 pytest
@@ -96,6 +123,7 @@ pytest --cov=qbtmcp --cov-report=html
 ```
 
 ### Code Style
+
 ```bash
 # Format code with black
 black .
@@ -110,6 +138,7 @@ mypy .
 ## 🎯 Features in Detail
 
 ### 🔍 Smart Anime Search
+
 ```python
 # Basic search
 await search_anime("Detective Conan", resolution="720p", group="ASW")
@@ -118,30 +147,29 @@ await search_anime("Detective Conan", resolution="720p", group="ASW")
 await search_anime(
     query="One Piece",
     resolution="1080p",
-    group="Erai-raws",
-    category="Anime",
-    min_seeders=5
+    group="Erai-raws"
 )
 ```
 
-### 🎛️ qBittorrent Integration
+### 🎛️ rTorrent Integration
+
 ```python
 # Add torrent from magnet link
 magnet = "magnet:?xt=urn:btih:..."
-await add_torrent_qbt(magnet, category="anime", tags=["anime", "asw"])
+await add_torrent_rt(magnet, category="anime")
 
 # Monitor and manage downloads
-await list_qbt_torrents(status="downloading")
-await pause_torrent("torrent_hash")
-await resume_torrent("torrent_hash")
-await delete_torrent("torrent_hash", delete_files=True)
+await list_rt_torrents()
+await pause_rt_torrent("torrent_hash")
+await resume_rt_torrent("torrent_hash")
+await delete_rt_torrent("torrent_hash", delete_files=True)
 
-# Automatic management
-await set_auto_management("torrent_hash", enable=True)
-await set_sequential_download("torrent_hash", enable=True)
+# Check connection status
+await get_rt_status()
 ```
 
 ### 🇦🇹 Austrian Legal Compliance
+
 ```python
 # Check if content is safe for Austria
 is_safe = await check_austrian_legal_status(torrent_info)
@@ -152,6 +180,7 @@ else:
 ```
 
 ### 🤖 Natural Language Processing
+
 ```python
 # English commands
 await process_command("Download the latest Detective Conan episode in 720p from ASW")
@@ -163,14 +192,44 @@ await process_command("Lade die neueste Folge Detective Conan in 720p von ASW")
 await process_command("Find me the best quality of Attack on Titan, but nothing below 720p")
 ```
 
+### 🛠️ System Tools
+
+```python
+# Get comprehensive help
+await help()
+
+# System status and health check
+await get_system_status()
+
+# Analyze the repository
+await analyze_repo()
+```
+
+### 🤖 Natural Language Processing
+
+```python
+# English commands
+await sandra_anime_command("get me this weeks asw anime, 720p")
+
+# German commands
+await sandra_anime_command("lade detective conan asw 720p")
+
+# Parse commands without executing
+await parse_anime_command("asw attack on titan 1080p")
+
+# Get command help
+await get_command_help()
+```
+
 ## 🔧 Configuration Options
 
 ### Environment Variables
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `QBITTORRENT_URL` | `http://localhost:8080` | qBittorrent Web UI URL |
-| `QBITTORRENT_USERNAME` | `admin` | qBittorrent username |
-| `QBITTORRENT_PASSWORD` | `adminadmin` | qBittorrent password |
+| `RTORRENT_HOST` | `localhost` | rTorrent SCGI host |
+| `RTORRENT_PORT` | `5000` | rTorrent SCGI port |
+| `RTORRENT_PATH` | `/var/lib/rtorrent/session` | rTorrent session path |
 | `NYAA_BASE_URL` | `https://nyaa.si` | Nyaa.si base URL |
 | `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
 | `DEBUG` | `false` | Enable debug mode |
@@ -181,27 +240,65 @@ await process_command("Find me the best quality of Attack on Titan, but nothing 
 ## 📚 Documentation
 
 ### API Reference
+
 For detailed API documentation, run the server and visit:
+
 ```
 http://localhost:8000/docs
 ```
 
+### Product Requirements Document
+
+See [PRD.md](docs/PRD.md) for comprehensive product specifications, requirements, and implementation details.
+
 ### Development
+
 1. Install development dependencies:
+
    ```bash
    pip install -r requirements.txt[dev]
    ```
 
 2. Run tests:
+
    ```bash
    pytest
    ```
 
 3. Build documentation:
+
    ```bash
    mkdocs serve
    ```
-   Then visit http://localhost:8001
+
+   Then visit <http://localhost:8001>
+
+## 🤖 Claude Desktop Integration
+
+### Option 1: MCPB Package (Recommended)
+
+1. Build the MCPB package: `.\scripts\build-dxt-package.ps1`
+2. Drag `dist/rtorrent-mcp-1.0.0.mcpb` to Claude Desktop
+3. Configure rTorrent settings in the extension setup
+
+### Option 2: Manual Configuration
+
+Add this to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "rtorrent-mcp": {
+      "command": "python",
+      "args": ["-m", "qbtmcp.server", "--transport", "stdio"],
+      "cwd": "D:\\Dev\\repos\\qbtmcp",
+      "env": {
+        "PYTHONPATH": "D:\\Dev\\repos\\qbtmcp\\src"
+      }
+    }
+  }
+}
+```
 
 ## 🤝 Contributing
 
@@ -217,15 +314,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [qBittorrent](https://www.qbittorrent.org/) - The awesome torrent client
+- [rTorrent](https://rakshasa.github.io/rtorrent/) - The lightweight torrent client
 - [Nyaa.si](https://nyaa.si/) - For the anime torrents
 - [FastMCP](https://fastmcp.anthropic.com) - The MCP framework
+- [Claude Desktop](https://claude.ai/desktop) - For MCP integration
 
 ---
 
 Made with ❤️ in Vienna, Austria
 
 ### Legal Compliance
+
 ```python
 # Check legal status
 await check_legal_status("austria")  # ✅ Safe for Sandra in Vienna

@@ -1,0 +1,228 @@
+[
+  {
+    "input": {
+      "command": "sandra_anime_command",
+      "args": {
+        "command": "get me this weeks asw anime, 720p"
+      }
+    },
+    "output": {
+      "response": "🎌 Searching for this week's ASW anime releases in 720p...",
+      "results": [
+        {
+          "title": "[ASW] One Piece - 1080 (Netflix 1080p HEVC AAC)",
+          "magnet": "magnet:?xt=urn:btih:...",
+          "seeders": 45,
+          "leechers": 12,
+          "size": "2.1 GB",
+          "quality_score": 95,
+          "release_group": "ASW"
+        }
+      ],
+      "next_steps": "Use add_torrent_rt() to download selected torrents"
+    }
+  },
+  {
+    "input": {
+      "command": "add_torrent_rt",
+      "args": {
+        "magnet_link": "magnet:?xt=urn:btih:...",
+        "category": "anime"
+      }
+    },
+    "output": {
+      "status": "success",
+      "message": "✅ Torrent added successfully",
+      "details": {
+        "hash": "abc123def456",
+        "category": "anime",
+        "magnet_preview": "magnet:?xt=urn:btih:...[50 chars]..."
+      },
+      "next_steps": "Monitor progress with list_rt_torrents()"
+    }
+  },
+  {
+    "input": {
+      "command": "list_rt_torrents"
+    },
+    "output": {
+      "torrents": [
+        {
+          "hash": "abc123def456",
+          "name": "[ASW] One Piece - 1080",
+          "state": "active",
+          "size_bytes": 2200000000,
+          "completed_bytes": 1100000000,
+          "progress": 50.0
+        }
+      ],
+      "summary": "1 active torrent, total download speed: 2.5 MB/s"
+    }
+  },
+  {
+    "input": {
+      "command": "check_legal_status",
+      "args": {
+        "country": "austria"
+      }
+    },
+    "output": {
+      "country": "Austria",
+      "risk_level": "safe",
+      "warning": "✅ Personal downloading generally tolerated",
+      "sandra_location": true,
+      "recommendation": "Safe for Sandra in Vienna 🇦🇹"
+    }
+  },
+  {
+    "input": {
+      "command": "search_anime",
+      "args": {
+        "query": "Detective Conan",
+        "resolution": "720p",
+        "group": "ASW"
+      }
+    },
+    "output": {
+      "search_results": [
+        {
+          "title": "[ASW] Detective Conan - 1080 (1080p HEVC AAC)",
+          "magnet": "magnet:?xt=urn:btih:...",
+          "seeders": 25,
+          "leechers": 3,
+          "size": "1.8 GB",
+          "quality_score": 90,
+          "release_group": "ASW"
+        }
+      ],
+      "total_results": 1,
+      "search_criteria": {
+        "query": "Detective Conan",
+        "resolution": "720p",
+        "group": "ASW"
+      }
+    }
+  },
+  {
+    "input": {
+      "command": "get_system_status"
+    },
+    "output": {
+      "server_status": "running",
+      "rtorrent_status": "connected",
+      "system_metrics": {
+        "python_version": "3.11.0",
+        "working_directory": "/path/to/project",
+        "memory_usage": "45.2 MB",
+        "uptime": "120.5 seconds"
+      },
+      "configuration": {
+        "app_name": "RTorrent MCP",
+        "version": "1.0.0",
+        "log_level": "INFO",
+        "allowed_categories": ["Anime"]
+      },
+      "recent_activity": [
+        "Server started successfully",
+        "rTorrent connection established",
+        "Configuration loaded"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "command": "help"
+    },
+    "output": {
+      "tools": [
+        {
+          "name": "add_torrent_rt",
+          "description": "Add torrents to rTorrent",
+          "category": "Torrent Management"
+        },
+        {
+          "name": "search_anime",
+          "description": "Search nyaa.si for anime",
+          "category": "Search"
+        }
+      ],
+      "resources": [
+        {
+          "uri": "rtorrent://config",
+          "description": "rTorrent configuration info",
+          "content_type": "application/json"
+        }
+      ],
+      "configuration": {
+        "app_name": "RTorrent MCP",
+        "version": "1.0.0",
+        "legal_status": "Safe for Sandra in Vienna 🇦🇹"
+      },
+      "troubleshooting": [
+        "Ensure rTorrent is running with SCGI on port 5000",
+        "Check network connectivity to nyaa.si",
+        "Verify local legal compliance requirements"
+      ]
+    }
+  },
+  {
+    "input": {
+      "command": "sandra_anime_command",
+      "args": {
+        "command": "lade detective conan asw 720p"
+      }
+    },
+    "output": {
+      "command_understood": "lade detective conan asw 720p",
+      "language": "german",
+      "action": "german_download_request",
+      "anime": "Detective Conan",
+      "results": [
+        {
+          "title": "[ASW] Detective Conan - 1080",
+          "magnet": "magnet:?xt=urn:btih:...",
+          "seeders": 15,
+          "leechers": 2,
+          "size": "1.8 GB"
+        }
+      ],
+      "austrian_context": true,
+      "german_efficiency": "Sehr gut! 🇦🇹"
+    }
+  },
+  {
+    "input": {
+      "command": "analyze_repo"
+    },
+    "output": {
+      "project_info": {
+        "name": "RTorrent MCP Server",
+        "version": "1.0.0",
+        "description": "FastMCP 2.12 compliant server for anime torrenting",
+        "author": "Sandra's Austrian Anime Automation"
+      },
+      "structure": {
+        "directories": ["src", "tests", "docs", "scripts"],
+        "files": ["pyproject.toml", "README.md", "requirements.txt"],
+        "total_lines": 2500,
+        "total_files": 25
+      },
+      "dependencies": [
+        {"name": "fastmcp", "version": "^2.12.0", "purpose": "MCP server framework"},
+        {"name": "aiohttp", "version": "^3.9.0", "purpose": "Async HTTP client"}
+      ],
+      "code_quality": {
+        "python_files": 15,
+        "test_files": 5,
+        "documentation_files": 3,
+        "main_packages": ["qbtmcp"]
+      },
+      "recommendations": [
+        "Consider adding more comprehensive error handling",
+        "Implement caching for frequently accessed data",
+        "Add rate limiting for API calls"
+      ]
+    }
+  }
+]

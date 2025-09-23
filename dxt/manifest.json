@@ -1,0 +1,27 @@
+{
+  "manifest_version": "0.2",
+  "name": "rtorrent-mcp",
+  "version": "1.0.0",
+  "description": "RTorrent MCP Server - Austrian anime automation with natural language processing",
+  "author": {
+    "name": "Sandra's Austrian Anime Automation"
+  },
+  "license": "MIT",
+  "server": {
+    "type": "python",
+    "entry_point": "src/qbtmcp/server.py",
+    "mcp_config": {
+      "command": "python",
+      "args": [
+        "-m",
+        "qbtmcp.server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "PYTHONPATH": "${__dirname}/src",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

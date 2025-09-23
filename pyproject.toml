@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "qbtmcp"
+name = "rtorrent-mcp"
 version = "1.0.0"
-description = "qBittorrent MCP Server - Austrian anime automation with FastMCP 2.10"
+description = "RTorrent MCP Server - Austrian anime automation with FastMCP 2.12"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -14,7 +14,7 @@ authors = [
 maintainers = [
     {name = "Sandra", email = "sandra@vienna.at"}
 ]
-keywords = ["qbittorrent", "anime", "mcp", "torrents", "austria", "asw", "fastmcp"]
+keywords = ["rtorrent", "anime", "mcp", "torrents", "austria", "asw", "fastmcp", "scgi"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: End Users/Desktop",
@@ -32,16 +32,15 @@ classifiers = [
     "Typing :: Typed"
 ]
 dependencies = [
-    "fastmcp[all]>=2.10.0",
+    "fastmcp>=2.12.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "aiohttp>=3.9.0",
     "beautifulsoup4>=4.12.0",
     "requests>=2.31.0",
-    "python-multipart>=0.0.6",
-    "pyyaml>=6.0",
-    "python-dateutil>=2.8.2"
+    "xmlrpc-client>=3.1.0",
+    "psutil>=5.9.0"
 ]
 requires-python = ">=3.9"
 
@@ -130,7 +129,7 @@ Issues = "https://github.com/sandra-vienna/qbtmcp/issues"
 Documentation = "https://github.com/sandra-vienna/qbtmcp/blob/main/README.md"
 
 [project.scripts]
-qbtmcp = "qbtmcp.server:main"
+rtorrent-mcp = "qbtmcp.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

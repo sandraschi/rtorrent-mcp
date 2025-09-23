@@ -118,22 +118,54 @@ def detect_release_group(title: str) -> str:
 
 def register_anime_search_tools(mcp):
     """Register anime search tools with FastMCP server"""
-    
-    @mcp.tool()
-    async def search_anime(query: str, resolution: str = "720p", group: str = "ASW") -> List[dict]:
-        """Search nyaa.si for anime releases with Austrian preferences
-        
+
+    @mcp.tool(
+        name="search_anime",
+        description="""
+        Search nyaa.si for anime releases with Austrian preferences.
+
+        This tool searches for anime torrents on nyaa.si with intelligent scoring
+        based on Austrian legal requirements and preferred release groups.
+
         Args:
-            query: Anime name to search for
-            resolution: Preferred resolution (720p, 1080p, 4K)
-            group: Release group preference (ASW, SubsPlease, Erai-raws)
-        """
+            query (str): Anime name to search for
+            resolution (str): Preferred resolution (720p, 1080p, 4K) - default: 720p
+            group (str): Release group preference (ASW, SubsPlease, Erai-raws) - default: ASW
+
+        Returns:
+            list: List of anime releases with quality scoring
+        """,
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Anime name"},
+                "resolution": {"type": "string", "description": "Preferred resolution", "default": "720p"},
+                "group": {"type": "string", "description": "Release group", "default": "ASW"}
+            },
+            "required": ["query"]
+        },
+        outputSchema={
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "magnet": {"type": "string"},
+                    "seeders": {"type": "number"},
+                    "leechers": {"type": "number"},
+                    "size": {"type": "string"},
+                    "quality_score": {"type": "number"},
+                    "release_group": {"type": "string"}
+                }
+            }
+        }
+    )
+    async def search_anime(query: str, resolution: str = "720p", group: str = "ASW") -> List[dict]:
         return await search_nyaa_anime(query, resolution, group)
-    
+
     @mcp.resource("anime://search/recent")
     def recent_anime_releases() -> str:
         """Recent anime releases information"""
-        import json
         return json.dumps({
             "description": "Search recent anime releases on nyaa.si",
             "preferred_groups": list(PREFERRED_RELEASE_GROUPS.keys()),
