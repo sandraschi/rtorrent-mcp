@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+import json
 
 class Settings(BaseSettings):
     """Application settings"""
@@ -28,9 +29,29 @@ class Settings(BaseSettings):
     NYAA_BASE_URL: str = "https://nyaa.si"
 
     # Legal compliance settings (Austria-specific)
-    ALLOWED_CATEGORIES: list[str] = ["Anime"]
-    ALLOWED_RESOLUTIONS: list[str] = ["720p", "1080p"]
+    ALLOWED_CATEGORIES_STR: str = "Anime"
+    ALLOWED_RESOLUTIONS_STR: str = "720p,1080p"
     MAX_TORRENT_SIZE_GB: int = 10  # Maximum allowed torrent size in GB
+
+    @property
+    def ALLOWED_CATEGORIES(self) -> list[str]:
+        """Parse ALLOWED_CATEGORIES_STR as list"""
+        if self.ALLOWED_CATEGORIES_STR.startswith('['):
+            try:
+                return json.loads(self.ALLOWED_CATEGORIES_STR)
+            except:
+                pass
+        return [cat.strip() for cat in self.ALLOWED_CATEGORIES_STR.split(',') if cat.strip()]
+
+    @property
+    def ALLOWED_RESOLUTIONS(self) -> list[str]:
+        """Parse ALLOWED_RESOLUTIONS_STR as list"""
+        if self.ALLOWED_RESOLUTIONS_STR.startswith('['):
+            try:
+                return json.loads(self.ALLOWED_RESOLUTIONS_STR)
+            except:
+                pass
+        return [res.strip() for res in self.ALLOWED_RESOLUTIONS_STR.split(',') if res.strip()]
 
     # Model configuration
     model_config = SettingsConfigDict(

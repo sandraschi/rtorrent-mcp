@@ -1,0 +1,186 @@
+site_name: RTorrent MCP Server
+site_description: Austrian anime automation with FastMCP 2.12
+site_author: Sandra's Austrian Anime Automation
+site_url: https://yourusername.github.io/rtorrent-mcp
+
+# Repository
+repo_name: yourusername/rtorrent-mcp
+repo_url: https://github.com/yourusername/rtorrent-mcp
+edit_uri: edit/main/docs/
+
+# Theme
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            docstring_section_style: table
+            heading_level: 1
+            inherited_members: true
+            merge_init_into_class: true
+            separate_signature: true
+            show_bases: true
+            show_categories: true
+            show_docstring_attributes: true
+            show_docstring_functions: true
+            show_docstring_classes: true
+            show_docstring_modules: true
+            show_if_no_docstring: true
+            show_inheritance_diagram: true
+            show_labels: true
+            show_object_full_path: true
+            show_root_full_path: true
+            show_root_heading: true
+            show_root_toc_entry: true
+            show_signature: true
+            show_signature_annotations: true
+            show_source: true
+            show_submodules: true
+            signature_crossrefs: true
+            summary: true
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - meta
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: yourusername
+      repo: rtorrent-mcp
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Configuration: getting-started/configuration.md
+      - Quick Start: getting-started/quick-start.md
+  - User Guide:
+      - Torrent Management: user-guide/torrent-management.md
+      - Anime Search: user-guide/anime-search.md
+      - Legal Compliance: user-guide/legal-compliance.md
+      - Natural Language: user-guide/natural-language.md
+  - Developer Guide:
+      - Architecture: developer-guide/architecture.md
+      - API Reference: developer-guide/api-reference.md
+      - Contributing: developer-guide/contributing.md
+      - Testing: developer-guide/testing.md
+  - MCPB Packaging:
+      - Overview: mcpb/overview.md
+      - Building: mcpb/building.md
+      - Distribution: mcpb/distribution.md
+  - About:
+      - Changelog: about/changelog.md
+      - Security: about/security.md
+      - Code of Conduct: about/code-of-conduct.md
+      - License: about/license.md
+
+# Social links
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yourusername/rtorrent-mcp
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/yourusername
+
+# Copyright
+copyright: Copyright &copy; 2025 Sandra's Austrian Anime Automation
+
+# Analytics (optional)
+# extra:
+#   analytics:
+#     provider: google
+#     property: G-XXXXXXXXXX

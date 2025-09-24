@@ -73,10 +73,6 @@ Documentation = "https://github.com/sandraschi/qbtmcp#readme"
 Issues = "https://github.com/sandraschi/qbtmcp/issues"
 Source = "https://github.com/sandraschi/qbtmcp"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-packages = find:
-
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["qbtmcp*"]
@@ -108,90 +104,38 @@ warn_unreachable = true
 module = ["pydantic.*", "pydantic_schema.*"]
 disallow_untyped_defs = false
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "mypy>=1.0.0"
-]
-test = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.0.0"
-]
-
-[project.urls]
-Homepage = "https://github.com/sandra-vienna/qbtmcp"
-Repository = "https://github.com/sandra-vienna/qbtmcp.git"
-Issues = "https://github.com/sandra-vienna/qbtmcp/issues"
-Documentation = "https://github.com/sandra-vienna/qbtmcp/blob/main/README.md"
-
-[project.scripts]
-rtorrent-mcp = "qbtmcp.server:main"
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["qbtmcp*"]
-exclude = ["tests*"]
-
-[tool.black]
-line-length = 88
-target-version = ['py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-include_trailing_comma = true
-
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-show_error_codes = true
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
-asyncio_mode = "auto"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=qbtmcp",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml",
+    "--cov-fail-under=80"
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests"
+]
 
 [tool.coverage.run]
-source = ["qbtmcp"]
-omit = ["tests/*", "*/test_*"]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/conftest.py"
+]
 
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
     "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:"
+    "raise NotImplementedError"
 ]

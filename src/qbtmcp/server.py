@@ -39,37 +39,28 @@ class RTorrentMCPServer(FastMCP):
         # Initialize FastMCP server with settings
         super().__init__(
             name=settings.APP_NAME,
-            version=settings.APP_VERSION,
-            description=settings.APP_DESCRIPTION,
+            instructions=settings.APP_DESCRIPTION,
             log_level=settings.LOG_LEVEL
         )
 
         self.logger = logging.getLogger(__name__)
-        self.settings = settings
+        self._settings = settings
 
     def setup(self):
         """Setup the server and register all tools"""
         # Log configuration
-        self.logger.info("🎌 Starting %s v%s", self.settings.APP_NAME, self.settings.APP_VERSION)
+        self.logger.info("🎌 Starting %s v%s", self._settings.APP_NAME, self._settings.APP_VERSION)
         self.logger.info("🔧 Configuration loaded from: %s",
                         os.getenv("ENV_FILE", "default settings"))
         self.logger.info("🇦🇹 Legal Status: Safe for Sandra in Vienna")
         self.logger.info("🎯 Focus: %s",
-                        ", ".join(self.settings.ALLOWED_CATEGORIES) + " @ " +
-                        "/".join(self.settings.ALLOWED_RESOLUTIONS))
+                        ", ".join(self._settings.ALLOWED_CATEGORIES) + " @ " +
+                        "/".join(self._settings.ALLOWED_RESOLUTIONS))
 
-        # Register all tool modules with settings
-        from qbtmcp.services.nyaa_search import register_anime_search_tools
-        from qbtmcp.services.qbittorrent_client import register_rtorrent_tools
-        from qbtmcp.services.legal_compliance import register_legal_tools
-        from qbtmcp.services.natural_language import register_nlp_tools
-        from qbtmcp.services.core_tools import register_core_tools
+        # Register all MCP tools using the tools package
+        from qbtmcp.tools import register_all_tools
 
-        register_anime_search_tools(self, settings=self.settings)
-        register_rtorrent_tools(self, settings=self.settings)
-        register_legal_tools(self, settings=self.settings)
-        register_nlp_tools(self, settings=self.settings)
-        register_core_tools(self, settings=self.settings)
+        register_all_tools(self, self._settings)
 
         self.logger.info("✅ Server setup complete")
 
