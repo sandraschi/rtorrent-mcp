@@ -33,7 +33,7 @@ def register_core_tools(mcp):
         Returns:
             dict: Comprehensive help information organized by category
         """,
-        outputSchema={
+        output_schema={
             "type": "object",
             "properties": {
                 "tools": {
@@ -81,32 +81,32 @@ def register_core_tools(mcp):
             return {
                 "tools": [
                     {
-                        "name": "add_torrent_rt",
+                        "name": "add_torrent",
                         "description": "Add a torrent to rTorrent with Austrian anime categorization",
                         "category": "Torrent Management"
                     },
                     {
-                        "name": "list_rt_torrents",
+                        "name": "list_torrents",
                         "description": "List all torrents in rTorrent with status information",
                         "category": "Torrent Management"
                     },
                     {
-                        "name": "pause_rt_torrent",
+                        "name": "pause_torrent",
                         "description": "Pause a specific torrent in rTorrent",
                         "category": "Torrent Management"
                     },
                     {
-                        "name": "resume_rt_torrent",
+                        "name": "resume_torrent",
                         "description": "Resume a specific torrent in rTorrent",
                         "category": "Torrent Management"
                     },
                     {
-                        "name": "delete_rt_torrent",
+                        "name": "delete_torrent",
                         "description": "Delete a torrent from rTorrent with optional file deletion",
                         "category": "Torrent Management"
                     },
                     {
-                        "name": "get_rt_status",
+                        "name": "get_status",
                         "description": "Get the current connection status of rTorrent",
                         "category": "System Status"
                     },
@@ -187,7 +187,7 @@ def register_core_tools(mcp):
         Returns:
             dict: Comprehensive status information
         """,
-        outputSchema={
+        output_schema={
             "type": "object",
             "properties": {
                 "server_status": {"type": "string"},
@@ -289,7 +289,7 @@ def register_core_tools(mcp):
         Returns:
             dict: Comprehensive repository analysis
         """,
-        outputSchema={
+        output_schema={
             "type": "object",
             "properties": {
                 "project_info": {

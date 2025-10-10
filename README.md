@@ -26,7 +26,7 @@ FastMCP 2.12 compliant server for anime torrenting automation with Austrian lega
 ### Prerequisites
 
 - Python 3.9 or higher
-- rTorrent with SCGI enabled (port 5000)
+- rTorrent with SCGI enabled (port 5000) - [See detailed installation guide](docs/RTORRENT_SETUP.md)
 - Claude Desktop (for MCP integration)
 - (Optional) Virtual environment (recommended)
 
@@ -58,17 +58,154 @@ FastMCP 2.12 compliant server for anime torrenting automation with Austrian lega
    pip install -r requirements.txt[dev]
    ```
 
+   **⚠️ Troubleshooting**: If you get `ERROR: No matching distribution found for xmlrpc-client`, this is expected - the requirements.txt has been updated to use the correct package name `xmlrpc3`. See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common dependency issues.
+
+### rTorrent Installation & Setup
+
+**⚠️ IMPORTANT: rTorrent must be installed and configured before using this MCP server.**
+
+For complete installation instructions, see our [comprehensive rTorrent setup guide](docs/RTORRENT_SETUP.md).
+
+#### Quick Setup (Windows - Docker Recommended)
+
+**Prerequisites:** Docker Desktop must be installed and running.
+
+```batch
+# Download the project files
+# Place docker-compose.yml and install.bat in your desired directory
+
+# Run the installation script
+install.bat
+
+# The script will:
+# - Create necessary directories
+# - Configure rTorrent with SCGI support
+# - Start the Docker containers
+# - Test the connection
+```
+
+**Management Commands:**
+```batch
+start.bat      # Start rTorrent containers
+stop.bat       # Stop rTorrent containers  
+status.bat     # Check container status and health
+uninstall.bat  # Remove everything
+```
+
+#### Alternative: WSL2 Setup
+
+```powershell
+# Enable WSL2 (run as Administrator)
+wsl --install -d Ubuntu
+
+# Inside WSL2 Ubuntu
+sudo apt update
+sudo apt install rtorrent
+```
+
+#### Linux/macOS Setup
+
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install rtorrent
+
+# CentOS/RHEL/Fedora
+sudo yum install rtorrent
+# or
+sudo dnf install rtorrent
+
+# macOS
+brew install rtorrent
+
+# Verify SCGI support
+rtorrent -h | grep -i scgi
+```
+
+#### Basic Configuration
+
+**For Docker (Windows):**
+
+1. **Create rTorrent configuration**
+   ```powershell
+   # Create config directory
+   mkdir C:\rtorrent-mcp\config
+   
+   # Create rtorrent.rc configuration
+   @"
+   # SCGI configuration for MCP server
+   scgi_port = 0.0.0.0:5000
+   
+   # Basic settings
+   session.path.set = /config/session
+   directory.default.set = /downloads
+   log.execute = /config/rtorrent.log
+   
+   # Performance settings
+   max_uploads.set = 50
+   max_connections.set = 200
+   max_peers.set = 100
+   
+   # Austrian Legal Compliance
+   system.method.set_key = event.download.inserted_new, anime_category, "d.custom1.set=anime"
+   "@ | Out-File -FilePath "C:\rtorrent-mcp\config\rtorrent.rc" -Encoding UTF8
+   ```
+
+2. **Restart container to apply configuration**
+   ```powershell
+   docker-compose restart
+   ```
+
+3. **Verify connection**
+   ```powershell
+   # Test SCGI connection from Windows
+   Invoke-RestMethod -Uri "http://localhost:5000/RPC2" -Method POST -ContentType "text/xml" -Body '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>'
+   ```
+
+**For WSL2/Linux/macOS:**
+
+1. **Create rTorrent configuration**
+   ```bash
+   mkdir -p ~/.rtorrent
+   cat > ~/.rtorrent.rc << 'EOF'
+   # SCGI configuration for MCP server
+   scgi_port = localhost:5000
+   
+   # Basic settings
+   session.path.set = ~/.rtorrent/session
+   directory.default.set = ~/Downloads
+   log.execute = ~/.rtorrent/rtorrent.log
+   
+   # Performance settings
+   max_uploads.set = 50
+   max_connections.set = 200
+   max_peers.set = 100
+   EOF
+   ```
+
+2. **Start rTorrent daemon**
+   ```bash
+   # Start in background
+   rtorrent -d
+   
+   # Or with systemd (create service)
+   sudo systemctl start rtorrent
+   sudo systemctl enable rtorrent
+   ```
+
+3. **Verify connection**
+   ```bash
+   # Test SCGI connection
+   curl -X POST -H "Content-Type: text/xml" \
+     -d '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>' \
+     http://localhost:5000/RPC2
+   ```
+
+For Windows, macOS, Docker, and advanced configuration options, see [docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md).
+
 ### Configuration
 
-1. **Configure rTorrent SCGI**
-   - Install rTorrent with SCGI support
-   - Configure SCGI port in `.rtorrent.rc`:
-     ```
-     scgi_port = localhost:5000
-     ```
-   - Start rTorrent daemon
-
-2. **Create a `.env` file** (or set environment variables)
+1. **Create a `.env` file** (or set environment variables)
 
    ```env
    # rTorrent settings
@@ -157,16 +294,16 @@ await search_anime(
 ```python
 # Add torrent from magnet link
 magnet = "magnet:?xt=urn:btih:..."
-await add_torrent_rt(magnet, category="anime")
+await add_torrent(magnet, category="anime")
 
 # Monitor and manage downloads
-await list_rt_torrents()
-await pause_rt_torrent("torrent_hash")
-await resume_rt_torrent("torrent_hash")
-await delete_rt_torrent("torrent_hash", delete_files=True)
+await list_torrents()
+await pause_torrent("torrent_hash")
+await resume_torrent("torrent_hash")
+await delete_torrent("torrent_hash", delete_files=True)
 
 # Check connection status
-await get_rt_status()
+await get_status()
 ```
 
 ### 🇦🇹 Austrian Legal Compliance
@@ -276,15 +413,36 @@ See [PRD.md](docs/PRD.md) for comprehensive product specifications, requirements
 
 ## 🤖 Claude Desktop Integration
 
-### Option 1: MCPB Package (Recommended)
+### Option 1: Drag & Drop Installation (DXT Package) - Recommended
 
-1. Build the MCPB package: `.\scripts\build-dxt-package.ps1`
-2. Drag `dist/rtorrent-mcp-1.0.0.mcpb` to Claude Desktop
-3. Configure rTorrent settings in the extension setup
+1. **Build the DXT package**:
+   ```bash
+   # Windows PowerShell
+   .\scripts\build-dxt-package.ps1
 
-### Option 2: Manual Configuration
+   # Linux/macOS
+   chmod +x scripts/build-dxt-package.ps1
+   ./scripts/build-dxt-package.ps1
+   ```
 
-Add this to your `claude_desktop_config.json`:
+2. **Install in Claude Desktop**:
+   - Locate the generated `.mcpb` file in the `dist/` folder
+   - Drag and drop the file onto Claude Desktop
+   - Claude Desktop will automatically install and configure the server
+
+3. **Configure rTorrent settings**:
+   - The extension will prompt you to configure rTorrent connection settings
+   - Set your rTorrent SCGI host and port (default: localhost:5000)
+
+### Option 2: Manual MCP Configuration
+
+For advanced users or custom setups, manually configure Claude Desktop:
+
+**Location**: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+**Location**: `%APPDATA%/Claude/claude_desktop_config.json` (Windows)
+**Location**: `~/.config/Claude/claude_desktop_config.json` (Linux)
+
+Add this configuration to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -292,14 +450,22 @@ Add this to your `claude_desktop_config.json`:
     "rtorrent-mcp": {
       "command": "python",
       "args": ["-m", "qbtmcp.server", "--transport", "stdio"],
-      "cwd": "D:\\Dev\\repos\\qbtmcp",
+      "cwd": "/path/to/your/qbtmcp",
       "env": {
-        "PYTHONPATH": "D:\\Dev\\repos\\qbtmcp\\src"
+        "PYTHONPATH": "/path/to/your/qbtmcp/src",
+        "RTORRENT_HOST": "localhost",
+        "RTORRENT_PORT": "5000",
+        "NYAA_BASE_URL": "https://nyaa.si"
       }
     }
   }
 }
 ```
+
+**Configuration Notes**:
+- Replace `/path/to/your/qbtmcp` with your actual repository path
+- Adjust environment variables as needed for your setup
+- The server will start automatically when Claude Desktop launches
 
 ## 🤝 Contributing
 

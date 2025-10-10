@@ -8,7 +8,7 @@ import logging
 from typing import List, Dict, Any
 from fastmcp import FastMCP
 
-from ..services.qbittorrent_client import get_rtorrent_client
+from ..services.rtorrent_client_scgi import get_rtorrent_scgi_client
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
     """
 
     @mcp.tool(
-        name="add_torrent_rt",
+        name="add_torrent",
         description="Add a torrent to rTorrent with Austrian anime categorization. "
                    "This tool allows you to add torrents via magnet links and automatically "
                    "categorizes them for Austrian legal compliance. "
@@ -31,11 +31,11 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
                    "category (str): The category to assign (default: 'anime'). "
                    "Returns: dict with operation result and status details.",
     )
-    async def add_torrent_rt(magnet_link: str, category: str = "anime") -> dict:
+    async def add_torrent(magnet_link: str, category: str = "anime") -> dict:
         """Add torrent to rTorrent with Austrian anime categorization"""
         logger.info(f"Adding torrent with category '{category}': {magnet_link[:50]}...")
         try:
-            client = await get_rtorrent_client()
+            client = await get_rtorrent_scgi_client()
             result = await client.add_torrent(magnet_link, category)
             if result.get("status") == "success":
                 logger.info(f"Successfully added torrent: {result.get('hash', 'unknown')}")
@@ -68,92 +68,77 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
             }
 
     @mcp.tool(
-        name="list_rt_torrents",
+        name="list_torrents",
         description="List all torrents currently in rTorrent with their status. "
                    "Provides detailed information about each torrent including hash identifier, "
                    "name, state (active, paused, stopped), size and completion progress. "
                    "Returns: array of torrent objects with status details."
     )
-    async def list_rt_torrents() -> List[dict]:
+    async def list_torrents() -> List[dict]:
         """List torrents in rTorrent"""
         try:
-            client = await get_rtorrent_client()
+            client = await get_rtorrent_scgi_client()
             return await client.get_torrents()
         except Exception as e:
             logger.error(f"Error listing torrents: {e}")
             return [{"error": f"Failed to list torrents: {str(e)}"}]
 
     @mcp.tool(
-        name="pause_rt_torrent",
+        name="pause_torrent",
         description="Pause a specific torrent in rTorrent. "
                    "Args: torrent_hash (str): The hash identifier of the torrent to pause. "
                    "Returns: dict with operation status and torrent hash.",
     )
-    async def pause_rt_torrent(torrent_hash: str) -> dict:
+    async def pause_torrent(torrent_hash: str) -> dict:
         """Pause a torrent in rTorrent"""
         try:
-            client = await get_rtorrent_client()
+            client = await get_rtorrent_scgi_client()
             return await client.pause_torrent(torrent_hash)
         except Exception as e:
             logger.error(f"Error pausing torrent {torrent_hash}: {e}")
             return {"status": "error", "hash": torrent_hash, "message": str(e)}
 
     @mcp.tool(
-        name="resume_rt_torrent",
+        name="resume_torrent",
         description="Resume a specific torrent in rTorrent. "
                    "Args: torrent_hash (str): The hash identifier of the torrent to resume. "
                    "Returns: dict with operation status and torrent hash."
     )
-    async def resume_rt_torrent(torrent_hash: str) -> dict:
+    async def resume_torrent(torrent_hash: str) -> dict:
         """Resume a torrent in rTorrent"""
         try:
-            client = await get_rtorrent_client()
+            client = await get_rtorrent_scgi_client()
             return await client.resume_torrent(torrent_hash)
         except Exception as e:
             logger.error(f"Error resuming torrent {torrent_hash}: {e}")
             return {"status": "error", "hash": torrent_hash, "message": str(e)}
 
     @mcp.tool(
-        name="delete_rt_torrent",
+        name="delete_torrent",
         description="Delete a torrent from rTorrent with optional file deletion. "
                    "Args: torrent_hash (str): The hash identifier of the torrent to delete, "
                    "delete_files (bool): Whether to delete the downloaded files (default: false). "
                    "Returns: dict with operation status and deletion details."
     )
-    async def delete_rt_torrent(torrent_hash: str, delete_files: bool = False) -> dict:
+    async def delete_torrent(torrent_hash: str, delete_files: bool = False) -> dict:
         """Delete a torrent from rTorrent"""
         try:
-            client = await get_rtorrent_client()
+            client = await get_rtorrent_scgi_client()
             return await client.delete_torrent(torrent_hash, delete_files)
         except Exception as e:
             logger.error(f"Error deleting torrent {torrent_hash}: {e}")
             return {"status": "error", "hash": torrent_hash, "message": str(e)}
 
     @mcp.tool(
-        name="get_rt_status",
+        name="get_status",
         description="Get the current connection status of rTorrent. "
                    "Returns: dict with connection status, host, port, and status message."
     )
-    def get_rt_status() -> dict:
+    async def get_status() -> dict:
         """Get rTorrent connection status"""
         try:
-            from ..services.qbittorrent_client import _rt_client
-            if _rt_client is None:
-                return {
-                    "status": "disconnected",
-                    "host": settings.RTORRENT_HOST,
-                    "port": settings.RTORRENT_PORT,
-                    "connected": False,
-                    "message": "Not connected to rTorrent yet"
-                }
-            else:
-                return {
-                    "status": "connected" if _rt_client.connected else "disconnected",
-                    "host": settings.RTORRENT_HOST,
-                    "port": settings.RTORRENT_PORT,
-                    "connected": _rt_client.connected,
-                    "message": "Connected" if _rt_client.connected else "Disconnected"
-                }
+            client = await get_rtorrent_scgi_client()
+            return await client.get_connection_info()
         except Exception as e:
             logger.error(f"Error getting rTorrent status: {e}")
             return {

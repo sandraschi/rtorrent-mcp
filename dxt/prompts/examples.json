@@ -19,12 +19,12 @@
           "release_group": "ASW"
         }
       ],
-      "next_steps": "Use add_torrent_rt() to download selected torrents"
+      "next_steps": "Use add_torrent() to download selected torrents"
     }
   },
   {
     "input": {
-      "command": "add_torrent_rt",
+      "command": "add_torrent",
       "args": {
         "magnet_link": "magnet:?xt=urn:btih:...",
         "category": "anime"
@@ -38,12 +38,12 @@
         "category": "anime",
         "magnet_preview": "magnet:?xt=urn:btih:...[50 chars]..."
       },
-      "next_steps": "Monitor progress with list_rt_torrents()"
+      "next_steps": "Monitor progress with list_torrents()"
     }
   },
   {
     "input": {
-      "command": "list_rt_torrents"
+      "command": "list_torrents"
     },
     "output": {
       "torrents": [

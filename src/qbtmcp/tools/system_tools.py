@@ -46,8 +46,8 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             # Basic level - just names and brief descriptions
             if level == "basic":
                 base_help["tools"] = [
-                    {"name": "add_torrent_rt", "description": "Add torrents", "category": "Torrent"},
-                    {"name": "list_rt_torrents", "description": "List torrents", "category": "Torrent"},
+                    {"name": "add_torrent", "description": "Add torrents", "category": "Torrent"},
+                    {"name": "list_torrents", "description": "List torrents", "category": "Torrent"},
                     {"name": "search_anime", "description": "Search anime", "category": "Search"},
                     {"name": "help", "description": "Get help", "category": "System"}
                 ]
@@ -57,12 +57,12 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             # Intermediate level - standard help
             elif level == "intermediate":
                 base_help["tools"] = [
-                    {"name": "add_torrent_rt", "description": "Add torrents to rTorrent", "category": "Torrent Management"},
-                    {"name": "list_rt_torrents", "description": "List all torrents with status", "category": "Torrent Management"},
-                    {"name": "pause_rt_torrent", "description": "Pause a torrent", "category": "Torrent Management"},
-                    {"name": "resume_rt_torrent", "description": "Resume a torrent", "category": "Torrent Management"},
-                    {"name": "delete_rt_torrent", "description": "Delete a torrent", "category": "Torrent Management"},
-                    {"name": "get_rt_status", "description": "Get rTorrent connection status", "category": "System Status"},
+                    {"name": "add_torrent", "description": "Add torrents to rTorrent", "category": "Torrent Management"},
+                    {"name": "list_torrents", "description": "List all torrents with status", "category": "Torrent Management"},
+                    {"name": "pause_torrent", "description": "Pause a torrent", "category": "Torrent Management"},
+                    {"name": "resume_torrent", "description": "Resume a torrent", "category": "Torrent Management"},
+                    {"name": "delete_torrent", "description": "Delete a torrent", "category": "Torrent Management"},
+                    {"name": "get_status", "description": "Get rTorrent connection status", "category": "System Status"},
                     {"name": "search_anime", "description": "Search nyaa.si for anime", "category": "Search"},
                     {"name": "check_legal_status", "description": "Check legal status by country", "category": "Legal Compliance"},
                     {"name": "get_legal_warning", "description": "Get detailed legal warnings", "category": "Legal Compliance"},
@@ -71,6 +71,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     {"name": "get_command_help", "description": "Get command pattern help", "category": "NLP"},
                     {"name": "analyze_repo", "description": "Analyze the repository", "category": "System"},
                     {"name": "get_system_status", "description": "Get system status and metrics", "category": "System"},
+                    {"name": "validate_rtorrent_setup", "description": "Validate rTorrent installation and configuration", "category": "System"},
                     {"name": "help", "description": "Get multilevel help", "category": "System"}
                 ]
                 base_help["resources"] = [
@@ -87,6 +88,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     "allowed_categories": ["Anime"]
                 }
                 base_help["troubleshooting"] = [
+                    "Run validate_rtorrent_setup() to check installation",
                     "Ensure rTorrent is running with SCGI on port 5000",
                     "Check network connectivity to nyaa.si",
                     "Verify local legal compliance requirements"
@@ -96,17 +98,17 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             else:  # level == "advanced"
                 base_help["tools"] = [
                     {
-                        "name": "add_torrent_rt",
+                        "name": "add_torrent",
                         "description": "Add torrents to rTorrent with Austrian anime categorization",
                         "category": "Torrent Management",
-                        "usage": "add_torrent_rt(magnet_link='magnet:?...', category='anime')",
+                        "usage": "add_torrent(magnet_link='magnet:?...', category='anime')",
                         "parameters": {"magnet_link": "Magnet URI (required)", "category": "Category (default: 'anime')"}
                     },
                     {
-                        "name": "list_rt_torrents",
+                        "name": "list_torrents",
                         "description": "List all torrents with detailed status information",
                         "category": "Torrent Management",
-                        "usage": "list_rt_torrents()",
+                        "usage": "list_torrents()",
                         "returns": "Array of torrent objects with hash, name, state, size, completion"
                     },
                     {
@@ -142,6 +144,12 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                         "description": "Deep analysis of the repository codebase",
                         "category": "System",
                         "returns": "Project structure, dependencies, code quality metrics, recommendations"
+                    },
+                    {
+                        "name": "validate_rtorrent_setup",
+                        "description": "Validate rTorrent installation and configuration for MCP compatibility",
+                        "category": "System",
+                        "returns": "Installation status, validation checks, recommendations, error details"
                     }
                 ]
                 base_help["resources"] = [
@@ -172,12 +180,14 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     "nyaa_base_url": "https://nyaa.si"
                 }
                 base_help["troubleshooting"] = [
+                    "Run validate_rtorrent_setup() to check installation",
                     "Ensure rTorrent is running with SCGI on port 5000",
                     "Check network connectivity to nyaa.si",
                     "Verify local legal compliance requirements",
                     "Check Python dependencies: fastmcp, aiohttp, beautifulsoup4",
                     "Ensure proper file permissions for download directory",
-                    "Verify rTorrent configuration (.rtorrent.rc)"
+                    "Verify rTorrent configuration (.rtorrent.rc)",
+                    "See comprehensive setup guide: docs/RTORRENT_SETUP.md"
                 ]
                 base_help["api_reference"] = {
                     "transport": "stdio (for Claude Desktop)",
@@ -193,6 +203,188 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                 "resources": [],
                 "configuration": {},
                 "troubleshooting": []
+            }
+
+    @mcp.tool(
+        name="validate_rtorrent_setup",
+        description="Validate rTorrent installation and configuration for MCP server compatibility. "
+                   "This tool checks rTorrent binary availability, SCGI support, configuration files, "
+                   "service status, network connectivity, and provides detailed recommendations. "
+                   "Use this tool to diagnose installation issues or verify setup completeness. "
+                   "Returns: dict with validation results and recommendations.",
+        output_schema={
+            "type": "object",
+            "properties": {
+                "installation_status": {"type": "string", "description": "Overall installation status"},
+                "checks": {
+                    "type": "object",
+                    "description": "Individual validation checks",
+                    "properties": {
+                        "binary_exists": {"type": "boolean", "description": "rTorrent binary found"},
+                        "scgi_support": {"type": "boolean", "description": "SCGI support available"},
+                        "config_file": {"type": "boolean", "description": "Configuration file exists"},
+                        "service_running": {"type": "boolean", "description": "rTorrent service running"},
+                        "port_accessible": {"type": "boolean", "description": "SCGI port accessible"},
+                        "xmlrpc_working": {"type": "boolean", "description": "XML-RPC interface working"}
+                    }
+                },
+                "recommendations": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Setup recommendations and fixes"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Validation errors found"
+                }
+            }
+        }
+    )
+    def validate_rtorrent_setup() -> Dict[str, Any]:
+        """Validate rTorrent installation and configuration"""
+        try:
+            import shutil
+            import subprocess
+            import socket
+            import os
+            from pathlib import Path
+
+            validation = {
+                "installation_status": "unknown",
+                "checks": {
+                    "binary_exists": False,
+                    "scgi_support": False,
+                    "config_file": False,
+                    "service_running": False,
+                    "port_accessible": False,
+                    "xmlrpc_working": False
+                },
+                "recommendations": [],
+                "errors": []
+            }
+
+            # Check 1: Binary exists
+            try:
+                rtorrent_path = shutil.which("rtorrent")
+                if rtorrent_path:
+                    validation["checks"]["binary_exists"] = True
+                    validation["recommendations"].append(f"✅ rTorrent found at: {rtorrent_path}")
+                else:
+                    validation["errors"].append("❌ rTorrent binary not found in PATH")
+                    validation["recommendations"].append("Install rTorrent: sudo apt install rtorrent (Ubuntu/Debian)")
+            except Exception as e:
+                validation["errors"].append(f"Error checking rTorrent binary: {e}")
+
+            # Check 2: SCGI support
+            try:
+                if validation["checks"]["binary_exists"]:
+                    result = subprocess.run(["rtorrent", "-h"], capture_output=True, text=True, timeout=10)
+                    if "scgi" in result.stdout.lower() or "scgi" in result.stderr.lower():
+                        validation["checks"]["scgi_support"] = True
+                        validation["recommendations"].append("✅ SCGI support detected")
+                    else:
+                        validation["errors"].append("❌ SCGI support not found in rTorrent")
+                        validation["recommendations"].append("Reinstall rTorrent with SCGI support: sudo apt install libxmlrpc-core-c3-dev")
+            except Exception as e:
+                validation["errors"].append(f"Error checking SCGI support: {e}")
+
+            # Check 3: Configuration file
+            try:
+                config_paths = [
+                    Path.home() / ".rtorrent.rc",
+                    Path.home() / ".rtorrent" / "rtorrent.rc",
+                    Path("/etc/rtorrent.rc")
+                ]
+                
+                config_found = False
+                for config_path in config_paths:
+                    if config_path.exists():
+                        validation["checks"]["config_file"] = True
+                        config_found = True
+                        validation["recommendations"].append(f"✅ Configuration file found: {config_path}")
+                        break
+                
+                if not config_found:
+                    validation["errors"].append("❌ rTorrent configuration file not found")
+                    validation["recommendations"].append("Create ~/.rtorrent.rc with SCGI configuration")
+            except Exception as e:
+                validation["errors"].append(f"Error checking configuration: {e}")
+
+            # Check 4: Service running
+            try:
+                result = subprocess.run(["pgrep", "-x", "rtorrent"], capture_output=True, text=True)
+                if result.returncode == 0:
+                    validation["checks"]["service_running"] = True
+                    validation["recommendations"].append("✅ rTorrent process is running")
+                else:
+                    validation["errors"].append("❌ rTorrent process not running")
+                    validation["recommendations"].append("Start rTorrent: rtorrent -d")
+            except Exception as e:
+                validation["errors"].append(f"Error checking rTorrent process: {e}")
+
+            # Check 5: Port accessible
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(5)
+                result = sock.connect_ex(('localhost', 5000))
+                sock.close()
+                
+                if result == 0:
+                    validation["checks"]["port_accessible"] = True
+                    validation["recommendations"].append("✅ SCGI port 5000 is accessible")
+                else:
+                    validation["errors"].append("❌ SCGI port 5000 not accessible")
+                    validation["recommendations"].append("Check rTorrent configuration: scgi_port = localhost:5000")
+            except Exception as e:
+                validation["errors"].append(f"Error checking port accessibility: {e}")
+
+            # Check 6: XML-RPC working
+            try:
+                if validation["checks"]["port_accessible"]:
+                    import requests
+                    response = requests.post(
+                        'http://localhost:5000/RPC2',
+                        data='<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>',
+                        headers={'Content-Type': 'text/xml'},
+                        timeout=5
+                    )
+                    if response.status_code == 200 and "system.listMethods" in response.text:
+                        validation["checks"]["xmlrpc_working"] = True
+                        validation["recommendations"].append("✅ XML-RPC interface working")
+                    else:
+                        validation["errors"].append("❌ XML-RPC interface not responding")
+                        validation["recommendations"].append("Check rTorrent SCGI configuration and restart")
+            except Exception as e:
+                validation["errors"].append(f"Error checking XML-RPC: {e}")
+
+            # Determine overall status
+            all_checks = validation["checks"].values()
+            if all(all_checks):
+                validation["installation_status"] = "✅ Complete - Ready for MCP server"
+            elif any(all_checks):
+                validation["installation_status"] = "⚠️ Partial - Some issues found"
+            else:
+                validation["installation_status"] = "❌ Failed - rTorrent not properly installed"
+
+            # Add general recommendations
+            if not validation["checks"]["binary_exists"]:
+                validation["recommendations"].extend([
+                    "📖 See installation guide: docs/RTORRENT_SETUP.md",
+                    "🐧 Linux: sudo apt install rtorrent",
+                    "🍎 macOS: brew install rtorrent",
+                    "🪟 Windows: Use WSL or Docker"
+                ])
+
+            return validation
+
+        except Exception as e:
+            logger.error(f"Error validating rTorrent setup: {e}")
+            return {
+                "installation_status": "❌ Error during validation",
+                "checks": {},
+                "recommendations": ["Check logs for detailed error information"],
+                "errors": [f"Validation failed: {str(e)}"]
             }
 
     @mcp.tool(

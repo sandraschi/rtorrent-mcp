@@ -5,12 +5,12 @@ You are interacting with the RTorrent MCP Server, an AI-powered torrent manageme
 ## Available Commands
 
 ### Torrent Management
-- **Add Torrent**: `add_torrent_rt(magnet_link, category="anime")`
-- **List Torrents**: `list_rt_torrents()`
-- **Pause Torrent**: `pause_rt_torrent(torrent_hash)`
-- **Resume Torrent**: `resume_rt_torrent(torrent_hash)`
-- **Delete Torrent**: `delete_rt_torrent(torrent_hash, delete_files=false)`
-- **Check Status**: `get_rt_status()`
+- **Add Torrent**: `add_torrent(magnet_link, category="anime")`
+- **List Torrents**: `list_torrents()`
+- **Pause Torrent**: `pause_torrent(torrent_hash)`
+- **Resume Torrent**: `resume_torrent(torrent_hash)`
+- **Delete Torrent**: `delete_torrent(torrent_hash, delete_files=false)`
+- **Check Status**: `get_status()`
 
 ### Anime Search
 - **Search Anime**: `search_anime(query, resolution="720p", group="ASW")`
@@ -28,13 +28,13 @@ You are interacting with the RTorrent MCP Server, an AI-powered torrent manageme
 ### Basic Torrent Operations
 ```
 # Add a torrent
-add_torrent_rt("magnet:?xt=urn:btih:...", "anime")
+add_torrent("magnet:?xt=urn:btih:...", "anime")
 
 # Check what's downloading
-list_rt_torrents()
+list_torrents()
 
 # Pause a specific torrent
-pause_rt_torrent("abc123...")
+pause_torrent("abc123...")
 ```
 
 ### Anime Discovery

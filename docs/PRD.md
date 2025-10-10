@@ -100,12 +100,15 @@ The RTorrent MCP Server is a FastMCP 2.12 compliant Model Context Protocol serve
 #### FR-001: rTorrent Integration
 - **Priority**: Critical
 - **Description**: Full SCGI API integration for torrent operations
+- **Prerequisites**: rTorrent must be installed and configured with SCGI support
 - **Acceptance Criteria**:
   - Add torrents via magnet links
   - List active torrents with status
   - Pause/resume torrent operations
   - Delete torrents with optional file removal
   - Real-time status monitoring
+  - Connection validation and health checks
+  - Installation verification tools
 
 #### FR-002: Anime Search Engine
 - **Priority**: High
@@ -144,6 +147,19 @@ The RTorrent MCP Server is a FastMCP 2.12 compliant Model Context Protocol serve
   - Repository analysis
   - Configuration validation
 
+#### FR-006: rTorrent Installation & Setup
+- **Priority**: Critical
+- **Description**: Comprehensive rTorrent installation and configuration support
+- **Acceptance Criteria**:
+  - Multi-platform installation instructions (Linux, macOS, Windows)
+  - SCGI configuration validation
+  - Service management setup (systemd, LaunchAgent, Windows Service)
+  - Connection testing and verification tools
+  - Troubleshooting guides and diagnostic tools
+  - Security configuration recommendations
+  - Performance optimization guidelines
+  - Health check automation
+
 ### Non-Functional Requirements
 
 #### NFR-001: Performance
@@ -175,11 +191,23 @@ The RTorrent MCP Server is a FastMCP 2.12 compliant Model Context Protocol serve
 | Component | Technology | Version | Justification |
 |-----------|------------|---------|---------------|
 | MCP Framework | FastMCP | 2.12 | Latest stable with stdio support |
-| Torrent Client | rTorrent | Latest | Lightweight, SCGI API support |
+| Torrent Client | rTorrent | 0.9.8+ | Lightweight, SCGI API support |
 | Language | Python | 3.9+ | FastMCP compatibility |
 | HTTP Client | aiohttp | 3.9+ | Async operations |
 | Configuration | Pydantic | 2.0+ | Type safety |
 | Testing | pytest | 7.0+ | Comprehensive test coverage |
+
+### rTorrent Requirements
+
+| Requirement | Specification | Documentation |
+|-------------|---------------|---------------|
+| **Installation** | Multi-platform support | [RTORRENT_SETUP.md](RTORRENT_SETUP.md) |
+| **SCGI Support** | Port 5000 (configurable) | Required for MCP communication |
+| **XML-RPC Interface** | system.listMethods support | Essential for remote control |
+| **Platform Support** | Linux, macOS, Windows (WSL) | Cross-platform compatibility |
+| **Service Management** | systemd, LaunchAgent, Windows Service | Automatic startup and monitoring |
+| **Security** | Localhost binding, firewall rules | Network security considerations |
+| **Performance** | File descriptor limits, memory tuning | Optimization guidelines |
 
 ### API Specifications
 
@@ -187,11 +215,11 @@ The RTorrent MCP Server is a FastMCP 2.12 compliant Model Context Protocol serve
 
 ```typescript
 // Torrent Management
-add_torrent_rt(magnet_link: string, category?: string) => Promise<Result>
-list_rt_torrents() => Promise<Torrent[]>
-pause_rt_torrent(hash: string) => Promise<Result>
-resume_rt_torrent(hash: string) => Promise<Result>
-delete_rt_torrent(hash: string, delete_files?: boolean) => Promise<Result>
+add_torrent(magnet_link: string, category?: string) => Promise<Result>
+list_torrents() => Promise<Torrent[]>
+pause_torrent(hash: string) => Promise<Result>
+resume_torrent(hash: string) => Promise<Result>
+delete_torrent(hash: string, delete_files?: boolean) => Promise<Result>
 
 // Search Operations
 search_anime(query: string, resolution?: string, group?: string) => Promise<SearchResult[]>
@@ -339,6 +367,11 @@ class AppConfig:
 ## ⚠️ Risks and Mitigations
 
 ### Technical Risks
+
+#### Risk: rTorrent Installation/Configuration Issues
+- **Impact**: Critical - Server cannot function without rTorrent
+- **Probability**: High - Complex setup requirements
+- **Mitigation**: Comprehensive installation guide, validation tools, troubleshooting documentation
 
 #### Risk: rTorrent SCGI API Changes
 - **Impact**: High - Could break core functionality

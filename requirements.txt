@@ -1,14 +1,20 @@
 # Core dependencies
-fastmcp[all]>=2.10.0
+fastmcp[all]>=2.12.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0
 pydantic-settings>=2.0.0
 
-# Web and API
+# Web and API - Critical for nyaa.si search
 aiohttp>=3.9.0
 beautifulsoup4>=4.12.0
 requests>=2.31.0
 python-multipart>=0.0.6
+
+# rTorrent integration - CORRECT PACKAGE NAME
+rtorrent-xmlrpc>=0.0.3
+
+# System monitoring and health
+psutil>=5.9.0
 
 # Data processing
 pyyaml>=6.0
