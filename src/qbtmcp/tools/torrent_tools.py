@@ -5,10 +5,10 @@ MCP tools for rTorrent operations with Austrian anime categorization.
 """
 
 import logging
-from typing import List, Dict, Any
+
 from fastmcp import FastMCP
 
-from ..services.rtorrent_client_scgi import get_rtorrent_scgi_client
+from ..services.rtorrent_client import get_rtorrent_client
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
         """Add torrent to rTorrent with Austrian anime categorization"""
         logger.info(f"Adding torrent with category '{category}': {magnet_link[:50]}...")
         try:
-            client = await get_rtorrent_scgi_client()
+            client = await get_rtorrent_client()
             result = await client.add_torrent(magnet_link, category)
             if result.get("status") == "success":
                 logger.info(f"Successfully added torrent: {result.get('hash', 'unknown')}")
@@ -74,10 +74,10 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
                    "name, state (active, paused, stopped), size and completion progress. "
                    "Returns: array of torrent objects with status details."
     )
-    async def list_torrents() -> List[dict]:
+    async def list_torrents() -> list[dict]:
         """List torrents in rTorrent"""
         try:
-            client = await get_rtorrent_scgi_client()
+            client = await get_rtorrent_client()
             return await client.get_torrents()
         except Exception as e:
             logger.error(f"Error listing torrents: {e}")
@@ -92,7 +92,7 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
     async def pause_torrent(torrent_hash: str) -> dict:
         """Pause a torrent in rTorrent"""
         try:
-            client = await get_rtorrent_scgi_client()
+            client = await get_rtorrent_client()
             return await client.pause_torrent(torrent_hash)
         except Exception as e:
             logger.error(f"Error pausing torrent {torrent_hash}: {e}")
@@ -107,7 +107,7 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
     async def resume_torrent(torrent_hash: str) -> dict:
         """Resume a torrent in rTorrent"""
         try:
-            client = await get_rtorrent_scgi_client()
+            client = await get_rtorrent_client()
             return await client.resume_torrent(torrent_hash)
         except Exception as e:
             logger.error(f"Error resuming torrent {torrent_hash}: {e}")
@@ -123,7 +123,7 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
     async def delete_torrent(torrent_hash: str, delete_files: bool = False) -> dict:
         """Delete a torrent from rTorrent"""
         try:
-            client = await get_rtorrent_scgi_client()
+            client = await get_rtorrent_client()
             return await client.delete_torrent(torrent_hash, delete_files)
         except Exception as e:
             logger.error(f"Error deleting torrent {torrent_hash}: {e}")
@@ -137,8 +137,26 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
     async def get_status() -> dict:
         """Get rTorrent connection status"""
         try:
-            client = await get_rtorrent_scgi_client()
-            return await client.get_connection_info()
+            client = await get_rtorrent_client()
+            if not client.connected:
+                await client.connect()
+            
+            if client.connected:
+                return {
+                    "status": "connected",
+                    "host": client.host,
+                    "port": client.port,
+                    "connected": True,
+                    "message": "Connected to rTorrent"
+                }
+            else:
+                return {
+                    "status": "disconnected",
+                    "host": client.host,
+                    "port": client.port,
+                    "connected": False,
+                    "message": "Not connected to rTorrent"
+                }
         except Exception as e:
             logger.error(f"Error getting rTorrent status: {e}")
             return {

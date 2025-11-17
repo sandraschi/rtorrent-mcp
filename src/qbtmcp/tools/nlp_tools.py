@@ -5,14 +5,10 @@ MCP tools for natural language processing and command interpretation
 """
 
 import logging
-import re
-from typing import Dict, Any
+
 from fastmcp import FastMCP
 
-from ..services.natural_language import (
-    process_sandra_command,
-    get_command_examples
-)
+from ..services.natural_language import get_command_examples, process_sandra_command
 
 logger = logging.getLogger(__name__)
 
@@ -110,8 +106,8 @@ def register_nlp_tools(mcp: FastMCP, settings) -> None:
     # Import helper functions from service
     from ..services.natural_language import (
         extract_anime_name,
+        extract_release_group,
         extract_resolution,
-        extract_release_group
     )
 
     # Resource for command examples

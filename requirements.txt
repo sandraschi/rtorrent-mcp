@@ -11,7 +11,6 @@ requests>=2.31.0
 python-multipart>=0.0.6
 
 # rTorrent integration - CORRECT PACKAGE NAME
-rtorrent-xmlrpc>=0.0.3
 
 # System monitoring and health
 psutil>=5.9.0

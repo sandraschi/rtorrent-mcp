@@ -3,21 +3,22 @@ Test configuration and fixtures for RTorrent MCP Server tests.
 """
 import asyncio
 import os
-import pytest
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
-
-from fastmcp import FastMCP
-from qbtmcp.server import RTorrentMCPServer
-from qbtmcp.config.settings import Settings
 
 # Add the src directory to the Python path
 import sys
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from qbtmcp.config.settings import Settings
+from qbtmcp.server import RTorrentMCPServer
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def event_loop():
-    """Create an instance of the default event loop for the test session."""
+    """Create an instance of the default event loop for each test."""
     policy = asyncio.get_event_loop_policy()
     loop = policy.new_event_loop()
     yield loop
@@ -37,21 +38,21 @@ def test_settings():
 @pytest.fixture
 def mock_rtorrent_client():
     """Fixture providing a mocked rTorrent client."""
-    with patch('qbtmcp.services.qbittorrent_client.RTorrentClient') as mock_client:
+    with patch('qbtmcp.services.rtorrent_client.RTorrentClient') as mock_client:
         mock_instance = AsyncMock()
         mock_client.return_value = mock_instance
         mock_instance.connect.return_value = True
         yield mock_instance
 
 @pytest.fixture
-async def mcp_server(test_settings):
+def mcp_server(test_settings):
     """Fixture providing a configured MCP server for testing."""
     # Patch settings to use test settings
     with patch('qbtmcp.config.settings.settings', test_settings):
         server = RTorrentMCPServer()
         # Don't actually start the server
         server.setup = AsyncMock()
-        server.run_stdio = AsyncMock()
+        server.run_stdio_async = AsyncMock()
         yield server
 
 @pytest.fixture

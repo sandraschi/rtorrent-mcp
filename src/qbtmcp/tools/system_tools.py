@@ -5,11 +5,11 @@ MCP tools for system monitoring, help, and repository analysis
 """
 
 import logging
-import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
+
 from fastmcp import FastMCP
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                    "Args: level (str): Help detail level ('basic', 'intermediate', 'advanced'). "
                    "Returns: dict with help information organized by category and detail level."
     )
-    def help(level: str = "intermediate") -> Dict[str, Any]:
+    def help(level: str = "intermediate") -> dict[str, Any]:
         """Get multilevel help information"""
         logger.info(f"Providing help at level: {level}")
         try:
@@ -89,7 +89,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                 }
                 base_help["troubleshooting"] = [
                     "Run validate_rtorrent_setup() to check installation",
-                    "Ensure rTorrent is running with SCGI on port 5000",
+                    "Ensure rTorrent is running with SCGI on port 12224",
                     "Check network connectivity to nyaa.si",
                     "Verify local legal compliance requirements"
                 ]
@@ -176,12 +176,12 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     "legal_status": "Safe for Sandra in Vienna 🇦🇹",
                     "allowed_categories": ["Anime"],
                     "rtorrent_host": "localhost",
-                    "rtorrent_port": 5000,
+                    "rtorrent_port": 12224,
                     "nyaa_base_url": "https://nyaa.si"
                 }
                 base_help["troubleshooting"] = [
                     "Run validate_rtorrent_setup() to check installation",
-                    "Ensure rTorrent is running with SCGI on port 5000",
+                    "Ensure rTorrent is running with SCGI on port 12224",
                     "Check network connectivity to nyaa.si",
                     "Verify local legal compliance requirements",
                     "Check Python dependencies: fastmcp, aiohttp, beautifulsoup4",
@@ -241,13 +241,12 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             }
         }
     )
-    def validate_rtorrent_setup() -> Dict[str, Any]:
+    def validate_rtorrent_setup() -> dict[str, Any]:
         """Validate rTorrent installation and configuration"""
         try:
             import shutil
-            import subprocess
             import socket
-            import os
+            import subprocess
             from pathlib import Path
 
             validation = {
@@ -296,7 +295,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     Path.home() / ".rtorrent" / "rtorrent.rc",
                     Path("/etc/rtorrent.rc")
                 ]
-                
+
                 config_found = False
                 for config_path in config_paths:
                     if config_path.exists():
@@ -304,7 +303,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                         config_found = True
                         validation["recommendations"].append(f"✅ Configuration file found: {config_path}")
                         break
-                
+
                 if not config_found:
                     validation["errors"].append("❌ rTorrent configuration file not found")
                     validation["recommendations"].append("Create ~/.rtorrent.rc with SCGI configuration")
@@ -327,15 +326,15 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             try:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.settimeout(5)
-                result = sock.connect_ex(('localhost', 5000))
+                result = sock.connect_ex(('localhost', 12224))
                 sock.close()
-                
+
                 if result == 0:
                     validation["checks"]["port_accessible"] = True
-                    validation["recommendations"].append("✅ SCGI port 5000 is accessible")
+                    validation["recommendations"].append("✅ SCGI port 12224 is accessible")
                 else:
-                    validation["errors"].append("❌ SCGI port 5000 not accessible")
-                    validation["recommendations"].append("Check rTorrent configuration: scgi_port = localhost:5000")
+                    validation["errors"].append("❌ SCGI port 12224 not accessible")
+                    validation["recommendations"].append("Check rTorrent configuration: scgi_port = localhost:5000 (container internal)")
             except Exception as e:
                 validation["errors"].append(f"Error checking port accessibility: {e}")
 
@@ -344,7 +343,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                 if validation["checks"]["port_accessible"]:
                     import requests
                     response = requests.post(
-                        'http://localhost:5000/RPC2',
+                        'http://localhost:12224/RPC2',
                         data='<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>',
                         headers={'Content-Type': 'text/xml'},
                         timeout=5
@@ -432,11 +431,12 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             }
         }
     )
-    def get_system_status() -> Dict[str, Any]:
+    def get_system_status() -> dict[str, Any]:
         """Get comprehensive system status"""
         try:
-            import psutil
             import time
+
+            import psutil
 
             # Get process information
             process = psutil.Process(os.getpid())
@@ -540,7 +540,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             }
         }
     )
-    def analyze_repo() -> Dict[str, Any]:
+    def analyze_repo() -> dict[str, Any]:
         """Analyze the repository and provide comprehensive information"""
         try:
             project_root = Path(__file__).parent.parent.parent
@@ -601,9 +601,9 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             for file_path in project_root.rglob('*.py'):
                 if file_path.is_file():
                     try:
-                        with open(file_path, 'r', encoding='utf-8') as f:
+                        with open(file_path, encoding='utf-8') as f:
                             analysis["structure"]["total_lines"] += len(f.readlines())
-                    except:
+                    except (OSError, UnicodeDecodeError):
                         pass
 
             return analysis

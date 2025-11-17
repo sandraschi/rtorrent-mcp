@@ -1,22 +1,22 @@
 """
-legal_compliance.py - Legal compliance checking for qBTMCP
+legal_compliance.py - Legal compliance checking for RTorrent MCP
 Austrian legal framework with international warnings
 """
 
-import logging
-from typing import Dict, Any
 import json
+import logging
+from typing import Any
 
 from . import LEGAL_RISK
 
 logger = logging.getLogger(__name__)
 
-def check_country_legal_status(country: str) -> Dict[str, Any]:
+def check_country_legal_status(country: str) -> dict[str, Any]:
     """Check legal status of torrenting by country with Austrian context"""
     country_lower = country.lower()
-    
+
     risk_level = LEGAL_RISK.get(country_lower, "unknown")
-    
+
     warnings = {
         "safe": "✅ Personal downloading generally tolerated",
         "medium": "⚠️ Use VPN recommended, avoid commercial content",
@@ -24,7 +24,7 @@ def check_country_legal_status(country: str) -> Dict[str, Any]:
         "criminal": "💀 Criminal penalties possible, prison sentences",
         "unknown": "❓ Legal status unclear, research local laws"
     }
-    
+
     return {
         "country": country.title(),
         "risk_level": risk_level,
@@ -33,7 +33,7 @@ def check_country_legal_status(country: str) -> Dict[str, Any]:
         "recommendation": "Safe for Sandra in Vienna 🇦🇹" if country_lower == "austria" else "Check local laws"
     }
 
-def get_austrian_legal_framework() -> Dict[str, Any]:
+def get_austrian_legal_framework() -> dict[str, Any]:
     """Get detailed Austrian legal framework for torrenting"""
     return {
         "country": "Austria 🇦🇹",
@@ -52,17 +52,17 @@ def get_austrian_legal_framework() -> Dict[str, Any]:
 
 def register_legal_tools(mcp):
     """Register legal compliance tools with FastMCP server"""
-    
+
     @mcp.tool()
     async def check_legal_status(country: str = "austria") -> dict:
         """Check legal status of torrenting by country with Austrian context"""
         return check_country_legal_status(country)
-    
+
     @mcp.tool()
     def get_legal_warning(country: str) -> dict:
         """Get detailed legal warning for specific country"""
         status = check_country_legal_status(country)
-        
+
         detailed_warnings = {
             "germany": {
                 "risk": "Very High",
@@ -83,7 +83,7 @@ def register_legal_tools(mcp):
                 "recommendation": "Personal anime downloading acceptable"
             }
         }
-        
+
         return {
             **status,
             "detailed_warning": detailed_warnings.get(country.lower(), {
@@ -92,12 +92,12 @@ def register_legal_tools(mcp):
                 "recommendation": "Research local copyright laws"
             })
         }
-    
+
     @mcp.resource("legal://austria")
     def austrian_legal_info() -> str:
         """Austrian legal framework for torrenting"""
         return json.dumps(get_austrian_legal_framework())
-    
+
     @mcp.resource("legal://overview")
     def legal_overview() -> str:
         """Overview of legal risks by country"""

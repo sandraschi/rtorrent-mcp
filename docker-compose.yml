@@ -1,0 +1,31 @@
+services:
+  rtorrent:
+    image: crazymax/rtorrent-rutorrent:latest
+    container_name: rtorrent-mcp
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+    volumes:
+      - ./config:/data
+      - ${USERPROFILE}/Downloads/rtorrent:/downloads
+      - ./watch:/watch
+      - ./logs:/logs
+    ports:
+      - "12224:8000"  # XMLRPC port through nginx (avoiding ports ending in 00/000)
+      - "12222:8080"  # Web UI (ruTorrent) - custom port
+      - "51413:51413"  # DHT port
+      - "6881:6881/udp"  # DHT UDP port
+    restart: unless-stopped
+    networks:
+      - rtorrent-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/RPC2"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  rtorrent-net:
+    driver: bridge

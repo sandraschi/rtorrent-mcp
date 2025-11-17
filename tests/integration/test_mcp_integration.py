@@ -2,9 +2,10 @@
 Integration tests for RTorrent MCP server
 """
 
-import pytest
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 from fastmcp import FastMCP
 
 
@@ -40,7 +41,7 @@ class TestMCPIntegration:
     async def test_tool_registration(self, mcp_server):
         """Test that tools are properly registered"""
         from qbtmcp.services.core_tools import register_core_tools
-        from qbtmcp.services.qbittorrent_client import register_rtorrent_tools
+        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
 
         register_core_tools(mcp_server)
         register_rtorrent_tools(mcp_server)
@@ -75,7 +76,6 @@ class TestMCPIntegration:
         text_content = content[0].text
         assert isinstance(text_content, str)
         # Parse the JSON content
-        import json
         parsed_content = json.loads(text_content)
         assert "tools" in parsed_content
         assert "resources" in parsed_content
@@ -84,12 +84,12 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_rtorrent_tools_with_mock(self, mcp_server):
         """Test rTorrent tools with mocked client"""
-        from qbtmcp.services.qbittorrent_client import register_rtorrent_tools
+        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
 
         register_rtorrent_tools(mcp_server)
 
         # Mock the client
-        with patch('qbtmcp.services.qbittorrent_client.get_rtorrent_client') as mock_get_client:
+        with patch('qbtmcp.services.rtorrent_client.get_rtorrent_client') as mock_get_client:
             mock_client = MagicMock()
             mock_client.get_torrents.return_value = [{"hash": "test", "name": "Test Torrent"}]
             mock_get_client.return_value = mock_client
@@ -109,7 +109,7 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_resource_registration(self, mcp_server):
         """Test resource registration"""
-        from qbtmcp.services.qbittorrent_client import register_rtorrent_tools
+        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
 
         register_rtorrent_tools(mcp_server)
 
@@ -153,12 +153,12 @@ class TestAsyncIntegration:
 
     async def test_async_tool_execution(self, mcp_server):
         """Test async tool execution"""
-        from qbtmcp.services.qbittorrent_client import register_rtorrent_tools
+        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
 
         register_rtorrent_tools(mcp_server)
 
         # Mock the async client
-        with patch('qbtmcp.services.qbittorrent_client.get_rtorrent_client') as mock_get_client:
+        with patch('qbtmcp.services.rtorrent_client.get_rtorrent_client') as mock_get_client:
             mock_client = MagicMock()
             mock_client.get_torrents = MagicMock(return_value=[{"hash": "test", "name": "Test"}])
             mock_get_client.return_value = mock_client

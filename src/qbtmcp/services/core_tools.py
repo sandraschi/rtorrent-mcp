@@ -4,11 +4,10 @@ Help, status, and analyzer tools with extensive error handling
 """
 
 import logging
-import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +74,7 @@ def register_core_tools(mcp):
             }
         }
     )
-    def help() -> Dict[str, Any]:
+    def help() -> dict[str, Any]:
         """Get comprehensive help information"""
         try:
             return {
@@ -151,8 +150,8 @@ def register_core_tools(mcp):
                     "allowed_resolutions": ["720p", "1080p"]
                 },
                 "troubleshooting": [
-                    "Ensure rTorrent is running with SCGI enabled on port 5000",
-                    "Check that the SCGI URL is accessible: http://localhost:5000/RPC2",
+                    "Ensure rTorrent is running with SCGI enabled on port 12224",
+                    "Check that the SCGI URL is accessible: http://localhost:12224/RPC2",
                     "Verify nyaa.si is accessible for search functionality",
                     "Check log files for detailed error messages",
                     "Ensure all dependencies are installed (fastmcp, aiohttp, etc.)",
@@ -221,11 +220,12 @@ def register_core_tools(mcp):
             }
         }
     )
-    def get_system_status() -> Dict[str, Any]:
+    def get_system_status() -> dict[str, Any]:
         """Get comprehensive system status"""
         try:
-            import psutil
             import time
+
+            import psutil
 
             # Get process information
             process = psutil.Process(os.getpid())
@@ -349,7 +349,7 @@ def register_core_tools(mcp):
             }
         }
     )
-    def analyze_repo() -> Dict[str, Any]:
+    def analyze_repo() -> dict[str, Any]:
         """Analyze the repository and provide comprehensive information"""
         try:
             project_root = Path(__file__).parent.parent.parent
@@ -421,9 +421,9 @@ def register_core_tools(mcp):
             for file_path in project_root.rglob('*.py'):
                 if file_path.is_file():
                     try:
-                        with open(file_path, 'r', encoding='utf-8') as f:
+                        with open(file_path, encoding='utf-8') as f:
                             analysis["structure"]["total_lines"] += len(f.readlines())
-                    except:
+                    except (OSError, UnicodeDecodeError):
                         pass
 
             return analysis

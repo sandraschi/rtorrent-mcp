@@ -1,13 +1,22 @@
 # RTorrent MCP Server MCPB Packaging Script
-# Uses the official Anthropic MCPB tool for packaging
+# Uses UV for dependency management and MCPB for packaging
 
 param(
     [switch]$NoSign,
     [string]$OutputDir = "dist"
 )
 
-Write-Host "🚀 Building RTorrent MCP Server with MCPB" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Green
+Write-Host "🚀 Building RTorrent MCP Server with UV + MCPB" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Green
+
+# Check if UV is available
+try {
+    $uvVersion = & uv --version 2>$null
+    Write-Host "✅ UV found: $uvVersion" -ForegroundColor Green
+} catch {
+    Write-Host "❌ UV not found. Please install with: pip install uv" -ForegroundColor Red
+    exit 1
+}
 
 # Check if MCPB is installed
 try {
@@ -18,55 +27,74 @@ try {
     exit 1
 }
 
+# Ensure dependencies are installed
+Write-Host "📚 Ensuring dependencies are installed..." -ForegroundColor Yellow
+& uv sync --dev
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Failed to install dependencies" -ForegroundColor Red
+    exit 1
+}
+
 # Create output directory
 if (!(Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir | Out-Null
 }
 
-Write-Host "📦 Using MCPB to validate and build package..." -ForegroundColor Yellow
+Write-Host "📦 Building Python package with UV..." -ForegroundColor Yellow
 
 try {
+    # Build the Python package first
+    & uv build
+    if ($LASTEXITCODE -ne 0) {
+        throw "UV build failed"
+    }
+
     # Validate the manifest
-    Write-Host "🔍 Validating manifest..." -ForegroundColor Cyan
+    Write-Host "🔍 Validating MCPB manifest..." -ForegroundColor Cyan
     & mcpb validate dxt/manifest.json
     if ($LASTEXITCODE -ne 0) {
         throw "Manifest validation failed"
     }
 
-    # Create a temporary directory with the proper MCPB structure
+    # Create MCPB package
+    Write-Host "🗜️  Creating MCPB package..." -ForegroundColor Cyan
+    $packagePath = "$OutputDir/rtorrent-mcp.mcpb"
+    
+    if (Test-Path "dxt") {
+        & mcpb pack dxt $packagePath
+    } else {
+        Write-Host "⚠️  dxt directory not found, creating fallback package..." -ForegroundColor Yellow
+        # Create a basic package structure
     $tempDir = Join-Path $env:TEMP "mcpb-build-$(Get-Random)"
     New-Item -ItemType Directory -Path $tempDir | Out-Null
 
     try {
-        # Copy the manifest
-        Copy-Item "dxt/manifest.json" -Destination $tempDir
-
-        # Copy source files
-        Write-Host "📋 Copying source files..." -ForegroundColor Cyan
+            # Copy essential files
+            Copy-Item "pyproject.toml" -Destination $tempDir
         Copy-Item -Path "src" -Destination $tempDir -Recurse -Force
 
-        # Install dependencies to the temp directory
-        Write-Host "📚 Installing dependencies..." -ForegroundColor Cyan
-        $libDir = Join-Path $tempDir "lib"
-        New-Item -ItemType Directory -Path $libDir | Out-Null
-
-        # Install dependencies
-        & dxt_env\Scripts\pip.exe install -r requirements.txt --target $libDir --no-deps
-
-        # Pack the directory using MCPB
-        Write-Host "🗜️  Creating MCPB package..." -ForegroundColor Cyan
-        $packagePath = "$OutputDir/rtorrent-mcp-1.0.0.mcpb"
+            # Create basic manifest if not exists
+            if (!(Test-Path "dxt/manifest.json")) {
+                $manifest = @{
+                    name = "rtorrent-mcp"
+                    version = "1.0.0"
+                    description = "RTorrent MCP Server - Austrian anime automation"
+                    author = "Sandra's Austrian Anime Automation"
+                    license = "MIT"
+                } | ConvertTo-Json -Depth 3
+                $manifest | Out-File -FilePath "$tempDir/manifest.json" -Encoding UTF8
+            }
+            
         & mcpb pack $tempDir $packagePath
+        } finally {
+            if (Test-Path $tempDir) {
+                Remove-Item $tempDir -Recurse -Force
+            }
+        }
+    }
 
         if ($LASTEXITCODE -ne 0) {
             throw "MCPB pack failed"
-        }
-
-    } finally {
-        # Clean up temp directory
-        if (Test-Path $tempDir) {
-            Remove-Item $tempDir -Recurse -Force
-        }
     }
 
     # Check if package was created
@@ -107,4 +135,4 @@ try {
 }
 
 Write-Host ""
-Write-Host "🏁 MCPB Build process completed" -ForegroundColor Green
+Write-Host "🏁 UV + MCPB Build process completed" -ForegroundColor Green

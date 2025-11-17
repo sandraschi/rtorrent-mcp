@@ -5,11 +5,11 @@ MCP tools for Austrian legal compliance and risk assessment
 """
 
 import logging
-from typing import Dict, Any
+
 from fastmcp import FastMCP
 
-from ..services.legal_compliance import check_country_legal_status, get_austrian_legal_framework
 from ..services import LEGAL_RISK
+from ..services.legal_compliance import check_country_legal_status, get_austrian_legal_framework
 
 logger = logging.getLogger(__name__)
 

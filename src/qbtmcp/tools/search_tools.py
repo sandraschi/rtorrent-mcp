@@ -5,7 +5,7 @@ MCP tools for anime search and discovery via NYAA.si
 """
 
 import logging
-from typing import List, Dict, Any
+
 from fastmcp import FastMCP
 
 from ..services.nyaa_search import search_nyaa_anime
@@ -32,7 +32,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
                    "group (str): Release group preference (default: 'ASW'). "
                    "Returns: array of anime releases with quality scoring and torrent details."
     )
-    async def search_anime(query: str, resolution: str = "720p", group: str = "ASW") -> List[dict]:
+    async def search_anime(query: str, resolution: str = "720p", group: str = "ASW") -> list[dict]:
         """Search nyaa.si for anime releases with Austrian preferences"""
         try:
             return await search_nyaa_anime(query, resolution, group)

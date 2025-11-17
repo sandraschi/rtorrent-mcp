@@ -1,23 +1,19 @@
 """
-rtorrent_client.py - rTorrent SCGI client for RTorrent MCP Server
+rtorrent_client.py - rTorrent XMLRPC client for RTorrent MCP Server
 Austrian anime categorization and torrent management
 """
 
-import logging
 import asyncio
-from typing import List, Dict, Any, Optional
+import logging
 import xmlrpc.client
-import socket
+from typing import Any
 
-from . import (
-    DEFAULT_RTORRENT_HOST,
-    DEFAULT_RTORRENT_PORT
-)
+from . import DEFAULT_RTORRENT_HOST, DEFAULT_RTORRENT_PORT
 
 logger = logging.getLogger(__name__)
 
 class RTorrentClient:
-    """Async rTorrent SCGI client"""
+    """Async rTorrent XMLRPC client"""
 
     def __init__(self, host: str = DEFAULT_RTORRENT_HOST, port: int = DEFAULT_RTORRENT_PORT):
         self.host = host
@@ -26,7 +22,7 @@ class RTorrentClient:
         self.connected = False
 
     async def connect(self) -> bool:
-        """Connect to rTorrent SCGI server"""
+        """Connect to rTorrent XMLRPC server"""
         try:
             if not self.server:
                 self.server = xmlrpc.client.ServerProxy(f'http://{self.host}:{self.port}/RPC2')
@@ -40,7 +36,7 @@ class RTorrentClient:
             self.connected = False
             return False
 
-    async def get_torrents(self) -> List[Dict[str, Any]]:
+    async def get_torrents(self) -> list[dict[str, Any]]:
         """Get list of all torrents"""
         if not self.connected:
             await self.connect()
@@ -73,25 +69,43 @@ class RTorrentClient:
             logger.error(f"Error getting torrents: {e}")
             return []
 
-    async def add_torrent(self, magnet_link: str, category: str = "anime") -> Dict[str, Any]:
+    async def add_torrent(self, magnet_link: str, category: str = "anime") -> dict[str, Any]:
         """Add torrent from magnet link with Austrian anime categorization"""
         if not self.connected:
             await self.connect()
 
         try:
             loop = asyncio.get_event_loop()
-            hash_str = await loop.run_in_executor(None, self.server.load_start, magnet_link)
+            # rTorrent XMLRPC method is load.start (not load_start)
+            await loop.run_in_executor(None, self.server.load.start, '', magnet_link)
+            
+            # Get hash from most recently added torrent
+            await asyncio.sleep(1)  # Give it time to load
+            torrents = await loop.run_in_executor(None, self.server.download_list)
+            
+            if torrents:
+                # Get the last torrent (most recently added)
+                hash_str = torrents[-1]
+                # Set custom1 for category (rTorrent custom field)
+                # rTorrent uses d.custom1.set method
+                try:
+                    await loop.run_in_executor(None, lambda: self.server.d.custom1.set(hash_str, category))
+                except Exception as e:
+                    logger.warning(f"Could not set category: {e}")
+                    # Continue anyway - torrent was added successfully
 
-            # Set custom1 for category (rTorrent custom field)
-            await loop.run_in_executor(None, self.server.d.set_custom1, hash_str, category)
-
-            return {
-                "status": "success",
-                "hash": hash_str,
-                "message": "Torrent added successfully",
-                "category": category,
-                "magnet": magnet_link[:50] + "..."
-            }
+                return {
+                    "status": "success",
+                    "hash": hash_str,
+                    "message": "Torrent added successfully",
+                    "category": category,
+                    "magnet": magnet_link[:50] + "..."
+                }
+            else:
+                return {
+                    "status": "error",
+                    "message": "Torrent added but could not retrieve hash"
+                }
         except Exception as e:
             logger.error(f"Error adding torrent: {e}")
             return {
@@ -99,7 +113,7 @@ class RTorrentClient:
                 "message": f"Error adding torrent: {str(e)}"
             }
 
-    async def pause_torrent(self, torrent_hash: str) -> Dict[str, Any]:
+    async def pause_torrent(self, torrent_hash: str) -> dict[str, Any]:
         """Pause a torrent"""
         if not self.connected:
             await self.connect()
@@ -111,7 +125,7 @@ class RTorrentClient:
         except Exception as e:
             return {"status": "error", "hash": torrent_hash, "message": str(e)}
 
-    async def resume_torrent(self, torrent_hash: str) -> Dict[str, Any]:
+    async def resume_torrent(self, torrent_hash: str) -> dict[str, Any]:
         """Resume a torrent"""
         if not self.connected:
             await self.connect()
@@ -123,7 +137,7 @@ class RTorrentClient:
         except Exception as e:
             return {"status": "error", "hash": torrent_hash, "message": str(e)}
 
-    async def delete_torrent(self, torrent_hash: str, delete_files: bool = False) -> Dict[str, Any]:
+    async def delete_torrent(self, torrent_hash: str, delete_files: bool = False) -> dict[str, Any]:
         """Delete a torrent"""
         if not self.connected:
             await self.connect()
@@ -173,14 +187,6 @@ def register_rtorrent_tools(mcp):
         Returns:
             dict: Result of the operation with status and details
         """,
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "magnet_link": {"type": "string", "description": "Magnet URI"},
-                "category": {"type": "string", "description": "Torrent category", "default": "anime"}
-            },
-            "required": ["magnet_link"]
-        }
     )
     async def add_torrent_rt(magnet_link: str, category: str = "anime") -> dict:
         client = await get_rtorrent_client()
@@ -200,24 +206,30 @@ def register_rtorrent_tools(mcp):
         Returns:
             list: List of torrent dictionaries
         """,
-        outputSchema={
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "hash": {"type": "string"},
-                    "name": {"type": "string"},
-                    "state": {"type": "string"},
-                    "size_bytes": {"type": "number"},
-                    "completed_bytes": {"type": "number"},
-                    "progress": {"type": "number"}
+        output_schema={
+            "type": "object",
+            "properties": {
+                "torrents": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "hash": {"type": "string"},
+                            "name": {"type": "string"},
+                            "state": {"type": "string"},
+                            "size_bytes": {"type": "number"},
+                            "completed_bytes": {"type": "number"},
+                            "progress": {"type": "number"}
+                        }
+                    }
                 }
             }
         }
     )
-    async def list_rt_torrents() -> List[dict]:
+    async def list_rt_torrents() -> dict:
         client = await get_rtorrent_client()
-        return await client.get_torrents()
+        torrents = await client.get_torrents()
+        return {"torrents": torrents}
 
     @mcp.tool(
         name="pause_rt_torrent",
@@ -230,13 +242,6 @@ def register_rtorrent_tools(mcp):
         Returns:
             dict: Result with status and torrent hash
         """,
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "torrent_hash": {"type": "string", "description": "Torrent hash"}
-            },
-            "required": ["torrent_hash"]
-        }
     )
     async def pause_torrent(torrent_hash: str) -> dict:
         client = await get_rtorrent_client()
@@ -253,13 +258,6 @@ def register_rtorrent_tools(mcp):
         Returns:
             dict: Result with status and torrent hash
         """,
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "torrent_hash": {"type": "string", "description": "Torrent hash"}
-            },
-            "required": ["torrent_hash"]
-        }
     )
     async def resume_torrent(torrent_hash: str) -> dict:
         client = await get_rtorrent_client()
@@ -277,14 +275,6 @@ def register_rtorrent_tools(mcp):
         Returns:
             dict: Result with status, hash, and deletion details
         """,
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "torrent_hash": {"type": "string", "description": "Torrent hash"},
-                "delete_files": {"type": "boolean", "description": "Delete files", "default": False}
-            },
-            "required": ["torrent_hash"]
-        }
     )
     async def delete_torrent(torrent_hash: str, delete_files: bool = False) -> dict:
         client = await get_rtorrent_client()
@@ -298,7 +288,7 @@ def register_rtorrent_tools(mcp):
         Returns:
             dict: Connection status and configuration details
         """,
-        outputSchema={
+        output_schema={
             "type": "object",
             "properties": {
                 "status": {"type": "string"},
@@ -341,6 +331,6 @@ def register_rtorrent_tools(mcp):
                 "1. Install rTorrent with SCGI support",
                 "2. Configure SCGI port in .rtorrent.rc",
                 "3. Start rTorrent daemon",
-                "4. Ensure SCGI server is running on port 5000"
+                "4. Ensure SCGI server is running on port 12224"
             ]
         })

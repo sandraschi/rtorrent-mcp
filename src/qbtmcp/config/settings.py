@@ -1,11 +1,10 @@
 """
 Configuration settings for RTorrent MCP Server
 """
-import os
-from pathlib import Path
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
 import json
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     """Application settings"""
@@ -22,7 +21,7 @@ class Settings(BaseSettings):
 
     # rTorrent settings
     RTORRENT_HOST: str = "localhost"
-    RTORRENT_PORT: int = 5000
+    RTORRENT_PORT: int = 12224  # XMLRPC through nginx (maps to container port 8000)
     RTORRENT_PATH: str = "/var/lib/rtorrent/session"
 
     # Nyaa.si settings
@@ -39,7 +38,7 @@ class Settings(BaseSettings):
         if self.ALLOWED_CATEGORIES_STR.startswith('['):
             try:
                 return json.loads(self.ALLOWED_CATEGORIES_STR)
-            except:
+            except (json.JSONDecodeError, TypeError):
                 pass
         return [cat.strip() for cat in self.ALLOWED_CATEGORIES_STR.split(',') if cat.strip()]
 
@@ -49,7 +48,7 @@ class Settings(BaseSettings):
         if self.ALLOWED_RESOLUTIONS_STR.startswith('['):
             try:
                 return json.loads(self.ALLOWED_RESOLUTIONS_STR)
-            except:
+            except (json.JSONDecodeError, TypeError):
                 pass
         return [res.strip() for res in self.ALLOWED_RESOLUTIONS_STR.split(',') if res.strip()]
 

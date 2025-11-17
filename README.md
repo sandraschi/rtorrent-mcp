@@ -49,13 +49,11 @@ FastMCP 2.12 compliant server for anime torrenting automation with Austrian lega
 3. **Install dependencies**
 
    ```bash
-   pip install -r requirements.txt
-   ```
-
-   For development:
-
-   ```bash
-   pip install -r requirements.txt[dev]
+   # Install UV (if not already installed)
+   pip install uv
+   
+   # Install all dependencies including dev tools
+   uv sync --dev
    ```
 
    **⚠️ Troubleshooting**: If you get `ERROR: No matching distribution found for xmlrpc-client`, this is expected - the requirements.txt has been updated to use the correct package name `xmlrpc3`. See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common dependency issues.
@@ -254,23 +252,27 @@ For easy installation, use the pre-built MCPB package:
 
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run with coverage report
-pytest --cov=qbtmcp --cov-report=html
+uv run pytest --cov=qbtmcp --cov-report=html
 ```
 
 ### Code Style
 
 ```bash
-# Format code with black
-black .
+# Format code with ruff
+uv run ruff format .
 
-# Sort imports
-isort .
+# Lint code with ruff
+uv run ruff check . --fix
 
-# Type checking
-mypy .
+# Type checking with pyright
+uv run pyright
+
+# Security scanning
+uv run bandit -r src/
+uv run safety scan
 ```
 
 ## 🎯 Features in Detail
@@ -394,19 +396,19 @@ See [PRD.md](docs/PRD.md) for comprehensive product specifications, requirements
 1. Install development dependencies:
 
    ```bash
-   pip install -r requirements.txt[dev]
+   uv sync --dev
    ```
 
 2. Run tests:
 
    ```bash
-   pytest
+   uv run pytest
    ```
 
 3. Build documentation:
 
    ```bash
-   mkdocs serve
+   uv run mkdocs serve
    ```
 
    Then visit <http://localhost:8001>
@@ -573,6 +575,35 @@ Windows users can use the PowerShell test runner:
 .\scripts\run-tests.ps1 -Unit
 ```
 
+### Modern Development Commands
+
+With UV installed, you can use these modern commands:
+
+```bash
+# Install all dependencies (including dev tools)
+uv sync --dev
+
+# Run linting and formatting
+uv run ruff check . --fix
+uv run ruff format .
+
+# Run type checking
+uv run pyright
+
+# Run security scans
+uv run bandit -r src/
+uv run safety scan
+
+# Run tests with coverage
+uv run pytest --cov=src/qbtmcp --cov-report=html
+
+# Build package
+uv build
+
+# Validate package
+uv run twine check dist/*
+```
+
 ## Production Readiness ✅
 
 This MCP server has been audited against enterprise production standards and achieved **95% compliance** (57/60 criteria met).
@@ -603,12 +634,22 @@ This tool is designed for Austrian legal context where personal downloading is g
 ## Dependencies 📦
 
 - **FastMCP 2.12+**: MCP server framework with stdio transport
+- **UV**: Modern Python package manager for fast, reliable builds
 - **aiohttp**: Async HTTP client for nyaa.si API
 - **beautifulsoup4**: HTML parsing for search results
-- **xmlrpc-client**: rTorrent SCGI communication
+- **rtorrent-xmlrpc**: rTorrent SCGI communication
 - **psutil**: System monitoring and health checks
 - **pydantic**: Data validation and settings management
 - **python-dotenv**: Environment configuration
+
+### Development Dependencies
+
+- **ruff**: Fast Python linter and formatter
+- **pyright**: Type checking and static analysis
+- **bandit**: Security vulnerability scanner
+- **safety**: Dependency vulnerability scanner
+- **pytest**: Testing framework with coverage
+- **build & twine**: Package building and publishing
 
 ## Author 👩‍💻
 

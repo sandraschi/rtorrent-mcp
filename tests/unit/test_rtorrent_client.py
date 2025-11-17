@@ -2,10 +2,12 @@
 Unit tests for RTorrent client
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
-from src.qbtmcp.services.rtorrent_client import RTorrentClient, get_rtorrent_client
+from unittest.mock import MagicMock
+
+import pytest
+
+from qbtmcp.services.rtorrent_client import RTorrentClient, get_rtorrent_client
 
 
 @pytest.fixture
@@ -58,7 +60,8 @@ class TestRTorrentClient:
 
     def test_add_torrent(self, client, mock_server):
         """Test adding torrent"""
-        mock_server.load_start.return_value = "new_hash"
+        mock_server.load.start.return_value = None
+        mock_server.download_list.return_value = ["hash1", "hash2", "new_hash"]
 
         async def test_add_torrent():
             result = await client.add_torrent("magnet://test")

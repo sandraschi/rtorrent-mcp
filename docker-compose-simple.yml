@@ -1,0 +1,32 @@
+services:
+  rtorrent:
+    image: cguenther/rtorrent:latest
+    container_name: rtorrent-mcp
+    environment:
+      - TZ=Europe/Vienna
+    volumes:
+      - ./config:/config
+      - ./downloads:/downloads
+      - ./watch:/watch
+      - ./logs:/logs
+    ports:
+      - "5000:5000"  # SCGI port for MCP server
+      - "8080:8080"  # Web UI (optional)
+      - "51413:51413"  # DHT port
+      - "51413:51413/udp"  # DHT UDP port
+    restart: unless-stopped
+    networks:
+      - rtorrent-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/RPC2"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  rtorrent-net:
+    driver: bridge
+
+
+

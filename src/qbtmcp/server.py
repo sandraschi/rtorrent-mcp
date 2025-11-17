@@ -4,15 +4,13 @@ RTorrent MCP Server
 FastMCP 2.12 compliant server for anime torrenting automation with Austrian legal compliance
 """
 
-import asyncio
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import Optional
 
-from fastmcp import FastMCP
 from dotenv import load_dotenv
+from fastmcp import FastMCP
 
 # Load environment variables from .env file
 load_dotenv()
@@ -22,7 +20,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import application settings
-from qbtmcp.config.settings import settings
+from qbtmcp.config.settings import settings  # noqa: E402
 
 # Configure structured logging
 logger = logging.getLogger(__name__)
@@ -30,7 +28,7 @@ logger = logging.getLogger(__name__)
 class RTorrentMCPServer(FastMCP):
     """RTorrent MCP Server implementation using FastMCP 2.12"""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize the RTorrent MCP server with optional config path"""
         # Load settings
         if config_path and os.path.exists(config_path):
@@ -64,7 +62,7 @@ class RTorrentMCPServer(FastMCP):
 
         self.logger.info("✅ Server setup complete")
 
-def main():
+def main(config_path: str | None = None):
     """Initialize and start the RTorrent MCP server"""
     import argparse
 
@@ -77,12 +75,16 @@ def main():
                       help="Transport protocol (stdio or http)")
     args = parser.parse_args()
 
+    # Use provided config_path if available, otherwise use args.config
+    final_config_path = config_path if config_path is not None else args.config
+
     # Create and start the server
     try:
-        server = RTorrentMCPServer(config_path=args.config)
+        server = RTorrentMCPServer(config_path=final_config_path)
         server.setup()
         if args.transport == "stdio":
-            server.run_stdio()
+            import asyncio
+            asyncio.run(server.run_stdio_async())
         else:
             server.run()
     except Exception as e:

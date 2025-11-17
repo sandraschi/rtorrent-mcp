@@ -1,5 +1,5 @@
 # RTorrent MCP Server Test Runner
-# PowerShell script to run tests on Windows
+# PowerShell script to run tests on Windows using UV
 
 param(
     [switch]$Unit,
@@ -12,13 +12,24 @@ param(
 Write-Host "🧪 Running RTorrent MCP Server Tests" -ForegroundColor Green
 Write-Host "=====================================" -ForegroundColor Green
 
-# Check if pytest is available
+# Check if UV is available
 try {
-    $pytestVersion = & python -m pytest --version 2>$null
-    Write-Host "✅ pytest found: $pytestVersion" -ForegroundColor Green
+    $uvVersion = & uv --version 2>$null
+    Write-Host "✅ UV found: $uvVersion" -ForegroundColor Green
 } catch {
-    Write-Host "❌ pytest not found. Please install with: pip install pytest pytest-cov" -ForegroundColor Red
+    Write-Host "❌ UV not found. Please install with: pip install uv" -ForegroundColor Red
+    Write-Host "   Then run: uv sync --dev" -ForegroundColor Yellow
     exit 1
+}
+
+# Check if dependencies are installed
+if (-not (Test-Path ".venv")) {
+    Write-Host "⚠️  Virtual environment not found. Installing dependencies..." -ForegroundColor Yellow
+    & uv sync --dev
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Failed to install dependencies" -ForegroundColor Red
+        exit 1
+    }
 }
 
 # Build pytest arguments
@@ -35,7 +46,7 @@ if ($Integration) {
 }
 
 if ($Coverage) {
-    $args += "--cov=qbtmcp", "--cov-report=term-missing", "--cov-report=html:htmlcov", "--cov-fail-under=80"
+    $args += "--cov=src/qbtmcp", "--cov-report=term-missing", "--cov-report=html:htmlcov", "--cov-fail-under=80"
     Write-Host "📊 Running with coverage reporting" -ForegroundColor Cyan
 }
 
@@ -45,12 +56,12 @@ if ($Verbose) {
 
 $args += $TestPath
 
-Write-Host "🚀 Executing: pytest $($args -join ' ')" -ForegroundColor Yellow
+Write-Host "🚀 Executing: uv run pytest $($args -join ' ')" -ForegroundColor Yellow
 Write-Host ""
 
 try {
-    # Run pytest
-    & python -m pytest @args
+    # Run pytest with UV
+    & uv run pytest @args
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host ""

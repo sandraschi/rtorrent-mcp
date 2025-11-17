@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial release of RTorrent MCP Server
-- rTorrent SCGI API integration
+- rTorrent XMLRPC API integration (through nginx)
 - NYAA.si anime search with quality scoring
 - Austrian legal compliance checking
 - Natural language command processing (English/German)
@@ -27,9 +27,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling and logging
 - Enhanced security and privacy features
 
+### Fixed
+- 🐛 **rTorrent connection issue resolved**: Fixed SCGI connection problem by using XMLRPC through nginx (port 8000) instead of direct SCGI configuration
+  - Updated docker-compose.yml to map port 12224 to container port 8000 (XMLRPC)
+  - Removed unnecessary custom startup scripts and socat bridge
+  - Connection now works using standard XMLRPC protocol through nginx proxy
+  - Verified with rTorrent version 0.15.5
+
 ### Technical Details
 - **Framework**: FastMCP 2.12
-- **Backend**: rTorrent SCGI API
+- **Backend**: rTorrent XMLRPC API (through nginx)
 - **Search Engine**: NYAA.si
 - **Legal Compliance**: Austria-focused
 - **Languages**: English/German NLP support
