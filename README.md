@@ -1,68 +1,123 @@
-# RTorrent MCP Server 🇦🇹🎌
+# rTorrent MCP Server 
 
-[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastMCP](https://img.shields.io/badge/FastMCP-2.12-brightgreen)](https://fastmcp.anthropic.com)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![FastMCP](https://img.shields.io/badge/FastMCP-3.1-brightgreen)](https://gofastmcp.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Production Ready](https://img.shields.io/badge/status-production%20ready-success)](https://github.com/sandra-vienna/qbtmcp)
 
-FastMCP 2.12 compliant server for anime torrenting automation with Austrian legal compliance using rTorrent.
+**rTorrent MCP** — FastMCP 3.1 server for **anime BitTorrent automation** with Austrian legal context, talking to **rTorrent** over XML-RPC/SCGI (not a generic site scraper).
 
-## Features 🎯
+**What this is:** A **BitTorrent** control plane: add/list/pause torrents, search indexers (Nyaa, etc.), workflows, and post-processing against your **rTorrent** instance. It is **not** a generic systems MCP, and it is **not** a qBittorrent Web API client.
 
-- **FastMCP 2.12 Compatible**: Latest standards and stdio transport for Claude Desktop
-- **rTorrent Integration**: Full SCGI API control (add/pause/resume/delete torrents)
-- **nyaa.si Anime Search**: Automated search with ASW release group prioritization
+**Web UI (`web_sota/`):** A **small** Vite + React dashboard + **REST bridge** (`/api/*`) on the same uvicorn process as MCP (status, torrent list, magnet add). It is a **deliberately minimal** alternative to the ruTorrent WebUI bundled with Docker—see **[Quick Start](#quick-start)** (subsection *ruTorrent vs this project’s webapp*) and [`web_sota/README.md`](web_sota/README.md). **Agents** still use **MCP tools** for full workflows.
+
+> ** Naming:** GitHub repo **`rtorrent-mcp`**; Python package **`rtorrent_mcp`**. The old **qBittorrent**
+> prototype used the historic name **`qbtmcp`** — that client is **not** supported; control is **rTorrent**
+> via XML-RPC. See **[docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)** and
+> **[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md)**.
+
+**Logs & tool text:** Prefer ASCII markers (`[OK]`, `[FAIL]`, `[WARN]`) instead of Unicode emoji so MCP clients, Windows consoles, and JSON stay predictable.
+
+## Features 
+
+- **rTorrent docs:** **[docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)** (architecture + env) and **[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md)** (Docker, plugins, long setup)
+- **FastMCP 3.1**: Portmanteau tools, MCPB packaging, prompts, skills provider, sampling, agentic workflow tool, CI/CD
+- **6 Consolidated Tools**: torrent, search, nlp, legal, system, workflow management
+- **rTorrent integration**: Torrent operations via XML-RPC to your instance (add/list/pause/resume/delete, etc.)
+- **Multi-Source Search**: nyaa.si (anime), Pirate Bay (TV), YTS (movies), Anna's Archive (ebooks)
+- **Post-Processing**: Automatic completion detection, filename normalization, Plex integration
+- **Metadata Services**: IMDb and TVDB metadata retrieval for movies and TV shows
 - **Austrian Legal Compliance**: Built-in legal risk assessment for Austrian users
-- **Natural Language Commands**: Process Sandra's anime requests in English/German
-- **Quality Scoring**: Intelligent ranking of releases by group reputation
-- **Self-Documenting Tools**: Comprehensive tool descriptions with input/output schemas
-- **Repository Analysis**: Deep codebase analysis and recommendations
-- **System Status Monitoring**: Detailed server health and metrics
-- **Configuration Management**: Environment variables and .env file support
-- **Comprehensive Testing**: Unit and integration tests for all components
+- **Natural language**: Parse anime-related commands in English/German
+- **Quality scoring**: Simple heuristics for release ordering (e.g. group/metadata cues)
+- **Tool schemas**: Docstrings and structured parameters for MCP clients
+- **System tools**: Health/status helpers and optional workspace/repo inspection where implemented
+- **Configuration**: Environment variables and `.env` support
+- **Tests**: Unit and integration tests under `tests/`
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- Python 3.9 or higher
-- rTorrent with SCGI enabled (port 5000) - [See detailed installation guide](docs/RTORRENT_SETUP.md)
+- Python 3.10 or higher
+- Docker Desktop (for rTorrent) - **Recommended**
 - Claude Desktop (for MCP integration)
-- (Optional) Virtual environment (recommended)
 
-### Installation
+### rTorrent stack (Docker, recommended)
 
-1. **Clone the repository**
+#### What [crazy-max/docker-rtorrent-rutorrent](https://github.com/crazy-max/docker-rtorrent-rutorrent) is
 
-   ```bash
-   git clone https://github.com/sandraschi/qbtmcp.git
-   cd qbtmcp
-   ```
+**CrazyMax** maintains a well-used Docker setup that packages **rTorrent** (the actual client), **ruTorrent** (a PHP web UI on top of rTorrent), and **nginx** as a front door. Nginx exposes **XML-RPC** on a TCP port so clients (this MCP server, scripts, other tools) can call rTorrent’s RPC at `/RPC2` without you wiring SCGI sockets by hand. The image is aimed at “install Docker, get a working rTorrent + classic WebUI,” not at building rTorrent from source.
 
-2. **Set up a virtual environment (recommended)**
+This repo’s root [`docker-compose.yml`](docker-compose.yml) pins **`crazymax/rtorrent-rutorrent:latest`**, maps **XML-RPC** to **12224** and **ruTorrent** to **12222**, and uses volumes under `./config`, your downloads folder, `./watch`, and `./logs` (see the compose file for exact bind paths on Windows).
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+#### Install (minimal)
 
-3. **Install dependencies**
+1. Install **Docker Desktop** and ensure it is running.
+2. Clone this repository (or copy `docker-compose.yml` and related layout).
+3. From the **repository root**:
 
    ```bash
-   # Install UV (if not already installed)
-   pip install uv
-   
-   # Install all dependencies including dev tools
-   uv sync --dev
+   docker compose up -d
    ```
 
-   **⚠️ Troubleshooting**: If you get `ERROR: No matching distribution found for xmlrpc-client`, this is expected - the requirements.txt has been updated to use the correct package name `xmlrpc3`. See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common dependency issues.
+   (Use `docker-compose up -d` if your Docker install only provides the hyphenated CLI.)
 
-### rTorrent Installation & Setup
+4. Check the container:
 
-**⚠️ IMPORTANT: rTorrent must be installed and configured before using this MCP server.**
+   ```bash
+   docker logs rtorrent-mcp
+   ```
 
-For complete installation instructions, see our [comprehensive rTorrent setup guide](docs/RTORRENT_SETUP.md).
+5. **Endpoints (defaults in this repo):**
+   - **XML-RPC (for MCP):** `http://localhost:12224/RPC2`
+   - **ruTorrent WebUI:** `http://localhost:12222`
+
+Point the MCP server at the RPC endpoint with **`RTORRENT_HOST`** / **`RTORRENT_PORT`** (see [docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)).
+
+#### ruTorrent vs this project’s webapp (`web_sota/`)
+
+**ruTorrent** (bundled in CrazyMax’s image) is the “full” UI: plugins, RSS, autotools, labels, and a lot of surface area. Many people find it **overcomplicated** and the UI **dated**; it is still the right place when you need **plugin workflows** (RSS rules, auto-move, unpack, etc.) that we do not replicate.
+
+**Our webapp** under [`web_sota/`](web_sota/) is intentionally **rudimentary**: a small **Vite + React** dashboard on a **REST bridge** (`/api/*`) served by the same Python process as MCP—see [`web_sota/README.md`](web_sota/README.md). Today it is a **light substitute** for day-to-day glances: health, rTorrent probe, torrent list, **magnet add**. It is **not** a feature-complete ruTorrent replacement. Use it when you want something simple; keep ruTorrent (or MCP tools) when you need depth.
+
+Run the stack (backend + Vite) with:
+
+```powershell
+.\web_sota\start.ps1
+```
+
+Default dev URLs are documented in `web_sota/README.md` (Vite + uvicorn ports).
+
+#### Optional: ruTorrent plugins (CrazyMax image)
+
+The upstream image ships ruTorrent with many plugins; common automation-related ones include RSS/feeds, autotools, scheduler, unpack, ratio/seedingtime. See [docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md) for a longer list and configuration notes.
+
+## Installation
+
+**rTorrent in Docker (CrazyMax image), ports, and webapp vs ruTorrent** are covered under **[Quick Start → rTorrent stack (Docker, recommended)](#rtorrent-stack-docker-recommended)** above. This section is for the **Python MCP package** and optional **desktop** wiring.
+
+### Prerequisites
+- [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
+- Python 3.12+
+
+### Quick Start
+Run immediately via `uvx`:
+```bash
+uvx rtorrent-mcp
+```
+
+### Claude Desktop Integration
+Add to your `claude_desktop_config.json`:
+```json
+"mcpServers": {
+  "rtorrent-mcp": {
+    "command": "uv",
+    "args": ["--directory", "D:/Dev/repos/rtorrent-mcp", "run", "rtorrent-mcp"]
+  }
+}
+```
+
+### Platform setup
 
 #### Quick Setup (Windows - Docker Recommended)
 
@@ -223,30 +278,19 @@ For Windows, macOS, Docker, and advanced configuration options, see [docs/RTORRE
 
 ```bash
 # Run with stdio transport (for Claude Desktop)
-python -m qbtmcp.server --transport stdio
+python -m rtorrent_mcp.server --transport stdio
 
 # Or with HTTP transport
-python -m qbtmcp.server --transport http
+python -m rtorrent_mcp.server --transport http
 
 # Custom config file
-python -m qbtmcp.server --config /path/to/config.env
+python -m rtorrent_mcp.server --config /path/to/config.env
 
 # Direct module execution
-python src/qbtmcp/server.py
+python src/rtorrent_mcp/server.py
 ```
 
-### MCPB Package Installation
-
-For easy installation, use the pre-built MCPB package:
-
-```bash
-# Build the MCPB package (requires MCPB CLI)
-.\scripts\build-dxt-package.ps1
-
-# Then drag dist/rtorrent-mcp-1.0.0.mcpb to Claude Desktop
-```
-
-## 📦 Development
+## Development
 
 ### Testing
 
@@ -255,7 +299,7 @@ For easy installation, use the pre-built MCPB package:
 uv run pytest
 
 # Run with coverage report
-uv run pytest --cov=qbtmcp --cov-report=html
+uv run pytest --cov=rtorrent_mcp --cov-report=html
 ```
 
 ### Code Style
@@ -275,9 +319,9 @@ uv run bandit -r src/
 uv run safety scan
 ```
 
-## 🎯 Features in Detail
+## Features in Detail
 
-### 🔍 Smart Anime Search
+### Smart Anime Search
 
 ```python
 # Basic search
@@ -291,7 +335,7 @@ await search_anime(
 )
 ```
 
-### 🎛️ rTorrent Integration
+### rTorrent Integration
 
 ```python
 # Add torrent from magnet link
@@ -308,7 +352,7 @@ await delete_torrent("torrent_hash", delete_files=True)
 await get_status()
 ```
 
-### 🇦🇹 Austrian Legal Compliance
+### (AT) Austrian Legal Compliance
 
 ```python
 # Check if content is safe for Austria
@@ -319,33 +363,61 @@ else:
     logger.warning("Content may not be legal in Austria")
 ```
 
-### 🤖 Natural Language Processing
+### Extended Search Capabilities
 
 ```python
-# English commands
-await process_command("Download the latest Detective Conan episode in 720p from ASW")
+# Search manga
+await search_manga("One Piece", subcategory="translated")
 
-# German commands
-await process_command("Lade die neueste Folge Detective Conan in 720p von ASW")
+# Search Japanese TV shows
+await search_japanese_tv("Terrace House", subcategory="translated")
 
-# Complex queries
-await process_command("Find me the best quality of Attack on Titan, but nothing below 720p")
+# Search movies on YTS
+await search_movies("The Matrix", quality="1080p", sort_by="seeds")
+
+# Search ebooks on Anna's Archive (60M+ books!)
+await search_ebooks_annas("Python Programming", content_type="books")
+
+# Search comics on Pirate Bay
+await search_comics("Watchmen", max_results=20)
 ```
 
-### 🛠️ System Tools
+### Metadata Services
 
 ```python
-# Get comprehensive help
-await help()
+# Get IMDb metadata for a movie
+await get_imdb_metadata("The Matrix", year=1999)
 
-# System status and health check
-await get_system_status()
+# Search IMDb for multiple matches
+await search_imdb("Matrix", year=1999)
 
-# Analyze the repository
-await analyze_repo()
+# Get TVDB metadata (requires API subscription)
+await get_tvdb_metadata("Breaking Bad", year=2008)
+
+# Get detailed Anna's Archive torrent info
+await get_annas_detail("https://annas-archive.org/...")
 ```
 
-### 🤖 Natural Language Processing
+### Post-Processing System
+
+```python
+# Check for completed downloads
+completed = await check_completed_downloads()
+
+# Process a completed download
+await process_completed_download("torrent_hash")
+
+# Start automatic post-processing (background polling)
+await start_post_processing()
+
+# Stop post-processing
+await stop_post_processing()
+
+# Normalize a filename
+normalized = await normalize_filename("Show.Name.S01E01.RELEASE-GROUP.mkv", category="tv")
+```
+
+### Natural Language Processing
 
 ```python
 # English commands
@@ -361,7 +433,20 @@ await parse_anime_command("asw attack on titan 1080p")
 await get_command_help()
 ```
 
-## 🔧 Configuration Options
+### System Tools
+
+```python
+# Server help / tool listing
+await help()
+
+# System status and health check
+await get_system_status()
+
+# Analyze the repository
+await analyze_repo()
+```
+
+## Configuration Options
 
 ### Environment Variables
 
@@ -376,8 +461,17 @@ await get_command_help()
 | `ALLOWED_CATEGORIES` | `["Anime"]` | Allowed content categories |
 | `ALLOWED_RESOLUTIONS` | `["720p", "1080p"]` | Allowed video resolutions |
 | `MAX_TORRENT_SIZE_GB` | `10` | Maximum allowed torrent size in GB |
+| `POST_PROCESSING_ENABLED` | `false` | Enable automatic post-processing |
+| `POST_PROCESSING_POLL_INTERVAL` | `60` | Seconds between polling for completed downloads |
+| `DELETE_TORRENT_AFTER_COMPLETE` | `true` | Remove torrent after completion |
+| `NORMALIZE_FILENAMES` | `true` | Normalize filenames before moving |
+| `INGESTION_ANIME_PATH` | - | Path to temporary ingestion folder for anime |
+| `INGESTION_TV_PATH` | - | Path to temporary ingestion folder for TV shows |
+| `INGESTION_MOVIES_PATH` | - | Path to temporary ingestion folder for movies |
+| `OMDB_API_KEY` | - | OMDb API key for IMDb metadata (free at omdbapi.com) |
+| `TVDB_API_KEY` | - | TVDB API key for TV metadata (requires subscription) |
 
-## 📚 Documentation
+## Documentation
 
 ### API Reference
 
@@ -389,13 +483,27 @@ http://localhost:8000/docs
 
 ### Product Requirements Document
 
-See [PRD.md](docs/PRD.md) for comprehensive product specifications, requirements, and implementation details.
+See [PRD.md](docs/PRD.md) for product background, requirements, and technical notes.
+
+### Extended Search Guide
+
+See [EXTENDED_SEARCH_GUIDE.md](docs/EXTENDED_SEARCH_GUIDE.md) for complete guide to using all search capabilities including manga, movies, ebooks, comics, and metadata services.
+
+### Post-Processing Setup
+
+See [POST_PROCESSING_SETUP.md](docs/POST_PROCESSING_SETUP.md) for complete post-processing configuration guide, including ingestion folder setup and Plex integration.
+
+### Status Report
+
+See [STATUS_REPORT.md](docs/STATUS_REPORT.md) for current project status, metrics, and development roadmap.
 
 ### Development
 
-1. Install development dependencies:
+1. Clone this repository and `cd` into it (or open an existing clone), then install development dependencies:
 
    ```bash
+   git clone https://github.com/sandraschi/rtorrent-mcp.git
+   cd rtorrent-mcp
    uv sync --dev
    ```
 
@@ -413,30 +521,11 @@ See [PRD.md](docs/PRD.md) for comprehensive product specifications, requirements
 
    Then visit <http://localhost:8001>
 
-## 🤖 Claude Desktop Integration
+## Claude Desktop integration
 
-### Option 1: Drag & Drop Installation (DXT Package) - Recommended
+The recommended `mcpServers` snippet is under [Installation](#installation) → **Claude Desktop Integration**.
 
-1. **Build the DXT package**:
-   ```bash
-   # Windows PowerShell
-   .\scripts\build-dxt-package.ps1
-
-   # Linux/macOS
-   chmod +x scripts/build-dxt-package.ps1
-   ./scripts/build-dxt-package.ps1
-   ```
-
-2. **Install in Claude Desktop**:
-   - Locate the generated `.mcpb` file in the `dist/` folder
-   - Drag and drop the file onto Claude Desktop
-   - Claude Desktop will automatically install and configure the server
-
-3. **Configure rTorrent settings**:
-   - The extension will prompt you to configure rTorrent connection settings
-   - Set your rTorrent SCGI host and port (default: localhost:5000)
-
-### Option 2: Manual MCP Configuration
+### Manual MCP configuration
 
 For advanced users or custom setups, manually configure Claude Desktop:
 
@@ -451,10 +540,10 @@ Add this configuration to your `claude_desktop_config.json`:
   "mcpServers": {
     "rtorrent-mcp": {
       "command": "python",
-      "args": ["-m", "qbtmcp.server", "--transport", "stdio"],
-      "cwd": "/path/to/your/qbtmcp",
+      "args": ["-m", "rtorrent_mcp.server", "--transport", "stdio"],
+      "cwd": "/path/to/your/rtorrent_mcp",
       "env": {
-        "PYTHONPATH": "/path/to/your/qbtmcp/src",
+        "PYTHONPATH": "/path/to/your/rtorrent_mcp/src",
         "RTORRENT_HOST": "localhost",
         "RTORRENT_PORT": "5000",
         "NYAA_BASE_URL": "https://nyaa.si"
@@ -465,11 +554,11 @@ Add this configuration to your `claude_desktop_config.json`:
 ```
 
 **Configuration Notes**:
-- Replace `/path/to/your/qbtmcp` with your actual repository path
+- Replace `/path/to/your/rtorrent_mcp` with your actual repository path
 - Adjust environment variables as needed for your setup
 - The server will start automatically when Claude Desktop launches
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -477,11 +566,11 @@ Add this configuration to your `claude_desktop_config.json`:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [rTorrent](https://rakshasa.github.io/rtorrent/) - The lightweight torrent client
 - [Nyaa.si](https://nyaa.si/) - For the anime torrents
@@ -490,32 +579,31 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ in Vienna, Austria
-
-### Legal Compliance
+### Legal compliance (examples)
 
 ```python
-# Check legal status
-await check_legal_status("austria")  # ✅ Safe for Sandra in Vienna
-await check_legal_status("germany")  # 🚨 High risk, VPN mandatory
+await check_legal_status("austria")
+await check_legal_status("germany")
 ```
 
-## Release Group Priorities 🏆
+Interpretation of results is on you; this is not legal advice.
 
-1. **ASW** (100pts) - Austrian preference
-2. **SubsPlease** (90pts)
-3. **Erai-raws** (85pts)
-4. **EMBER** (80pts)
-5. **Judas** (75pts)
+## Release group priorities (defaults)
 
-## Austrian Context 🇦🇹
+Heuristic ordering used by search helpers (tune in config as needed):
 
-- **Legal Status**: Personal downloading generally tolerated
-- **Sandra's Location**: Vienna, 9th district
-- **Risk Assessment**: Safe for individual anime consumption
-- **Language Support**: English + German commands
+1. **ASW**
+2. **SubsPlease**
+3. **Erai-raws**
+4. **EMBER**
+5. **Judas**
 
-## Configuration ⚙️
+## Austrian context (AT)
+
+- Tooling includes AT-oriented legal **risk hints** in outputs; verify locally.
+- Command parsing supports English and German where implemented.
+
+## Configuration
 
 Copy `.env.example` to `.env` and configure:
 
@@ -530,7 +618,7 @@ PREFERRED_RELEASE_GROUP=ASW
 LOG_LEVEL=INFO
 ```
 
-## Testing 🧪
+## Testing 
 
 ### Run Tests
 
@@ -546,7 +634,7 @@ pytest -m integration   # Integration tests only
 pytest -v
 
 # Generate coverage report
-pytest --cov=qbtmcp --cov-report=html
+pytest --cov=rtorrent_mcp --cov-report=html
 ```
 
 ### Test Structure
@@ -577,7 +665,7 @@ Windows users can use the PowerShell test runner:
 
 ### Modern Development Commands
 
-With UV installed, you can use these modern commands:
+With UV installed, from a **clone** of this repo at the repository root, you can use these modern commands:
 
 ```bash
 # Install all dependencies (including dev tools)
@@ -595,7 +683,7 @@ uv run bandit -r src/
 uv run safety scan
 
 # Run tests with coverage
-uv run pytest --cov=src/qbtmcp --cov-report=html
+uv run pytest --cov=src/rtorrent_mcp --cov-report=html
 
 # Build package
 uv build
@@ -604,34 +692,19 @@ uv build
 uv run twine check dist/*
 ```
 
-## Production Readiness ✅
+## CI, tests, and checklist
 
-This MCP server has been audited against enterprise production standards and achieved **95% compliance** (57/60 criteria met).
+- **CI**: GitHub Actions runs lint, type check, and tests (see `.github/workflows/`)
+- **Tests**: `uv run pytest` (coverage optional via `pytest --cov`)
+- **Self-review**: [`docs/MCP_PRODUCTION_CHECKLIST.md`](docs/MCP_PRODUCTION_CHECKLIST.md) is a checklist for hardening; it is not a third-party certification.
 
-### ✅ Completed Standards
-- **FastMCP 2.12 Compliance**: Latest standards with stdio transport
-- **Comprehensive Testing**: Unit + integration tests with 80%+ coverage
-- **Enterprise Documentation**: Full API docs, PRD, CHANGELOG, contributing guidelines
-- **CI/CD Pipeline**: Automated testing, linting, building, and releasing
-- **Security Audited**: No vulnerabilities in core dependencies
-- **Cross-Platform**: Windows/PowerShell first with Linux compatibility
-- **Legal Compliance**: Austrian-focused with international warnings
-- **Professional Architecture**: Clean separation, error handling, logging
+Treat this project like any other self-hosted tool: verify behaviour in your environment and keep dependencies updated.
 
-### 📋 Production Checklist
-See [`docs/MCP_PRODUCTION_CHECKLIST.md`](docs/MCP_PRODUCTION_CHECKLIST.md) for the complete audit results.
-
-### 🚀 Ready for Enterprise Use
-This server meets production requirements for:
-- Individual anime enthusiasts in Austria 🇦🇹
-- Development teams needing MCP examples
-- Organizations requiring audited, secure automation tools
-
-## Legal Disclaimer ⚖️
+## Legal Disclaimer 
 
 This tool is designed for Austrian legal context where personal downloading is generally tolerated. Users in other jurisdictions should research local copyright laws. High-risk countries (Germany, Japan) require additional precautions.
 
-## Dependencies 📦
+## Dependencies 
 
 - **FastMCP 2.12+**: MCP server framework with stdio transport
 - **UV**: Modern Python package manager for fast, reliable builds
@@ -651,8 +724,6 @@ This tool is designed for Austrian legal context where personal downloading is g
 - **pytest**: Testing framework with coverage
 - **build & twine**: Package building and publishing
 
-## Author 👩‍💻
+## Author
 
-Sandra's Austrian Anime Automation 🇦🇹🎌
-
-*"Sin temor y sin esperanza" - Practical automation without hype.*
+Maintainer: sandraschi / rtorrent-mcp contributors.
