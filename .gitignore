@@ -96,7 +96,7 @@ tmp/
 temp/
 
 # Project-specific backups
-qbtmcp_backup/
+rtorrent_mcp_backup/
 server.py.bak
 *.bak
 *.bak.*
@@ -150,3 +150,5 @@ Desktop.ini
 config/
 *.lock
 *.torrent.rtorrent
+# Rust / Zed IDE — rust-analyzer may create target/ at repo root
+target/
