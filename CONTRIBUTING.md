@@ -1,8 +1,8 @@
-# 🤝 Contributing to RTorrent MCP Server
+# Contributing to RTorrent MCP Server
 
 Thank you for your interest in contributing to RTorrent MCP Server! This document provides guidelines and information for contributors.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
@@ -14,11 +14,11 @@ Thank you for your interest in contributing to RTorrent MCP Server! This documen
 - [Reporting Issues](#reporting-issues)
 - [Documentation](#documentation)
 
-## 🤝 Code of Conduct
+## Code of Conduct
 
 This project follows a [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a welcoming environment for all contributors. By participating, you agree to uphold this code.
 
-## 🛡️ Branch Protection Rules
+## Branch Protection Rules
 
 This repository uses GitHub branch protection to maintain code quality:
 
@@ -65,7 +65,7 @@ This repository uses GitHub branch protection to maintain code quality:
 - `docs/documentation-update`: Documentation changes
 - `refactor/code-improvement`: Code refactoring
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -94,7 +94,7 @@ npm install -g @anthropic-ai/mcpb
 pytest
 ```
 
-## 🛠️ Development Setup
+## Development Setup
 
 ### Environment Configuration
 
@@ -117,7 +117,7 @@ We recommend using:
 - **PyCharm Professional** with MCP support
 - **Cursor** for AI-assisted development
 
-## 🔄 Development Workflow
+## Development Workflow
 
 ### 1. Choose an Issue
 
@@ -149,7 +149,7 @@ git checkout -b fix/issue-number-description
 pytest
 
 # Run with coverage
-pytest --cov=src/qbtmcp --cov-report=html
+pytest --cov=src/rtorrent_mcp --cov-report=html
 
 # Run linting
 black --check .
@@ -182,7 +182,7 @@ git push origin feature/your-feature-name
 # Create a Pull Request on GitHub
 ```
 
-## 🎨 Code Style
+## Code Style
 
 ### Python Style
 
@@ -222,7 +222,7 @@ Types:
 - **Constants**: `UPPER_SNAKE_CASE`
 - **Files**: `snake_case.py`
 
-## 🧪 Testing
+## Testing
 
 ### Running Tests
 
@@ -237,14 +237,14 @@ pytest tests/unit/test_rtorrent_client.py
 pytest -v
 
 # Run with coverage
-pytest --cov=src/qbtmcp --cov-report=html
+pytest --cov=src/rtorrent_mcp --cov-report=html
 ```
 
 ### Writing Tests
 
 ```python
 import pytest
-from src.qbtmcp.services.rtorrent_client import RTorrentClient
+from src.rtorrent_mcp.services.rtorrent_client import RTorrentClient
 
 class TestRTorrentClient:
     def test_connection_success(self, mock_server):
@@ -262,13 +262,13 @@ class TestRTorrentClient:
 - Add integration tests for API interactions
 - Test error conditions and edge cases
 
-## 📝 Submitting Changes
+## Submitting Changes
 
 ### Pull Request Process
 
 1. **Title**: Use descriptive, imperative titles
-   - ✅ "Add torrent pause functionality"
-   - ❌ "Fix bug" or "Update code"
+   - [OK] "Add torrent pause functionality"
+   - [FAIL] "Fix bug" or "Update code"
 
 2. **Description**: Include context and details
    - What problem does this solve?
@@ -288,7 +288,7 @@ class TestRTorrentClient:
 - No merge conflicts
 - Follow-up commits may be requested
 
-## 🐛 Reporting Issues
+## Reporting Issues
 
 ### Bug Reports
 
@@ -309,7 +309,7 @@ Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature-request.yml) a
 - Proposed implementation
 - Alternative solutions considered
 
-## 📚 Documentation
+## Documentation
 
 ### Code Documentation
 
@@ -338,7 +338,7 @@ def search_anime(query: str, resolution: str = "720p") -> List[Dict[str, Any]]:
 - Update API examples
 - Include breaking changes
 
-## 🎯 Development Best Practices
+## Development Best Practices
 
 ### Security
 
@@ -361,25 +361,25 @@ def search_anime(query: str, resolution: str = "720p") -> List[Dict[str, Any]]:
 - Use type hints
 - Keep functions small and focused
 
-## 🙋 Getting Help
+## Getting Help
 
 - **Documentation**: Check [README.md](README.md) and [PRD](docs/PRD.md)
 - **Issues**: Search existing issues or create new ones
 - **Discussions**: Use GitHub Discussions for questions
 - **Discord**: Join our community Discord (link in README)
 
-## 📄 License
+## License
 
 By contributing to this project, you agree that your contributions will be licensed under the same license as the project (MIT License).
 
-## 🎉 Recognition
+## Recognition
 
 Contributors are recognized in:
 - [CONTRIBUTORS.md](CONTRIBUTORS.md) file
 - Release notes
 - GitHub's contributor insights
 
-Thank you for contributing to RTorrent MCP Server! 🚀
+Thank you for contributing to RTorrent MCP Server! 
 
 ---
 

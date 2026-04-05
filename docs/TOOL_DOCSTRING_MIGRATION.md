@@ -8,14 +8,14 @@
 
 ## Migration Status
 
-### Completed ✅
+### Completed [OK]
 - [x] query_tools.py - execute_query (reference implementation)
 
-### In Progress 🔄
+### In Progress 
 - [ ] query_tools.py - quick_data_sample
 - [ ] query_tools.py - export_query_results
 
-### Pending 📋
+### Pending 
 
 **Connection Tools** (connection_tools.py) - 5 tools
 - [ ] list_supported_databases
@@ -290,14 +290,14 @@ def main():
     if all_issues:
         print("Tool Docstring Issues Found:\n")
         for filepath, issues in all_issues.items():
-            print(f"📄 {filepath}")
+            print(f" {filepath}")
             for issue in issues:
-                print(f"  ⚠️  {issue['function']} (line {issue['line']})")
+                print(f"  [WARN]  {issue['function']} (line {issue['line']})")
                 for problem in issue['issues']:
                     print(f"      - {problem}")
             print()
     else:
-        print("✅ All tool docstrings are compliant!")
+        print("[OK] All tool docstrings are compliant!")
 
 if __name__ == '__main__':
     main()
@@ -316,7 +316,7 @@ python check_docstrings.py
 Update in this order for maximum impact:
 
 1. **High Priority** - Most used tools
-   - execute_query ✅
+   - execute_query [OK]
    - register_database_connection
    - list_tables
    - describe_table

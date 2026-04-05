@@ -4,14 +4,14 @@
 [![FastMCP](https://img.shields.io/badge/FastMCP-3.1-brightgreen)](https://gofastmcp.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**rTorrent MCP** — FastMCP 3.1 server for **anime BitTorrent automation** with Austrian legal context, talking to **rTorrent** over XML-RPC/SCGI (not a generic site scraper).
+**rTorrent MCP**  FastMCP 3.1 server for **anime BitTorrent automation** with Austrian legal context, talking to **rTorrent** over XML-RPC/SCGI (not a generic site scraper).
 
 **What this is:** A **BitTorrent** control plane: add/list/pause torrents, search indexers (Nyaa, etc.), workflows, and post-processing against your **rTorrent** instance. It is **not** a generic systems MCP, and it is **not** a qBittorrent Web API client.
 
-**Web UI (`web_sota/`):** A **small** Vite + React dashboard + **REST bridge** (`/api/*`) on the same uvicorn process as MCP (status, torrent list, magnet add). It is a **deliberately minimal** alternative to the ruTorrent WebUI bundled with Docker—see **[Quick Start](#quick-start)** (subsection *ruTorrent vs this project’s webapp*) and [`web_sota/README.md`](web_sota/README.md). **Agents** still use **MCP tools** for full workflows.
+**Web UI (`web_sota/`):** A **small** Vite + React dashboard + **REST bridge** (`/api/*`) on the same uvicorn process as MCP (status, torrent list, magnet add). It is a **deliberately minimal** alternative to the ruTorrent WebUI bundled with Dockersee **[Quick Start](#quick-start)** (subsection *ruTorrent vs this projects webapp*) and [`web_sota/README.md`](web_sota/README.md). **Agents** still use **MCP tools** for full workflows.
 
 > ** Naming:** GitHub repo **`rtorrent-mcp`**; Python package **`rtorrent_mcp`**. The old **qBittorrent**
-> prototype used the historic name **`qbtmcp`** — that client is **not** supported; control is **rTorrent**
+> prototype used the historic name **`qbtmcp`**  that client is **not** supported; control is **rTorrent**
 > via XML-RPC. See **[docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)** and
 > **[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md)**.
 
@@ -46,9 +46,9 @@
 
 #### What [crazy-max/docker-rtorrent-rutorrent](https://github.com/crazy-max/docker-rtorrent-rutorrent) is
 
-**CrazyMax** maintains a well-used Docker setup that packages **rTorrent** (the actual client), **ruTorrent** (a PHP web UI on top of rTorrent), and **nginx** as a front door. Nginx exposes **XML-RPC** on a TCP port so clients (this MCP server, scripts, other tools) can call rTorrent’s RPC at `/RPC2` without you wiring SCGI sockets by hand. The image is aimed at “install Docker, get a working rTorrent + classic WebUI,” not at building rTorrent from source.
+**CrazyMax** maintains a well-used Docker setup that packages **rTorrent** (the actual client), **ruTorrent** (a PHP web UI on top of rTorrent), and **nginx** as a front door. Nginx exposes **XML-RPC** on a TCP port so clients (this MCP server, scripts, other tools) can call rTorrents RPC at `/RPC2` without you wiring SCGI sockets by hand. The image is aimed at install Docker, get a working rTorrent + classic WebUI, not at building rTorrent from source.
 
-This repo’s root [`docker-compose.yml`](docker-compose.yml) pins **`crazymax/rtorrent-rutorrent:latest`**, maps **XML-RPC** to **12224** and **ruTorrent** to **12222**, and uses volumes under `./config`, your downloads folder, `./watch`, and `./logs` (see the compose file for exact bind paths on Windows).
+This repos root [`docker-compose.yml`](docker-compose.yml) pins **`crazymax/rtorrent-rutorrent:latest`**, maps **XML-RPC** to **12224** and **ruTorrent** to **12222**, and uses volumes under `./config`, your downloads folder, `./watch`, and `./logs` (see the compose file for exact bind paths on Windows).
 
 #### Install (minimal)
 
@@ -74,11 +74,11 @@ This repo’s root [`docker-compose.yml`](docker-compose.yml) pins **`crazymax/r
 
 Point the MCP server at the RPC endpoint with **`RTORRENT_HOST`** / **`RTORRENT_PORT`** (see [docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)).
 
-#### ruTorrent vs this project’s webapp (`web_sota/`)
+#### ruTorrent vs this projects webapp (`web_sota/`)
 
-**ruTorrent** (bundled in CrazyMax’s image) is the “full” UI: plugins, RSS, autotools, labels, and a lot of surface area. Many people find it **overcomplicated** and the UI **dated**; it is still the right place when you need **plugin workflows** (RSS rules, auto-move, unpack, etc.) that we do not replicate.
+**ruTorrent** (bundled in CrazyMaxs image) is the full UI: plugins, RSS, autotools, labels, and a lot of surface area. Many people find it **overcomplicated** and the UI **dated**; it is still the right place when you need **plugin workflows** (RSS rules, auto-move, unpack, etc.) that we do not replicate.
 
-**Our webapp** under [`web_sota/`](web_sota/) is intentionally **rudimentary**: a small **Vite + React** dashboard on a **REST bridge** (`/api/*`) served by the same Python process as MCP—see [`web_sota/README.md`](web_sota/README.md). Today it is a **light substitute** for day-to-day glances: health, rTorrent probe, torrent list, **magnet add**. It is **not** a feature-complete ruTorrent replacement. Use it when you want something simple; keep ruTorrent (or MCP tools) when you need depth.
+**Our webapp** under [`web_sota/`](web_sota/) is intentionally **rudimentary**: a small **Vite + React** dashboard on a **REST bridge** (`/api/*`) served by the same Python process as MCPsee [`web_sota/README.md`](web_sota/README.md). Today it is a **light substitute** for day-to-day glances: health, rTorrent probe, torrent list, **magnet add**. It is **not** a feature-complete ruTorrent replacement. Use it when you want something simple; keep ruTorrent (or MCP tools) when you need depth.
 
 Run the stack (backend + Vite) with:
 
@@ -94,7 +94,7 @@ The upstream image ships ruTorrent with many plugins; common automation-related 
 
 ## Installation
 
-**rTorrent in Docker (CrazyMax image), ports, and webapp vs ruTorrent** are covered under **[Quick Start → rTorrent stack (Docker, recommended)](#rtorrent-stack-docker-recommended)** above. This section is for the **Python MCP package** and optional **desktop** wiring.
+**rTorrent in Docker (CrazyMax image), ports, and webapp vs ruTorrent** are covered under **[Quick Start  rTorrent stack (Docker, recommended)](#rtorrent-stack-docker-recommended)** above. This section is for the **Python MCP package** and optional **desktop** wiring.
 
 ### Prerequisites
 - [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
@@ -523,7 +523,7 @@ See [STATUS_REPORT.md](docs/STATUS_REPORT.md) for current project status, metric
 
 ## Claude Desktop integration
 
-The recommended `mcpServers` snippet is under [Installation](#installation) → **Claude Desktop Integration**.
+The recommended `mcpServers` snippet is under [Installation](#installation)  **Claude Desktop Integration**.
 
 ### Manual MCP configuration
 
@@ -561,9 +561,9 @@ Add this configuration to your `claude_desktop_config.json`:
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/-feature`)
+3. Commit your changes (`git commit -m 'Add some  feature'`)
+4. Push to the branch (`git push origin feature/-feature`)
 5. Open a Pull Request
 
 ## License
@@ -641,11 +641,11 @@ pytest --cov=rtorrent_mcp --cov-report=html
 
 ```
 tests/
-├── conftest.py              # Test configuration and fixtures
-├── unit/                    # Unit tests (isolated components)
-│   └── test_rtorrent_client.py
-└── integration/             # Integration tests (full workflows)
-    └── test_mcp_integration.py
+ conftest.py              # Test configuration and fixtures
+ unit/                    # Unit tests (isolated components)
+    test_rtorrent_client.py
+ integration/             # Integration tests (full workflows)
+     test_mcp_integration.py
 ```
 
 ### PowerShell Test Runner

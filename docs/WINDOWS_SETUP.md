@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [Overview](#overview)
 2. [Prerequisites](#prerequisites)
@@ -18,7 +18,7 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 This guide provides Windows-specific instructions for setting up rTorrent with SCGI support for the RTorrent MCP Server. Since rTorrent is primarily a Linux application, we'll use containerization and virtualization to run it on Windows.
 
@@ -33,7 +33,7 @@ This guide provides Windows-specific instructions for setting up rTorrent with S
 
 ---
 
-## 💻 Prerequisites
+## Prerequisites
 
 ### System Requirements
 
@@ -55,7 +55,7 @@ This guide provides Windows-specific instructions for setting up rTorrent with S
 
 ---
 
-## 🐳 Method 1: Docker (Recommended)
+## Method 1: Docker (Recommended)
 
 ### Step 1: Install Docker Desktop
 
@@ -227,10 +227,10 @@ docker inspect rtorrent-mcp --format='{{.State.Health.Status}}'
 $body = '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>'
 try {
     $response = Invoke-RestMethod -Uri "http://localhost:5000/RPC2" -Method POST -ContentType "text/xml" -Body $body
-    Write-Host "✅ SCGI connection successful" -ForegroundColor Green
+    Write-Host "[OK] SCGI connection successful" -ForegroundColor Green
     Write-Host "Response: $response" -ForegroundColor Cyan
 } catch {
-    Write-Host "❌ SCGI connection failed: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] SCGI connection failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # Test Web UI (optional)
@@ -239,7 +239,7 @@ Start-Process "http://localhost:8081"
 
 ---
 
-## 🐧 Method 2: WSL2
+## Method 2: WSL2
 
 ### Step 1: Enable WSL2
 
@@ -332,9 +332,9 @@ pgrep rtorrent
 $body = '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>'
 try {
     $response = Invoke-RestMethod -Uri "http://localhost:5000/RPC2" -Method POST -ContentType "text/xml" -Body $body
-    Write-Host "✅ WSL2 rTorrent connection successful" -ForegroundColor Green
+    Write-Host "[OK] WSL2 rTorrent connection successful" -ForegroundColor Green
 } catch {
-    Write-Host "❌ WSL2 rTorrent connection failed: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] WSL2 rTorrent connection failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # Create Windows shortcut to WSL2 rTorrent
@@ -346,7 +346,7 @@ $shortcut.Save()
 
 ---
 
-## ⚙️ Method 3: Windows Service
+## Method 3: Windows Service
 
 ### Step 1: Install NSSM
 
@@ -399,7 +399,7 @@ services.msc
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -437,10 +437,10 @@ Update your MCP server configuration:
   "mcpServers": {
     "rtorrent-mcp": {
       "command": "python",
-      "args": ["-m", "qbtmcp.server", "--transport", "stdio"],
-      "cwd": "D:\\Dev\\repos\\qbtmcp",
+      "args": ["-m", "rtorrent_mcp.server", "--transport", "stdio"],
+      "cwd": "D:\\Dev\\repos\\rtorrent_mcp",
       "env": {
-        "PYTHONPATH": "D:\\Dev\\repos\\qbtmcp\\src",
+        "PYTHONPATH": "D:\\Dev\\repos\\rtorrent_mcp\\src",
         "RTORRENT_HOST": "localhost",
         "RTORRENT_PORT": "5000",
         "NYAA_BASE_URL": "https://nyaa.si"
@@ -452,7 +452,7 @@ Update your MCP server configuration:
 
 ---
 
-## ✅ Verification
+## Verification
 
 ### Health Check Script
 
@@ -469,15 +469,15 @@ param(
     [int]$Port = 5000
 )
 
-Write-Host "🔍 Checking rTorrent health..." -ForegroundColor Cyan
+Write-Host " Checking rTorrent health..." -ForegroundColor Cyan
 
 # Check if Docker container is running (if using Docker)
 if (Get-Command docker -ErrorAction SilentlyContinue) {
     $containerStatus = docker ps --filter "name=rtorrent-mcp" --format "table {{.Status}}"
     if ($containerStatus -match "Up") {
-        Write-Host "✅ Docker container is running" -ForegroundColor Green
+        Write-Host "[OK] Docker container is running" -ForegroundColor Green
     } else {
-        Write-Host "❌ Docker container is not running" -ForegroundColor Red
+        Write-Host "[FAIL] Docker container is not running" -ForegroundColor Red
         exit 1
     }
 }
@@ -486,9 +486,9 @@ if (Get-Command docker -ErrorAction SilentlyContinue) {
 if (Get-Command wsl -ErrorAction SilentlyContinue) {
     $wslProcess = wsl pgrep rtorrent
     if ($wslProcess) {
-        Write-Host "✅ WSL2 rTorrent process is running" -ForegroundColor Green
+        Write-Host "[OK] WSL2 rTorrent process is running" -ForegroundColor Green
     } else {
-        Write-Host "❌ WSL2 rTorrent process is not running" -ForegroundColor Red
+        Write-Host "[FAIL] WSL2 rTorrent process is not running" -ForegroundColor Red
         exit 1
     }
 }
@@ -498,9 +498,9 @@ try {
     $tcpClient = New-Object System.Net.Sockets.TcpClient
     $tcpClient.Connect($Host, $Port)
     $tcpClient.Close()
-    Write-Host "✅ SCGI port $Port is accessible" -ForegroundColor Green
+    Write-Host "[OK] SCGI port $Port is accessible" -ForegroundColor Green
 } catch {
-    Write-Host "❌ SCGI port $Port is not accessible" -ForegroundColor Red
+    Write-Host "[FAIL] SCGI port $Port is not accessible" -ForegroundColor Red
     exit 1
 }
 
@@ -510,17 +510,17 @@ try {
     $response = Invoke-RestMethod -Uri "http://$Host`:$Port/RPC2" -Method POST -ContentType "text/xml" -Body $body -TimeoutSec 10
     
     if ($response -match "system.listMethods") {
-        Write-Host "✅ XML-RPC connection successful" -ForegroundColor Green
+        Write-Host "[OK] XML-RPC connection successful" -ForegroundColor Green
     } else {
-        Write-Host "❌ XML-RPC connection failed" -ForegroundColor Red
+        Write-Host "[FAIL] XML-RPC connection failed" -ForegroundColor Red
         exit 1
     }
 } catch {
-    Write-Host "❌ XML-RPC connection failed: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] XML-RPC connection failed: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "🎉 rTorrent is healthy and ready for MCP server!" -ForegroundColor Green
+Write-Host " rTorrent is healthy and ready for MCP server!" -ForegroundColor Green
 "@ | Out-File -FilePath "rtorrent-health-check.ps1" -Encoding UTF8
 
 # Make script executable
@@ -534,17 +534,17 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ```powershell
 # Test MCP server connection
-cd D:\Dev\repos\qbtmcp
+cd D:\Dev\repos\rtorrent_mcp
 
 # Run MCP server in test mode
-python -m qbtmcp.server --transport stdio
+python -m rtorrent_mcp.server --transport stdio
 
 # In another terminal, test the connection
 python -c "
 import asyncio
 import sys
 sys.path.append('src')
-from qbtmcp.services.qbittorrent_client import RTorrentClient
+from rtorrent_mcp.services.qbittorrent_client import RTorrentClient
 
 async def test():
     client = RTorrentClient()
@@ -560,7 +560,7 @@ asyncio.run(test())
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -592,7 +592,7 @@ taskkill /PID <PID> /F
 
 # Or change port in docker-compose.yml
 # ports:
-#   - "5001:5000"  # Use port 5001 instead
+# - "5001:5000"  # Use port 5001 instead
 ```
 
 #### 3. WSL2 Connection Issues
@@ -653,7 +653,7 @@ rtorrent -d
 
 ---
 
-## ⚡ Performance Optimization
+## Performance Optimization
 
 ### Docker Optimization
 
@@ -755,7 +755,7 @@ network.max_open_sockets.set = 8192
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 ### Useful Commands
 
@@ -801,18 +801,18 @@ while ($true) {
         $tcpClient = New-Object System.Net.Sockets.TcpClient
         $tcpClient.Connect("localhost", 5000)
         $tcpClient.Close()
-        Write-Host "SCGI Port: ✅ Accessible" -ForegroundColor Green
+        Write-Host "SCGI Port: [OK] Accessible" -ForegroundColor Green
     } catch {
-        Write-Host "SCGI Port: ❌ Not accessible" -ForegroundColor Red
+        Write-Host "SCGI Port: [FAIL] Not accessible" -ForegroundColor Red
     }
     
     # Check XML-RPC
     try {
         $body = '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>'
         $response = Invoke-RestMethod -Uri "http://localhost:5000/RPC2" -Method POST -ContentType "text/xml" -Body $body -TimeoutSec 5
-        Write-Host "XML-RPC: ✅ Working" -ForegroundColor Green
+        Write-Host "XML-RPC: [OK] Working" -ForegroundColor Green
     } catch {
-        Write-Host "XML-RPC: ❌ Failed" -ForegroundColor Red
+        Write-Host "XML-RPC: [FAIL] Failed" -ForegroundColor Red
     }
     
     Write-Host "`nPress Ctrl+C to exit..."
@@ -823,11 +823,11 @@ while ($true) {
 
 ---
 
-## 🎯 Next Steps
+## Next Steps
 
 After completing the Windows setup:
 
-1. **Test the MCP Server**: Run `python -m qbtmcp.server --transport stdio`
+1. **Test the MCP Server**: Run `python -m rtorrent_mcp.server --transport stdio`
 2. **Configure Claude Desktop**: Add the MCP server to your configuration
 3. **Test Anime Search**: Try searching for anime using natural language
 4. **Monitor Performance**: Use the monitoring scripts to track health
@@ -835,7 +835,7 @@ After completing the Windows setup:
 
 ---
 
-**Made with ❤️ in Vienna, Austria 🇦🇹**
+**Made with  in Vienna, Austria (AT)**
 
 *For Windows users who want reliable rTorrent integration with their MCP server.*
 

@@ -68,7 +68,7 @@
 ### Prerequisites
 
 **Required:**
-- Python 3.10+ (you have 3.13 ✅)
+- Python 3.10+ (you have 3.13 [OK])
 - `uv` package manager (Python's new fast package tool)
 
 **Install uv (Windows PowerShell):**
@@ -281,7 +281,7 @@ Serena provides these tools to the AI:
 
 ---
 
-## 📊 The Dashboard (Very Cool!)
+## [stat] The Dashboard (Very Cool!)
 
 Serena runs a **local web dashboard** for monitoring:
 
@@ -411,8 +411,8 @@ Serena has different "contexts" for different use cases:
 
 3. **Specific prompts:**
    ```
-   ❌ "Improve this project"
-   ✅ "Refactor the UserService class to use interfaces"
+   [NO] "Improve this project"
+   [OK] "Refactor the UserService class to use interfaces"
    ```
 
 4. **Let Serena prepare:**
@@ -429,7 +429,7 @@ Serena has different "contexts" for different use cases:
 
 ---
 
-## 💡 Real-World Examples
+## [tip] Real-World Examples
 
 ### Example 1: Bug Hunting
 
@@ -600,17 +600,17 @@ http://localhost:24282/dashboard/index.html
 ## 🎯 Is Serena Right for You?
 
 **YES, if:**
-- ✅ Working on medium/large projects (1000+ lines)
-- ✅ Multi-file codebases with structure
-- ✅ Want to save tokens/API costs
-- ✅ Need semantic code understanding
-- ✅ Projects in Python, JS/TS, Java, Rust, Go
+- [OK] Working on medium/large projects (1000+ lines)
+- [OK] Multi-file codebases with structure
+- [OK] Want to save tokens/API costs
+- [OK] Need semantic code understanding
+- [OK] Projects in Python, JS/TS, Java, Rust, Go
 
 **MAYBE NOT, if:**
-- ❌ Single-file scripts
-- ❌ Very small projects (<100 lines)
-- ❌ Just need basic text editing
-- ❌ Don't want to manage another tool
+- [NO] Single-file scripts
+- [NO] Very small projects (<100 lines)
+- [NO] Just need basic text editing
+- [NO] Don't want to manage another tool
 
 ---
 

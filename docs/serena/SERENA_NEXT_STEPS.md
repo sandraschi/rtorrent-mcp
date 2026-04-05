@@ -4,7 +4,7 @@
 
 ---
 
-## ✅ **Step 1: Verify Serena is Available**
+## [OK] **Step 1: Verify Serena is Available**
 
 ### **Check MCP Tools**
 
@@ -40,18 +40,18 @@ Run onboarding
 ```
 
 **What happens** (30 seconds - 2 minutes):
-1. ✅ Serena scans notepadpp-mcp project
-2. ✅ Creates `.serena/` folder
-3. ✅ Generates memory files about the project
-4. ✅ Starts Python language server
-5. ✅ Opens dashboard: http://localhost:24282
-6. ✅ Indexes all symbols (functions, classes, etc.)
+1. [OK] Serena scans notepadpp-mcp project
+2. [OK] Creates `.serena/` folder
+3. [OK] Generates memory files about the project
+4. [OK] Starts Python language server
+5. [OK] Opens dashboard: http://localhost:24282
+6. [OK] Indexes all symbols (functions, classes, etc.)
 
 **Watch the dashboard!** It shows the indexing in real-time! 🎨
 
 ---
 
-## 📊 **Step 3: Open the Dashboard**
+## [stat] **Step 3: Open the Dashboard**
 
 ### **URL**: http://localhost:24282/dashboard/index.html
 
@@ -82,7 +82,7 @@ Start-Process "http://localhost:24282/dashboard/index.html"
    - Auto-generated project understanding
 
 4. **Language Servers**
-   - Python LSP: ✅ Running
+   - Python LSP: [OK] Running
    - Status: Active/Idle
    - Performance metrics
 
@@ -156,18 +156,18 @@ Get-ChildItem .serena -Recurse
 
 # Expected structure:
 # .serena/
-#   project.yml          ← Config
-#   memories/            ← Project understanding
-#     architecture.md
-#     main-components.md
-#   index/               ← Symbol cache
+# project.yml          ← Config
+# memories/            ← Project understanding
+# architecture.md
+# main-components.md
+# index/               ← Symbol cache
 ```
 
 **These files help Serena understand your project!**
 
 ---
 
-## 💡 **Step 6: Use Serena Naturally**
+## [tip] **Step 6: Use Serena Naturally**
 
 **Now just work normally!** Serena is available via `@Composer`.
 
@@ -212,7 +212,7 @@ Get-ChildItem .serena -Recurse
 
 ---
 
-## 📊 **Token Savings Example**
+## [stat] **Token Savings Example**
 
 ### **Without Serena**
 
@@ -277,12 +277,12 @@ read_only: true
 
 ---
 
-## ⚠️ **Important Notes**
+## [WARN] **Important Notes**
 
 **Per-Project Installation**:
-- ✅ Serena is configured ONLY for notepadpp-mcp folder
-- ✅ Other repos won't have it (unless you copy config)
-- ✅ Each repo needs its own `.cursor/mcp.json`
+- [OK] Serena is configured ONLY for notepadpp-mcp folder
+- [OK] Other repos won't have it (unless you copy config)
+- [OK] Each repo needs its own `.cursor/mcp.json`
 
 **To add to other repos**:
 - Copy `.cursor/mcp.json` to new repo

@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## ✨ Feature Request
+        ##  Feature Request
 
         Thank you for suggesting a new feature! Please fill out the template below to help us understand your idea.
 

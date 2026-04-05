@@ -7,7 +7,7 @@
       }
     },
     "output": {
-      "response": "🎌 Searching for this week's ASW anime releases in 720p...",
+      "response": "Searching for this week's ASW anime releases in 720p...",
       "results": [
         {
           "title": "[ASW] One Piece - 1080 (Netflix 1080p HEVC AAC)",
@@ -32,7 +32,7 @@
     },
     "output": {
       "status": "success",
-      "message": "✅ Torrent added successfully",
+      "message": "[OK] Torrent added successfully",
       "details": {
         "hash": "abc123def456",
         "category": "anime",
@@ -69,9 +69,9 @@
     "output": {
       "country": "Austria",
       "risk_level": "safe",
-      "warning": "✅ Personal downloading generally tolerated",
+      "warning": "[OK] Personal downloading generally tolerated",
       "sandra_location": true,
-      "recommendation": "Safe for Sandra in Vienna 🇦🇹"
+      "recommendation": "Safe for Sandra in Vienna (AT)"
     }
   },
   {
@@ -157,7 +157,7 @@
       "configuration": {
         "app_name": "RTorrent MCP",
         "version": "1.0.0",
-        "legal_status": "Safe for Sandra in Vienna 🇦🇹"
+        "legal_status": "Safe for Sandra in Vienna (AT)"
       },
       "troubleshooting": [
         "Ensure rTorrent is running with SCGI on port 5000",
@@ -188,7 +188,7 @@
         }
       ],
       "austrian_context": true,
-      "german_efficiency": "Sehr gut! 🇦🇹"
+      "german_efficiency": "Sehr gut! (AT)"
     }
   },
   {
@@ -216,7 +216,7 @@
         "python_files": 15,
         "test_files": 5,
         "documentation_files": 3,
-        "main_packages": ["qbtmcp"]
+        "main_packages": ["rtorrent_mcp"]
       },
       "recommendations": [
         "Consider adding more comprehensive error handling",

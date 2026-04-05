@@ -1,4 +1,4 @@
-# 🔧 Troubleshooting Guide
+# Troubleshooting Guide
 
 ## Search Tools Returning Empty Results
 
@@ -26,7 +26,7 @@ The issue was **missing Python dependencies** causing silent import failures:
 - rTorrent SCGI communication unavailable
 - System monitoring and health checks non-functional
 
-## 🛠️ **Solution**
+## **Solution**
 
 ### Step 1: Fix Package Dependencies
 
@@ -58,7 +58,7 @@ python-dateutil>=2.8.2
 
 ### Step 2: Fix Missing Import
 
-Add missing `json` import to `src/qbtmcp/services/nyaa_search.py`:
+Add missing `json` import to `src/rtorrent_mcp/services/nyaa_search.py`:
 
 ```python
 import json  # ADD THIS LINE
@@ -72,7 +72,7 @@ from urllib.parse import quote_plus
 ### Step 3: Install Dependencies
 
 ```bash
-cd D:\Dev\repos\qbtmcp
+cd D:\Dev\repos\rtorrent_mcp
 pip install -r requirements.txt --upgrade
 ```
 
@@ -85,7 +85,7 @@ python -c "
 import sys
 sys.path.insert(0, 'src')
 import asyncio
-from qbtmcp.services.nyaa_search import search_nyaa_anime
+from rtorrent_mcp.services.nyaa_search import search_nyaa_anime
 
 async def test():
     results = await search_nyaa_anime('test', '720p', 'ASW')
@@ -99,7 +99,7 @@ asyncio.run(test())
 
 After installing dependencies, restart Claude Desktop to pick up the changes.
 
-## ✅ **Verification**
+## **Verification**
 
 After applying the fix, these commands should work:
 
@@ -107,14 +107,14 @@ After applying the fix, these commands should work:
 - `sandra_anime_command("get me gachiakuta latest episode")` - Finds and suggests torrents
 - `get_status()` - Shows rTorrent connection status
 
-## 🎯 **Key Learnings**
+## **Key Learnings**
 
 1. **Always check import statements** - Missing imports cause silent failures
 2. **Verify package names** - `xmlrpc-client` vs `xmlrpc3` 
 3. **Keep FastMCP updated** - Version compatibility is critical
 4. **Test dependencies explicitly** - Don't assume tools are "mocks"
 
-## 📝 **Prevention**
+## **Prevention**
 
 - Add dependency checks to CI/CD pipeline
 - Include import validation in unit tests  
@@ -124,4 +124,4 @@ After applying the fix, these commands should work:
 ---
 
 **Last Updated:** September 26, 2025  
-**Status:** ✅ Resolved - Search tools now fully functional
+**Status:** [OK] Resolved - Search tools now fully functional

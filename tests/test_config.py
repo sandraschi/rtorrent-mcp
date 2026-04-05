@@ -1,10 +1,11 @@
 """
 Tests for the RTorrent MCP configuration settings.
 """
+
 import os
 from unittest.mock import patch
 
-from qbtmcp.config.settings import Settings
+from rtorrent_mcp.config.settings import Settings
 
 
 def test_default_settings():
@@ -28,6 +29,7 @@ def test_default_settings():
     assert "720p" in test_settings.ALLOWED_RESOLUTIONS
     assert test_settings.MAX_TORRENT_SIZE_GB == 10
 
+
 def test_environment_variable_override():
     """Test that environment variables override default settings."""
     # Set up environment variables
@@ -40,7 +42,7 @@ def test_environment_variable_override():
         "LOG_LEVEL": "DEBUG",
         "ALLOWED_CATEGORIES_STR": "Anime,Music",
         "ALLOWED_RESOLUTIONS_STR": "1080p,4K",
-        "MAX_TORRENT_SIZE_GB": "20"
+        "MAX_TORRENT_SIZE_GB": "20",
     }
 
     with patch.dict(os.environ, env_vars, clear=True):
@@ -58,6 +60,7 @@ def test_environment_variable_override():
         assert "1080p" in test_settings.ALLOWED_RESOLUTIONS
         assert "4K" in test_settings.ALLOWED_RESOLUTIONS
         assert test_settings.MAX_TORRENT_SIZE_GB == 20
+
 
 def test_env_file_loading(tmp_path):
     """Test that settings can be loaded from a .env file."""
@@ -86,11 +89,12 @@ def test_env_file_loading(tmp_path):
     assert test_settings.NYAA_BASE_URL == "https://nyaa.si"
     assert test_settings.PORT == 8000
 
+
 def test_settings_singleton():
     """Test that the settings instance is a singleton."""
     # Import the settings instance
-    from qbtmcp.config.settings import settings as settings1
-    from qbtmcp.config.settings import settings as settings2
+    from rtorrent_mcp.config.settings import settings as settings1
+    from rtorrent_mcp.config.settings import settings as settings2
 
     # Verify they are the same object
     assert settings1 is settings2
@@ -102,6 +106,7 @@ def test_settings_singleton():
 
     # Clean up
     settings1.DEBUG = original_debug
+
 
 def test_invalid_settings_validation():
     """Test that invalid settings raise validation errors."""

@@ -1,7 +1,7 @@
 # rTorrent SCGI Connection Problem Report & Fix Plan
 
 **Date:** 2025-11-17  
-**Status:** ✅ RESOLVED - Using XMLRPC through nginx (port 8000)
+**Status:** [OK] RESOLVED - Using XMLRPC through nginx (port 8000)
 
 ---
 
@@ -13,7 +13,7 @@ rTorrent MCP server cannot connect to rTorrent via SCGI. The connection is being
 
 ## Current State
 
-### What Works ✅
+### What Works [OK]
 - rTorrent container is running (`rtorrent-mcp`)
 - rTorrent UI accessible on port 12222 (ruTorrent web interface)
 - rTorrent process is running inside container
@@ -22,7 +22,7 @@ rTorrent MCP server cannot connect to rTorrent via SCGI. The connection is being
 - Port 12224 (host) → 5000 (container) is mapped and listening
 - SCGI client can establish TCP connection (no more "getaddrinfo failed")
 
-### What's Broken ❌
+### What's Broken [FAIL]
 - SCGI client connects but fails to parse response
 - Error: "Unable to split response into header and body sections"
 - MCP server reports "disconnected" status
@@ -55,14 +55,14 @@ The `crazymax/rtorrent-rutorrent` Docker image:
 
 ## What We've Tried (Failed Attempts)
 
-1. ✅ Fixed `.env` port from 12222 → 12224
-2. ✅ Fixed SCGI client to use `127.0.0.1` instead of `localhost`
-3. ✅ Fixed library bug: strip `//` from host after parsing
-4. ✅ Set up socat bridge: Unix socket → TCP:5000
-5. ❌ Tried to override rTorrent config via `RTORRENT_CMD` env var
-6. ❌ Tried to modify `/etc/rtorrent/.rtlocal.rc` inside container (gets overwritten)
-7. ❌ Tried to disable Unix socket in default config (causes "SCGI already enabled" error)
-8. ❌ Tried to add TCP port to default config (causes "SCGI already enabled" error)
+1. [OK] Fixed `.env` port from 12222 → 12224
+2. [OK] Fixed SCGI client to use `127.0.0.1` instead of `localhost`
+3. [OK] Fixed library bug: strip `//` from host after parsing
+4. [OK] Set up socat bridge: Unix socket → TCP:5000
+5. [FAIL] Tried to override rTorrent config via `RTORRENT_CMD` env var
+6. [FAIL] Tried to modify `/etc/rtorrent/.rtlocal.rc` inside container (gets overwritten)
+7. [FAIL] Tried to disable Unix socket in default config (causes "SCGI already enabled" error)
+8. [FAIL] Tried to add TCP port to default config (causes "SCGI already enabled" error)
 
 ---
 
@@ -145,7 +145,7 @@ exec rtorrent -D -o import=/etc/rtorrent/.rtlocal.rc -o import=/data/rtorrent.rc
 
 ---
 
-## ✅ SOLUTION IMPLEMENTED: Use XMLRPC through nginx
+## SOLUTION IMPLEMENTED: Use XMLRPC through nginx
 
 **Final Solution:** Use the built-in XMLRPC interface through nginx (port 8000)
 

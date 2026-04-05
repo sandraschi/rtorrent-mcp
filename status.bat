@@ -10,14 +10,14 @@ echo.
 REM Check if Docker is running
 docker --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Docker is not installed or not in PATH
+    echo [FAIL] Docker is not installed or not in PATH
     pause
     exit /b 1
 )
 
 docker info >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Docker is not running
+    echo [FAIL] Docker is not running
     echo Please start Docker Desktop and try again
     pause
     exit /b 1
@@ -25,13 +25,13 @@ if %errorlevel% neq 0 (
 
 REM Check if docker-compose.yml exists
 if not exist "docker-compose.yml" (
-    echo ❌ docker-compose.yml not found
+    echo [FAIL] docker-compose.yml not found
     echo Please run install.bat first
     pause
     exit /b 1
 )
 
-echo ✅ Docker is running
+echo [OK] Docker is running
 
 REM Show container status
 echo.
@@ -41,7 +41,7 @@ docker-compose ps
 REM Check SCGI port
 echo.
 echo Testing SCGI connection...
-powershell -Command "try { $body = '<?xml version=\"1.0\"?><methodCall><methodName>system.listMethods</methodName></methodCall>'; $response = Invoke-RestMethod -Uri 'http://localhost:12224/RPC2' -Method POST -ContentType 'text/xml' -Body $body -TimeoutSec 5; if ($response -match 'system.listMethods') { Write-Host '✅ SCGI connection successful' -ForegroundColor Green } else { Write-Host '❌ SCGI connection failed' -ForegroundColor Red } } catch { Write-Host '❌ SCGI connection failed: ' $_.Exception.Message -ForegroundColor Red }"
+powershell -Command "try { $body = '<?xml version=\"1.0\"?><methodCall><methodName>system.listMethods</methodName></methodCall>'; $response = Invoke-RestMethod -Uri 'http://localhost:12224/RPC2' -Method POST -ContentType 'text/xml' -Body $body -TimeoutSec 5; if ($response -match 'system.listMethods') { Write-Host '[OK] SCGI connection successful' -ForegroundColor Green } else { Write-Host '[FAIL] SCGI connection failed' -ForegroundColor Red } } catch { Write-Host '[FAIL] SCGI connection failed: ' $_.Exception.Message -ForegroundColor Red }"
 
 REM Show recent logs
 echo.
@@ -68,11 +68,11 @@ echo ========================================
 echo   Status Check Complete!
 echo ========================================
 echo.
-echo 🌐 Access points:
+echo  Access points:
 echo    SCGI API:    http://localhost:12224/RPC2
 echo    Web UI:      http://localhost:12222 ^(ruTorrent^)
 echo.
-echo 🛠️  Management commands:
+echo [i]  Management commands:
 echo    start.bat    - Start containers
 echo    stop.bat     - Stop containers
 echo    status.bat   - Check status

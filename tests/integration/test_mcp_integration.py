@@ -12,7 +12,7 @@ from fastmcp import FastMCP
 @pytest.fixture
 def mock_settings():
     """Mock settings for tests"""
-    with patch('qbtmcp.config.settings.settings') as mock_settings:
+    with patch("rtorrent_mcp.config.settings.settings") as mock_settings:
         mock_settings.APP_NAME = "RTorrent MCP"
         mock_settings.APP_VERSION = "1.0.0"
         mock_settings.ALLOWED_CATEGORIES = ["Anime"]
@@ -23,10 +23,7 @@ def mock_settings():
 @pytest.fixture
 def mcp_server(mock_settings):
     """FastMCP server instance for integration tests"""
-    server = FastMCP(
-        name="RTorrent MCP",
-        instructions="Test server"
-    )
+    server = FastMCP(name="RTorrent MCP", instructions="Test server")
     return server
 
 
@@ -40,8 +37,8 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_tool_registration(self, mcp_server):
         """Test that tools are properly registered"""
-        from qbtmcp.services.core_tools import register_core_tools
-        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
+        from rtorrent_mcp.services.core_tools import register_core_tools
+        from rtorrent_mcp.services.rtorrent_client import register_rtorrent_tools
 
         register_core_tools(mcp_server)
         register_rtorrent_tools(mcp_server)
@@ -59,7 +56,7 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_help_tool_output(self, mcp_server):
         """Test help tool output format"""
-        from qbtmcp.services.core_tools import register_core_tools
+        from rtorrent_mcp.services.core_tools import register_core_tools
 
         register_core_tools(mcp_server)
 
@@ -68,7 +65,7 @@ class TestMCPIntegration:
         result = await help_tool.run({})
 
         # ToolResult has a content attribute with TextContent
-        assert hasattr(result, 'content')
+        assert hasattr(result, "content")
         content = result.content
         # Content is a list of TextContent objects
         assert isinstance(content, list)
@@ -84,12 +81,12 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_rtorrent_tools_with_mock(self, mcp_server):
         """Test rTorrent tools with mocked client"""
-        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
+        from rtorrent_mcp.services.rtorrent_client import register_rtorrent_tools
 
         register_rtorrent_tools(mcp_server)
 
         # Mock the client
-        with patch('qbtmcp.services.rtorrent_client.get_rtorrent_client') as mock_get_client:
+        with patch("rtorrent_mcp.services.rtorrent_client.get_rtorrent_client") as mock_get_client:
             mock_client = MagicMock()
             mock_client.get_torrents.return_value = [{"hash": "test", "name": "Test Torrent"}]
             mock_get_client.return_value = mock_client
@@ -99,7 +96,7 @@ class TestMCPIntegration:
             result = await list_tool.run({})
 
             # ToolResult has a content attribute
-            assert hasattr(result, 'content')
+            assert hasattr(result, "content")
             content = result.content
             assert isinstance(content, dict)
             assert "torrents" in content
@@ -109,7 +106,7 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_resource_registration(self, mcp_server):
         """Test resource registration"""
-        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
+        from rtorrent_mcp.services.rtorrent_client import register_rtorrent_tools
 
         register_rtorrent_tools(mcp_server)
 
@@ -121,7 +118,7 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_error_handling(self, mcp_server):
         """Test error handling in tools"""
-        from qbtmcp.services.core_tools import register_core_tools
+        from rtorrent_mcp.services.core_tools import register_core_tools
 
         register_core_tools(mcp_server)
 
@@ -129,13 +126,15 @@ class TestMCPIntegration:
         help_tool = await mcp_server.get_tool("help")
 
         # Simulate an error
-        with patch('qbtmcp.services.core_tools.logger') as mock_logger:
+        with patch("rtorrent_mcp.services.core_tools.logger") as mock_logger:
             # Force an error in help function
-            with patch('qbtmcp.services.core_tools.json.dumps', side_effect=Exception("Test error")):
+            with patch(
+                "rtorrent_mcp.services.core_tools.json.dumps", side_effect=Exception("Test error")
+            ):
                 result = await help_tool.run({})
 
                 # ToolResult has a content attribute with TextContent
-                assert hasattr(result, 'content')
+                assert hasattr(result, "content")
                 content = result.content
                 # Content is a list of TextContent objects
                 assert isinstance(content, list)
@@ -153,12 +152,12 @@ class TestAsyncIntegration:
 
     async def test_async_tool_execution(self, mcp_server):
         """Test async tool execution"""
-        from qbtmcp.services.rtorrent_client import register_rtorrent_tools
+        from rtorrent_mcp.services.rtorrent_client import register_rtorrent_tools
 
         register_rtorrent_tools(mcp_server)
 
         # Mock the async client
-        with patch('qbtmcp.services.rtorrent_client.get_rtorrent_client') as mock_get_client:
+        with patch("rtorrent_mcp.services.rtorrent_client.get_rtorrent_client") as mock_get_client:
             mock_client = MagicMock()
             mock_client.get_torrents = MagicMock(return_value=[{"hash": "test", "name": "Test"}])
             mock_get_client.return_value = mock_client
@@ -168,7 +167,7 @@ class TestAsyncIntegration:
             result = await list_tool.run({})
 
             # ToolResult has a content attribute
-            assert hasattr(result, 'content')
+            assert hasattr(result, "content")
             content = result.content
             assert isinstance(content, dict)
             assert "torrents" in content

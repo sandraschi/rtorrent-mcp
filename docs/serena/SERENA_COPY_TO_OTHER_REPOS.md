@@ -47,18 +47,18 @@ if (Test-Path ".gitignore") {
     $gitignore = Get-Content ".gitignore" -Raw
     if ($gitignore -notmatch "\.serena") {
         Add-Content ".gitignore" "`n# Serena`n.serena/`n"
-        Write-Host "✅ Added .serena/ to .gitignore" -ForegroundColor Green
+        Write-Host "[OK] Added .serena/ to .gitignore" -ForegroundColor Green
     }
 } else {
     @"
 # Serena
 .serena/
 "@ | Out-File -FilePath ".gitignore" -Encoding UTF8
-    Write-Host "✅ Created .gitignore with Serena entry" -ForegroundColor Green
+    Write-Host "[OK] Created .gitignore with Serena entry" -ForegroundColor Green
 }
 
 # Success message
-Write-Host "`n✅ Serena configured for: $projectPath" -ForegroundColor Green
+Write-Host "`n[OK] Serena configured for: $projectPath" -ForegroundColor Green
 Write-Host "`nNext steps:" -ForegroundColor Cyan
 Write-Host "1. Restart Cursor" -ForegroundColor Yellow
 Write-Host "2. Say: '@Composer Run onboarding'" -ForegroundColor Yellow
@@ -92,20 +92,20 @@ Set-Location "D:\Dev\repos\<repo-name>"
 
 ---
 
-## 📊 **Which Repos Benefit Most?**
+## [stat] **Which Repos Benefit Most?**
 
 **Best candidates** for Serena:
 
-✅ **Large projects** (1,000+ lines)  
-✅ **Multi-file codebases**  
-✅ **Complex relationships** (classes, imports)  
-✅ **Active development** (frequent navigation needed)  
-✅ **Python, TypeScript, Rust, Go** (best LSP support)  
+[OK] **Large projects** (1,000+ lines)  
+[OK] **Multi-file codebases**  
+[OK] **Complex relationships** (classes, imports)  
+[OK] **Active development** (frequent navigation needed)  
+[OK] **Python, TypeScript, Rust, Go** (best LSP support)  
 
 **Skip for**:
-❌ Single-file scripts  
-❌ Very small projects (<100 lines)  
-❌ Pure data/config repos  
+[NO] Single-file scripts  
+[NO] Very small projects (<100 lines)  
+[NO] Pure data/config repos  
 
 ---
 

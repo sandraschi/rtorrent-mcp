@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from qbtmcp.services.rtorrent_client import RTorrentClient, get_rtorrent_client
+from rtorrent_mcp.services.rtorrent_client import RTorrentClient, get_rtorrent_client
 
 
 @pytest.fixture
@@ -49,6 +49,7 @@ class TestRTorrentClient:
 
     def test_get_torrents(self, client, mock_server):
         """Test getting torrents list"""
+
         async def test_get_torrents():
             torrents = await client.get_torrents()
             assert len(torrents) == 2
@@ -73,6 +74,7 @@ class TestRTorrentClient:
 
     def test_pause_torrent(self, client, mock_server):
         """Test pausing torrent"""
+
         async def test_pause_torrent():
             result = await client.pause_torrent("hash1")
             assert result["status"] == "success"
@@ -83,6 +85,7 @@ class TestRTorrentClient:
 
     def test_resume_torrent(self, client, mock_server):
         """Test resuming torrent"""
+
         async def test_resume_torrent():
             result = await client.resume_torrent("hash1")
             assert result["status"] == "success"
@@ -93,6 +96,7 @@ class TestRTorrentClient:
 
     def test_delete_torrent(self, client, mock_server):
         """Test deleting torrent"""
+
         async def test_delete_torrent():
             result = await client.delete_torrent("hash1", delete_files=False)
             assert result["status"] == "success"
@@ -108,6 +112,7 @@ class TestRTorrentClientSingleton:
 
     def test_get_client_singleton(self):
         """Test that get_rtorrent_client returns singleton"""
+
         async def test_singleton():
             client1 = await get_rtorrent_client()
             client2 = await get_rtorrent_client()

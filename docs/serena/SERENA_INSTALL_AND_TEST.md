@@ -275,7 +275,7 @@ Cursor Composer: "Use Serena to find all functions that handle user authenticati
 
 ---
 
-## 📊 Dashboard Access
+## [stat] Dashboard Access
 
 Serena runs a local dashboard:
 
@@ -467,16 +467,16 @@ Track these to evaluate Serena's value:
 ### Decision Criteria:
 
 **Keep Serena If:**
-- ✅ Token savings >50% on large projects
-- ✅ Dashboard provides useful insights
-- ✅ Faster navigation than manual file reading
-- ✅ No performance/stability issues
+- [OK] Token savings >50% on large projects
+- [OK] Dashboard provides useful insights
+- [OK] Faster navigation than manual file reading
+- [OK] No performance/stability issues
 
 **Remove Serena If:**
-- ❌ Token savings <30%
-- ❌ Constant crashes or slow performance
-- ❌ Dashboard is useless
-- ❌ More hassle than benefit
+- [NO] Token savings <30%
+- [NO] Constant crashes or slow performance
+- [NO] Dashboard is useless
+- [NO] More hassle than benefit
 
 ---
 
@@ -535,18 +535,18 @@ Track these to evaluate Serena's value:
 **Is Serena Worth It?**
 
 **Pros:**
-- ✅ Completely FREE (no hidden paid tier)
-- ✅ 13.8K stars, active community
-- ✅ Real 70% token savings reported
-- ✅ Dashboard is genuinely interesting
-- ✅ Works with Claude's free tier
-- ✅ German founders (Sandra likes supporting EU tech)
+- [OK] Completely FREE (no hidden paid tier)
+- [OK] 13.8K stars, active community
+- [OK] Real 70% token savings reported
+- [OK] Dashboard is genuinely interesting
+- [OK] Works with Claude's free tier
+- [OK] German founders (Sandra likes supporting EU tech)
 
 **Cons:**
-- ⚠️ Requires `uv` dependency
-- ⚠️ Setup is manual (not one-click)
-- ⚠️ Best for large projects (overkill for small ones)
-- ⚠️ Still new (April 2025 release)
+- [WARN] Requires `uv` dependency
+- [WARN] Setup is manual (not one-click)
+- [WARN] Best for large projects (overkill for small ones)
+- [WARN] Still new (April 2025 release)
 
 **Recommendation for Sandra:**
 

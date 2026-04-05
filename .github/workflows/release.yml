@@ -96,23 +96,23 @@ jobs:
           tag_name: ${{ steps.version.outputs.version }}
           name: RTorrent MCP Server ${{ steps.version.outputs.version }}
           body: |
-            ## 🚀 RTorrent MCP Server ${{ steps.version.outputs.version }}
+            ## RTorrent MCP Server ${{ steps.version.outputs.version }}
             
-            ### 📦 Downloads
+            ###  Downloads
             - **MCPB Package**: `rtorrent-mcp.mcpb` - Drag to Claude Desktop
             - **Python Wheel**: `rtorrent_mcp-${{ steps.version.outputs.version_number }}-py3-none-any.whl`
             - **Source Distribution**: `rtorrent-mcp-${{ steps.version.outputs.version_number }}.tar.gz`
             
-            ### 🔧 Installation
+            ### Installation
             1. Download the `.mcpb` file
             2. Drag it to Claude Desktop
             3. Configure rTorrent connection (localhost:5000)
             4. Restart Claude Desktop
             
-            ### 📋 What's New
+            ### What's New
             ${{ steps.changelog.outputs.changelog }}
             
-            ### 🔗 Links
+            ###  Links
             - [Documentation](https://github.com/${{ github.repository }}/blob/main/README.md)
             - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
             - [Issues](https://github.com/${{ github.repository }}/issues)

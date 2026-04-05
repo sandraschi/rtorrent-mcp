@@ -1,14 +1,14 @@
-## 📝 Pull Request Description
+## Pull Request Description
 
-### 🎯 What does this PR do?
+### What does this PR do?
 
 [Brief description of the changes made in this PR]
 
-### 🔍 Context
+### Context
 
 [Why is this change needed? What problem does it solve?]
 
-### 🛠️ Changes Made
+### Changes Made
 
 #### Files Changed:
 - `file1.py` - [brief description]
@@ -20,7 +20,7 @@
 - [Include any breaking changes]
 - [Mention any new dependencies]
 
-### ✅ Testing
+### Testing
 
 #### Test Coverage:
 - [ ] Unit tests added/updated
@@ -32,30 +32,30 @@
 [Paste test output or coverage results here]
 ```
 
-### 🔒 Security Considerations
+### Security Considerations
 
 - [ ] No sensitive data exposed
 - [ ] Dependencies vetted for security
 - [ ] No hardcoded secrets
 - [ ] Input validation added where needed
 
-### 📚 Documentation
+### Documentation
 
 - [ ] README updated (if needed)
 - [ ] Code comments added
 - [ ] API documentation updated
 - [ ] Migration guide added (for breaking changes)
 
-### 🚀 Deployment Notes
+### Deployment Notes
 
 [Special deployment instructions, environment variables, or configuration changes needed]
 
-### 🔗 Related Issues
+### Related Issues
 
 Closes #[issue number]
 Related to #[issue number]
 
-### 📋 Checklist
+### Checklist
 
 - [ ] Code follows project style guidelines
 - [ ] All tests pass locally
@@ -64,16 +64,16 @@ Related to #[issue number]
 - [ ] Self-review completed
 - [ ] Ready for review
 
-### 📸 Screenshots/Examples (if applicable)
+### Screenshots/Examples (if applicable)
 
 [Add screenshots, examples, or before/after comparisons]
 
 ---
 
-## 🤔 Review Notes
+## Review Notes
 
 [Anything specific you'd like reviewers to focus on]
 
 ---
 
-**Thank you for contributing to RTorrent MCP Server! 🎉**
+**Thank you for contributing to RTorrent MCP Server! **

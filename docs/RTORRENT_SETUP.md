@@ -1,10 +1,163 @@
 # rTorrent Installation & Configuration Guide
 
-**Complete guide for installing and configuring rTorrent with SCGI support for the RTorrent MCP Server**
+**Complete guide for installing and configuring rTorrent with SCGI support for the rTorrent MCP Server**
 
 ---
 
-## 📋 Table of Contents
+## TL;DR - Quick Start with Docker (Recommended)
+
+**We use [crazymax/rtorrent-rutorrent](https://github.com/crazy-max/docker-rtorrent-rutorrent) Docker image.**
+
+This is the recommended setup - provides rTorrent + ruTorrent WebUI + nginx XMLRPC proxy all in one.
+
+```bash
+# 1. Clone the repo (if not already)
+cd D:\Dev\repos\rtorrent-mcp
+
+# 2. Start rTorrent in Docker
+docker-compose up -d
+
+# 3. Verify it's running
+docker logs rtorrent-mcp
+
+# 4. Test XMLRPC connection (what MCP server uses)
+curl -X POST http://localhost:12224/RPC2 -H "Content-Type: text/xml" \
+  -d "<?xml version='1.0'?><methodCall><methodName>system.client_version</methodName></methodCall>"
+```
+
+**Access Points:**
+| Service | URL | Description |
+|---------|-----|-------------|
+| **XMLRPC** | `http://localhost:12224/RPC2` | MCP server connects here |
+| **ruTorrent WebUI** | `http://localhost:12222` | Visual torrent management |
+| **Downloads** | `%USERPROFILE%\Downloads\rtorrent` | Downloaded files |
+
+**How it works:**
+```
+MCP Server → HTTP/XMLRPC (port 12224) → nginx → Unix Socket → rTorrent
+```
+
+The `docker-compose.yml` in the repo root is pre-configured for this setup.
+
+---
+
+## Bundled ruTorrent Plugins (crazymax/rtorrent-rutorrent)
+
+The image ships ruTorrent with many plugins enabled by default; see the [upstream image docs](https://github.com/crazy-max/docker-rtorrent-rutorrent) for the current list.
+
+### Core Plugins (Always Available)
+
+| Plugin | Purpose | MCP Integration |
+|--------|---------|-----------------|
+| **_task** | Background task scheduler for ruTorrent | Could trigger MCP workflows |
+| **autotools** | Auto-label, auto-move, auto-watch downloads | * Anime auto-categorization |
+| **cpuload** | CPU usage monitoring display | System monitoring |
+| **create** | Create .torrent files from local data | - |
+| **datadir** | Change torrent data directory | File management |
+| **diskspace** | Disk space monitoring and alerts | * MCP can monitor |
+| **edit** | Edit torrent trackers in-place | - |
+| **erasedata** | Delete torrent + associated data | Cleanup operations |
+| **extsearch** | External search engine integration | ** Add Nyaa.si! |
+| **feeds** | RSS/Atom feed management | ** Auto-anime feeds |
+| **geoip** | Peer geolocation display | Analytics |
+| **history** | Download history tracking | * MCP analytics |
+| **httprpc** | HTTP RPC interface | Core MCP communication |
+| **ipad** | iPad/mobile-optimized interface | - |
+| **ratio** | Upload/download ratio management | * Seeding compliance |
+| **retrackers** | Automatic tracker addition | - |
+| **rss** | RSS auto-download rules | *** KEY for anime automation! |
+| **rutracker_check** | Rutracker integration | - |
+| **scheduler** | Download time scheduling | ** Night downloads |
+| **screenshots** | Video screenshot extraction | Media preview |
+| **seedingtime** | Track seeding duration | * Ratio management |
+| **source** | Show torrent source info | - |
+| **theme** | Theme/skin support | UI customization |
+| **throttle** | Per-torrent speed throttling | * Bandwidth control |
+| **tracklabels** | Auto-label by tracker | * Organize by source |
+| **trafic** | Traffic graphs and statistics | Analytics |
+| **unpack** | Auto-extract RAR/ZIP archives | ** Post-processing! |
+
+### Key Plugins for Anime Automation 
+
+**RSS Plugin** - The bread and butter:
+```
+./config/rutorrent/plugins-conf/rss.conf.php
+```
+- Monitor SubsPlease, ASW, Erai-raws release feeds
+- Auto-match by regex patterns
+- Quality filtering (1080p preferred)
+
+**Autotools Plugin** - Automatic organization:
+```
+./config/rutorrent/plugins-conf/autotools.conf.php
+```
+- Auto-move completed anime to Plex library
+- Auto-label by release group
+- Auto-watch folders for .torrent drops
+
+**Scheduler Plugin** - Austrian-friendly timing:
+```
+./config/rutorrent/plugins-conf/scheduler.conf.php
+```
+- Download during off-peak hours
+- Pause during business hours
+- Maximize seeding at night
+
+### Plugin Configuration Location
+
+```
+./config/rutorrent/
+├── conf/
+│   └── plugins.ini          ← Enable/disable plugins
+├── plugins/                  ← Custom/third-party plugins (add here)
+├── plugins-conf/             ← Plugin configuration overrides
+│   ├── rss.conf.php
+│   ├── autotools.conf.php
+│   └── {plugin}.conf.php
+└── themes/                   ← Custom UI themes
+```
+
+### Adding Third-Party Plugins
+
+Popular additions for anime:
+
+| Plugin | Source | Purpose |
+|--------|--------|---------|
+| **autodl-irssi** | github.com/autodl-community/autodl-rutorrent | *** IRC announce monitoring - instant anime grabs! |
+| **filemanager** | github.com/nelu/rutorrent-thirdparty-plugins | File operations |
+| **mediainfo** | Novik/ruTorrent contrib | Media file metadata |
+| **mobile** | Novik/ruTorrent contrib | Better mobile UI |
+
+**Installation:**
+```powershell
+# Example: Add autodl-irssi
+cd D:\Dev\repos\rtorrent-mcp\config\rutorrent\plugins
+git clone https://github.com/autodl-community/autodl-rutorrent autodl-irssi
+
+# Restart container
+docker-compose restart
+```
+
+### Disabling Unwanted Plugins
+
+Use the `RU_REMOVE_CORE_PLUGINS` environment variable in `docker-compose.yml`:
+```yaml
+environment:
+  - RU_REMOVE_CORE_PLUGINS=ipad,rutracker_check
+```
+
+Or edit `./config/rutorrent/conf/plugins.ini`:
+```ini
+[ipad]
+enabled = no
+
+[rutracker_check]
+enabled = no
+```
+
+---
+
+## Table of Contents
 
 1. [Overview](#overview)
 2. [System Requirements](#system-requirements)
@@ -19,7 +172,7 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 rTorrent is a lightweight, high-performance BitTorrent client that supports SCGI (Simple Common Gateway Interface) for remote control. This guide covers installation, configuration, and optimization for use with the RTorrent MCP Server.
 
@@ -32,7 +185,7 @@ rTorrent is a lightweight, high-performance BitTorrent client that supports SCGI
 
 ---
 
-## 💻 System Requirements
+## System Requirements
 
 ### Minimum Requirements
 
@@ -51,7 +204,7 @@ rTorrent is a lightweight, high-performance BitTorrent client that supports SCGI
 
 ---
 
-## 🚀 Installation by Platform
+## Installation by Platform
 
 ### Linux (Ubuntu/Debian)
 
@@ -326,7 +479,7 @@ nssm start rTorrent
 
 ---
 
-## ⚙️ SCGI/XMLRPC Configuration
+## SCGI/XMLRPC Configuration
 
 ### Docker Setup (crazymax/rtorrent-rutorrent)
 
@@ -413,7 +566,7 @@ EOF
 
 ---
 
-## 🔧 Service Management
+## Service Management
 
 ### Systemd Service (Linux)
 
@@ -518,7 +671,7 @@ nssm start rTorrent
 
 ---
 
-## ✅ Verification & Testing
+## Verification & Testing
 
 ### Basic Connection Test
 
@@ -533,12 +686,12 @@ curl -X POST -H "Content-Type: text/xml" \
 
 ```bash
 # Test with MCP server
-python -m qbtmcp.server --transport stdio
+python -m rtorrent_mcp.server --transport stdio
 
 # In another terminal, test connection
 python -c "
 import asyncio
-from src.qbtmcp.services.qbittorrent_client import RTorrentClient
+from src.rtorrent_mcp.services.qbittorrent_client import RTorrentClient
 
 async def test():
     client = RTorrentClient()
@@ -563,21 +716,21 @@ Create a health check script:
 RTORRENT_HOST="localhost"
 RTORRENT_PORT="5000"
 
-echo "🔍 Checking rTorrent health..."
+echo " Checking rTorrent health..."
 
 # Check if process is running
 if pgrep -x "rtorrent" > /dev/null; then
-    echo "✅ rTorrent process is running"
+    echo "[OK] rTorrent process is running"
 else
-    echo "❌ rTorrent process is not running"
+    echo "[FAIL] rTorrent process is not running"
     exit 1
 fi
 
 # Check SCGI port
 if nc -z $RTORRENT_HOST $RTORRENT_PORT; then
-    echo "✅ SCGI port $RTORRENT_PORT is open"
+    echo "[OK] SCGI port $RTORRENT_PORT is open"
 else
-    echo "❌ SCGI port $RTORRENT_PORT is not accessible"
+    echo "[FAIL] SCGI port $RTORRENT_PORT is not accessible"
     exit 1
 fi
 
@@ -587,18 +740,18 @@ RESPONSE=$(curl -s -X POST -H "Content-Type: text/xml" \
   http://$RTORRENT_HOST:$RTORRENT_PORT/RPC2)
 
 if echo "$RESPONSE" | grep -q "system.listMethods"; then
-    echo "✅ XML-RPC connection successful"
+    echo "[OK] XML-RPC connection successful"
 else
-    echo "❌ XML-RPC connection failed"
+    echo "[FAIL] XML-RPC connection failed"
     exit 1
 fi
 
-echo "🎉 rTorrent is healthy and ready for MCP server!"
+echo " rTorrent is healthy and ready for MCP server!"
 ```
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -692,7 +845,7 @@ grep -i "scgi\|xmlrpc" ~/.rtorrent/rtorrent.log
 
 ---
 
-## 🛡️ Security Considerations
+## Security Considerations
 
 ### Network Security
 
@@ -726,7 +879,7 @@ sudo chown -R rtorrent:rtorrent /home/rtorrent
 
 ---
 
-## ⚡ Performance Tuning
+## Performance Tuning
 
 ### System Limits
 
@@ -770,7 +923,7 @@ system.method.set_key = event.download.inserted_new, quality_check, "execute.thr
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 ### Official Documentation
 
@@ -786,17 +939,17 @@ system.method.set_key = event.download.inserted_new, quality_check, "execute.thr
 
 ### Support
 
-- [GitHub Issues](https://github.com/sandraschi/qbtmcp/issues)
+- [GitHub Issues](https://github.com/sandraschi/rtorrent-mcp/issues)
 - [Discord Community](https://discord.gg/rtorrent)
 - [Reddit rTorrent](https://www.reddit.com/r/rtorrent/)
 
 ---
 
-## 🎯 Next Steps
+## Next Steps
 
 After completing rTorrent installation and configuration:
 
-1. **Test the MCP Server**: Run `python -m qbtmcp.server --transport stdio`
+1. **Test the MCP Server**: Run `python -m rtorrent_mcp.server --transport stdio`
 2. **Configure Claude Desktop**: Add the MCP server to your configuration
 3. **Test Anime Search**: Try searching for anime using natural language
 4. **Monitor Performance**: Use the system status tools to monitor health
@@ -804,6 +957,6 @@ After completing rTorrent installation and configuration:
 
 ---
 
-**Made with ❤️ in Vienna, Austria 🇦🇹**
+**Made with  in Vienna, Austria (AT)**
 
 *For Austrian anime enthusiasts who value both quality and legal compliance.*

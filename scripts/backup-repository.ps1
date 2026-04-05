@@ -1,19 +1,18 @@
 #!/usr/bin/env pwsh
 # qBTMCP Repository Backup Script
-# 
-# This script creates automated backups of the qBTMCP repository
+# # This script creates automated backups of the qBTMCP repository
 # following the 3-2-1 backup rule and GFS (Grandfather-Father-Son) strategy
 #
 # Usage:
-#   .\scripts\backup-repository.ps1 [-BackupPath <path>] [-RetentionDays <days>] [-CompressionLevel <0-9>]
+# .\scripts\backup-repository.ps1 [-BackupPath <path>] [-RetentionDays <days>] [-CompressionLevel <0-9>]
 #
 # Parameters:
-#   -BackupPath: Destination path for backups (default: D:\Backups\qbtmcp)
-#   -RetentionDays: Number of days to keep backups (default: 30)
-#   -CompressionLevel: Compression level 0-9 (default: 7)
+# -BackupPath: Destination path for backups (default: D:\Backups\rtorrent_mcp)
+# -RetentionDays: Number of days to keep backups (default: 30)
+# -CompressionLevel: Compression level 0-9 (default: 7)
 
 param(
-    [string]$BackupPath = "D:\Backups\qbtmcp",
+    [string]$BackupPath = "D:\Backups\rtorrent_mcp",
     [int]$RetentionDays = 30,
     [int]$CompressionLevel = 7,
     [switch]$CreateScheduledTask,
@@ -29,7 +28,7 @@ Usage:
     .\scripts\backup-repository.ps1 [options]
 
 Options:
-    -BackupPath <path>        Destination path for backups (default: D:\Backups\qbtmcp)
+    -BackupPath <path>        Destination path for backups (default: D:\Backups\rtorrent_mcp)
     -RetentionDays <days>     Number of days to keep backups (default: 30)
     -CompressionLevel <0-9>   Compression level 0-9 (default: 7)
     -CreateScheduledTask      Create a Windows scheduled task for daily backups
@@ -64,7 +63,7 @@ if (-not (Test-Path $BackupPath)) {
 
 # Generate backup filename with timestamp
 $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$BackupFile = "$BackupPath\qbtmcp_backup_$Timestamp.zip"
+$BackupFile = "$BackupPath\rtorrent_mcp_backup_$Timestamp.zip"
 
 Write-Host "Starting qBTMCP repository backup..." -ForegroundColor Green
 Write-Host "Repository: $RepoRoot" -ForegroundColor Cyan
@@ -76,7 +75,7 @@ try {
     Write-Host "Creating backup archive..." -ForegroundColor Yellow
     
     # Create temporary directory for backup contents
-    $TempDir = "$env:TEMP\qbtmcp_backup_$Timestamp"
+    $TempDir = "$env:TEMP\rtorrent_mcp_backup_$Timestamp"
     New-Item -ItemType Directory -Force -Path $TempDir | Out-Null
     
     try {
@@ -131,7 +130,7 @@ try {
     # Clean up old backups based on retention policy
     Write-Host "Cleaning up old backups..." -ForegroundColor Yellow
     
-    $OldBackups = Get-ChildItem -Path $BackupPath -Filter "qbtmcp_backup_*.zip" | 
+    $OldBackups = Get-ChildItem -Path $BackupPath -Filter "rtorrent_mcp_backup_*.zip" | 
         Sort-Object CreationTime -Descending | 
         Select-Object -Skip $RetentionDays
     

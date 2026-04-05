@@ -11,7 +11,7 @@ REM Check if Docker is running
 echo [1/3] Checking Docker installation...
 docker --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Docker is not installed or not in PATH
+    echo [FAIL] Docker is not installed or not in PATH
     echo Please install Docker Desktop for Windows first
     pause
     exit /b 1
@@ -19,20 +19,20 @@ if %errorlevel% neq 0 (
 
 docker info >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Docker is not running
+    echo [FAIL] Docker is not running
     echo Please start Docker Desktop and try again
     pause
     exit /b 1
 )
 
-echo ✅ Docker is running
+echo [OK] Docker is running
 
 REM Stop and remove containers
 echo.
 echo [2/3] Stopping and removing containers...
 docker-compose down
 if %errorlevel% neq 0 (
-    echo ⚠️  Some containers may not have been running
+    echo [WARN]  Some containers may not have been running
 )
 
 REM Remove Docker images (optional)
@@ -44,9 +44,9 @@ if /i "%remove_images%"=="Y" (
     echo Removing Docker images...
     docker rmi linuxserver/rtorrent:latest 2>nul
     docker rmi linuxserver/rutorrent:latest 2>nul
-    echo ✅ Docker images removed
+    echo [OK] Docker images removed
 ) else (
-    echo ✅ Docker images kept
+    echo [OK] Docker images kept
 )
 
 REM Ask about data removal
@@ -61,10 +61,10 @@ if /i "%remove_data%"=="Y" (
     if exist "watch" rmdir /s /q "watch"
     if exist "logs" rmdir /s /q "logs"
     if exist ".env" del ".env"
-    echo ✅ Project data removed
+    echo [OK] Project data removed
 ) else (
     echo [3/3] Keeping project data...
-    echo ✅ Project data preserved
+    echo [OK] Project data preserved
 )
 
 echo.
@@ -72,7 +72,7 @@ echo ========================================
 echo   Uninstall Complete!
 echo ========================================
 echo.
-echo 🗑️  Removed:
+echo [i]  Removed:
 echo    - Docker containers
 if /i "%remove_images%"=="Y" (
     echo    - Docker images
@@ -83,7 +83,7 @@ if /i "%remove_data%"=="Y" (
     echo    - Project data preserved
 )
 echo.
-echo 📁 Remaining files:
+echo  Remaining files:
 echo    - docker-compose.yml
 echo    - install.bat
 echo    - uninstall.bat

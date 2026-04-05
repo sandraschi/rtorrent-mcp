@@ -1,6 +1,6 @@
 # qBTMCP Server - Additional Tool Ideas
 
-## 🎯 **Torrent Management Tools**
+## **Torrent Management Tools**
 
 ### **Advanced Torrent Control**
 - `pause_all_torrents` - Pause all active torrents
@@ -17,7 +17,7 @@
 - `bandwidth_scheduler` - Set different speed limits for different times of day
 - `disk_space_monitor` - Monitor disk space and pause torrents when low
 
-## 📊 **Analytics & Monitoring Tools**
+## **Analytics & Monitoring Tools**
 
 ### **Performance Tracking**
 - `download_stats` - Get detailed download statistics (speed, ETA, etc.)
@@ -31,7 +31,7 @@
 - `export_torrent_list` - Export torrent list to CSV/JSON
 - `backup_torrent_config` - Backup torrent client configuration
 
-## 🔍 **Enhanced Search & Discovery**
+## **Enhanced Search & Discovery**
 
 ### **Smart Search**
 - `search_by_category` - Search torrents by category (movies, TV, games, etc.)
@@ -45,7 +45,7 @@
 - `duplicate_detector` - Find and manage duplicate torrents
 - `quality_upgrader` - Find higher quality versions of existing downloads
 
-## 🎬 **Media-Specific Tools**
+## **Media-Specific Tools**
 
 ### **TV Show Management**
 - `track_tv_series` - Track multiple TV series with episode management
@@ -58,7 +58,7 @@
 - `quality_preference_manager` - Set quality preferences (1080p, 4K, etc.)
 - `release_group_tracker` - Track preferred release groups
 
-## 🔧 **System Integration Tools**
+## **System Integration Tools**
 
 ### **File System**
 - `cleanup_incomplete` - Clean up incomplete downloads
@@ -72,7 +72,7 @@
 - `proxy_config` - Configure proxy settings
 - `vpn_status` - Check VPN connection status
 
-## 🤖 **AI-Powered Features**
+## **AI-Powered Features**
 
 ### **Smart Recommendations**
 - `ai_content_suggestions` - AI-powered content recommendations
@@ -80,7 +80,7 @@
 - `quality_assessment` - AI assessment of torrent quality
 - `malware_detection` - AI-powered malware detection in torrents
 
-## 📱 **Notification & Alerts**
+## **Notification & Alerts**
 
 ### **Smart Notifications**
 - `download_complete_alert` - Alert when downloads complete
@@ -88,7 +88,7 @@
 - `storage_warning` - Alert when storage is getting full
 - `new_episode_notification` - Notify when new episodes are available
 
-## 🔒 **Security & Privacy**
+## **Security & Privacy**
 
 ### **Privacy Tools**
 - `ip_leak_test` - Test for IP leaks
@@ -96,7 +96,7 @@
 - `anonymous_mode` - Enable anonymous mode settings
 - `traffic_encryption` - Configure traffic encryption
 
-## 🎮 **Gaming-Specific**
+## **Gaming-Specific**
 
 ### **Game Management**
 - `game_launcher` - Launch downloaded games
@@ -104,7 +104,7 @@
 - `mod_manager` - Manage game mods and DLC
 - `save_backup` - Backup game saves
 
-## 📚 **Educational Content**
+## **Educational Content**
 
 ### **Learning Management**
 - `course_tracker` - Track educational courses

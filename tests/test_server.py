@@ -1,38 +1,41 @@
 """
 Tests for the RTorrent MCP server implementation.
 """
+
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from qbtmcp.server import RTorrentMCPServer
+from rtorrent_mcp.config.settings import Settings
+from rtorrent_mcp.server import RTorrentMCPServer
 
 
-def test_server_initialization(mock_os_environ, mock_rtorrent_client):
-    """Test that the server initializes correctly."""
-    # Set up test environment
-    mock_os_environ.update({
-        "RTORRENT_HOST": "test-rtorrent",
-        "RTORRENT_PORT": "8080",
-        "RTORRENT_PATH": "/test/path",
-        "NYAA_BASE_URL": "http://test-nyaa"
-    })
+def test_server_initialization(mock_rtorrent_client):
+    """Test that the server initializes and binds ``settings`` correctly.
 
-    # Create and initialize server
-    server = RTorrentMCPServer()
+    The global ``settings`` singleton is built at import time from ``.env``/env,
+    so tests must patch ``rtorrent_mcp.server.settings`` to assert custom values.
+    """
+    custom_settings = Settings(
+        RTORRENT_HOST="test-rtorrent",
+        RTORRENT_PORT=8080,
+        RTORRENT_PATH="/test/path",
+        NYAA_BASE_URL="http://test-nyaa",
+    )
 
-    # Verify server properties
+    with patch("rtorrent_mcp.server.settings", custom_settings):
+        server = RTorrentMCPServer()
+
     assert server._settings.APP_NAME == "RTorrent MCP"
     assert server._settings.APP_VERSION == "1.0.0"
     assert "RTorrent automation" in server._settings.APP_DESCRIPTION
 
-    # Verify settings were loaded correctly (environment variables should override defaults)
-    # Note: Environment variables are loaded at import time, so we need to check the actual values
     assert server._settings.RTORRENT_HOST == "test-rtorrent"
     assert server._settings.RTORRENT_PORT == 8080
     assert server._settings.RTORRENT_PATH == "/test/path"
     assert server._settings.NYAA_BASE_URL == "http://test-nyaa"
+
 
 @pytest.mark.asyncio
 async def test_server_setup(mcp_server, caplog):
@@ -45,6 +48,7 @@ async def test_server_setup(mcp_server, caplog):
 
     # Verify setup was called
     mcp_server.setup.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_server_run(mcp_server):
@@ -61,43 +65,40 @@ async def test_server_run(mcp_server):
     # Verify run was called with the correct transport
     mcp_server.run.assert_awaited_once_with(transport="stdio")
 
-def test_main_function(capsys, mock_os_environ, monkeypatch):
-    """Test the main function with command line arguments."""
-    # Mock command line arguments
+
+def test_main_function(mock_os_environ, monkeypatch):
+    """Test the main function with HTTP transport (uses ``run_server_async``, not ``.run``)."""
     test_args = ["--config", "test.env", "--transport", "http"]
-    monkeypatch.setattr('sys.argv', ['server.py'] + test_args)
+    monkeypatch.setattr("sys.argv", ["server.py"] + test_args)
 
-    # Mock the server class
     mock_server = MagicMock()
-    with patch('qbtmcp.server.RTorrentMCPServer', return_value=mock_server):
-        # Import here to apply monkeypatch
-        from qbtmcp.server import main
+    with patch("rtorrent_mcp.server.RTorrentMCPServer", return_value=mock_server):
+        with patch(
+            "rtorrent_mcp.server.run_server_async", new_callable=AsyncMock
+        ) as mock_run_async:
+            from rtorrent_mcp.server import RTorrentMCPServer, main
 
-        # Run the main function
-        main()
+            main()
 
-        # Verify the server was created with the correct config path
-        from qbtmcp.server import RTorrentMCPServer
-        RTorrentMCPServer.assert_called_once_with(config_path="test.env")
+            RTorrentMCPServer.assert_called_once_with(config_path="test.env")
+            mock_server.setup.assert_called_once()
+            mock_run_async.assert_awaited_once()
 
-        # Verify setup and run were called
-        mock_server.setup.assert_called_once()
-        mock_server.run.assert_called_once()
 
 def test_server_error_handling(capsys, mock_os_environ, monkeypatch):
     """Test error handling in the main function."""
     # Mock command line arguments
     test_args = ["--config", "nonexistent.env"]
-    monkeypatch.setattr('sys.argv', ['server.py'] + test_args)
+    monkeypatch.setattr("sys.argv", ["server.py"] + test_args)
 
     # Mock the server to raise an exception
-    with patch('qbtmcp.server.RTorrentMCPServer') as mock_server_class:
+    with patch("rtorrent_mcp.server.RTorrentMCPServer") as mock_server_class:
         mock_server = MagicMock()
         mock_server.setup.side_effect = Exception("Test error")
         mock_server_class.return_value = mock_server
 
         # Import here to apply monkeypatch
-        from qbtmcp.server import main
+        from rtorrent_mcp.server import main
 
         # Run the main function and check exit code
         with pytest.raises(SystemExit) as excinfo:

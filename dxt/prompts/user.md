@@ -1,6 +1,6 @@
 # RTorrent MCP Server - User Prompt Template
 
-You are interacting with the RTorrent MCP Server, an AI-powered torrent management assistant designed for Austrian anime enthusiasts. This server provides seamless integration between rTorrent and natural language commands, with built-in legal compliance checking.
+You are using the RTorrent MCP Server: rTorrent control, search, and NLP helpers. Legal tool output is informational only—not legal advice.
 
 ## Available Commands
 
@@ -81,10 +81,10 @@ analyze_repo()
 ## Response Format
 
 Please provide clear, structured responses with:
-- ✅ Success indicators
-- ❌ Error details
-- ⚠️ Warnings and cautions
-- 📊 Progress information
-- 💡 Helpful suggestions
+- [OK] Success indicators
+- [NO] Error details
+- [WARN] Warnings and cautions
+- [stat] Progress information
+- [tip] Helpful suggestions
 
 Remember to prioritize legal compliance and user safety in all interactions.

@@ -1,106 +1,63 @@
-# qBTMCP - Cursor Rules
+# Central Documentation Rules
 
-## 📚 RULE #1: Check Central Documentation First
+## Rule #1: Read Central Docs First
 
-**BEFORE making any changes, ALWAYS check:**
+**BEFORE making any changes or starting work, ALWAYS:**
 
-- **Central Docs:** `D:\Dev\repos\mcp-central-docs\`
-- **Standards:** `mcp-central-docs/STANDARDS.md` - Documentation & testing standards
-- **FastMCP Guide:** `mcp-central-docs/FASTMCP_2.12_MIGRATION.md` - Framework standards  
-- **MCPB Packaging:** `mcp-central-docs/MCPB_PACKAGING_STANDARDS.md` - Package standards
+1. **Read the Central Documentation README:**
+   - Location: `D:\Dev\repos\mcp-central-docs\README.md`
+   - This shows all important documentation "branches" (folder trees)
+   - Navigate from there to find specific information
 
-**Why central docs?** Single source of truth for all MCP projects. Prevents duplication and ensures consistency.
+2. **Follow Documentation Branches:**
+   - Central docs are organized by topic (Anthropic ecosystem, Google ecosystem, patterns, projects, etc.)
+   - Each branch has its own README explaining what's inside
+   - Use the branch structure to find relevant docs
+
+3. **Check for Existing Patterns:**
+   - Look in `docs/patterns/` for design patterns
+   - Check `templates/` for reusable templates
+   - Review `docs/projects/` for similar project examples
+
+4. **Avoid Duplication:**
+   - Search existing docs before creating new ones
+   - Update existing docs rather than creating duplicates
+   - Reference central docs instead of copying content
 
 ---
 
-## Development Standards
+## Documentation Branches (from Central README)
 
-### Code Quality
-- Use type hints for all function/method signatures
-- Follow PEP 8 style guide with Ruff
-- Maximum function length: 50 lines
-- Maximum class length: 300 lines
-- Minimum test coverage: 80%
-- Use docstrings for all public modules, classes, and functions
+### Core Standards
+- `STANDARDS.md` - Documentation quality standards
+- `STRUCTURE.md` - Directory layout guide
+- `CONTRIBUTING.md` - How to contribute
 
-### Error Handling
-- Use specific exception types
-- Include context in error messages
-- Log errors before raising when appropriate
-- Use custom exception classes for domain-specific errors
+### Anthropic Ecosystem (`docs/anthropic-ecosystem/`)
+- MCP Protocol, FastMCP, MCPB, Claude Desktop, Glama
 
-### FastMCP 2.12 Standards
-- Use `@mcp.tool` decorator with only `name` and `description` parameters
-- No `inputSchema` or `outputSchema` in tool definitions
-- Tools should return standard Python types (dict, list, str, etc.)
-- Use async/await for all tool functions
-- Proper error handling with try/catch blocks
+### Google Ecosystem (`docs/google-ecosystem/`)
+- Gemini 3, Antigravity IDE, Nano Banana Pro, DeepMind, TPU infrastructure
 
-### File Organization
-- Keep files under 300 lines
-- Group related functionality in modules
-- Use clear, descriptive names
-- Follow the established directory structure:
-  ```
-  src/qbtmcp/
-  ├── services/          # Business logic services
-  ├── tools/             # MCP tool definitions
-  ├── models/            # Data models
-  └── utils/             # Utility functions
-  ```
+### Patterns (`docs/patterns/`)
+- Design patterns for MCP servers and development
 
-### Testing
-- Write tests for new features
-- Maintain good test coverage
-- Run tests before merging to main
-- Use pytest with async support
+### Projects (`docs/projects/`)
+- myai, veogen, mywienerlinien, autohotkey
 
-### Documentation
-- Document public APIs and interfaces
-- Keep README files updated
-- Document environment setup
-- Maintain CHANGELOG.md
-- Document architectural decisions
+### Monitoring (`monitoring/`)
+- Prometheus/Grafana/Loki stack
 
-### Security
-- Never hardcode credentials
-- Use environment variables for sensitive data
-- Follow principle of least privilege
-- Keep dependencies up to date
-- Audit for known vulnerabilities
+### Templates (`templates/`)
+- Reusable templates and scripts
 
-### PowerShell Scripts
-- Use proper PowerShell syntax
-- Include error handling with `-ErrorAction Stop`
-- Use `New-Item -ItemType Directory -Force` for directory creation
-- Use `Test-Path` to check file/directory existence
-- Use `Get-Content -Path` for file operations
+---
 
-### Git Workflow
-- Use semantic versioning (SemVer)
-- Write clear commit messages
-- Use feature branches for new development
-- Require pull request reviews
-- Run CI/CD checks before merging
+## Quick Reference
 
-### Dependencies
-- Use UV for dependency management
-- Pin dependency versions in pyproject.toml
-- Regular security audits with Safety
-- Document all third-party dependencies
+**Central Docs Location:** `D:\Dev\repos\mcp-central-docs\`
 
-### Performance
-- Profile before optimizing
-- Optimize for readability first
-- Consider memory usage and execution time
-- Use async/await for I/O operations
+**Start Here:** `D:\Dev\repos\mcp-central-docs\README.md`
 
-### Change Management
-- Never remove, rewrite, or break major functionality without explicit user instruction
-- Always clarify and confirm before making breaking changes
-- Provide explicit diffs and summaries for all major edits
-- Follow user-specified workflow preferences strictly
-- Set up safety nets like auto-staged commits when possible
+**When in doubt:** Read the central README and navigate from there.
 
-### Rule Verification
-- Add "lgr1 " to cascade outputs to prove rules were read

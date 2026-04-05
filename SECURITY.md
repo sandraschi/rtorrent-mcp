@@ -1,10 +1,10 @@
-# 🔒 Security Policy
+# Security Policy
 
-## 🚨 Reporting Security Vulnerabilities
+## [ALERT] Reporting Security Vulnerabilities
 
 We take security seriously. If you discover a security vulnerability in RTorrent MCP Server, please help us by reporting it responsibly.
 
-### 📧 How to Report
+### How to Report
 
 **Please DO NOT report security vulnerabilities through public GitHub issues.**
 
@@ -19,7 +19,7 @@ Instead, please report security vulnerabilities by emailing:
 - **Fix Development**: Within 1-2 weeks for critical issues
 - **Public Disclosure**: After fix is deployed and tested
 
-### 📋 What to Include
+### What to Include
 
 Please include the following information in your report:
 
@@ -30,25 +30,25 @@ Please include the following information in your report:
 5. **Environment**: Your setup (OS, Python version, etc.)
 6. **Contact Information**: How we can reach you for follow-up
 
-### 🏷️ Severity Levels
+### Severity Levels
 
 - **Critical**: System compromise, data breach, remote code execution
 - **High**: Privilege escalation, significant data exposure
 - **Medium**: Limited data exposure, denial of service
 - **Low**: Minor information disclosure, cosmetic issues
 
-### 🎯 Scope
+### Scope
 
 This security policy applies to:
 - RTorrent MCP Server core functionality
 - All official extensions and tools
 - Associated documentation and build scripts
 
-### 🙏 Recognition
+### Recognition
 
 We appreciate security researchers who help keep our users safe. With your permission, we'd like to acknowledge your contribution in our release notes and security advisories.
 
-### 📜 Legal
+### Legal
 
 This project follows responsible disclosure practices. Please give us reasonable time to fix issues before public disclosure. We will work with you to ensure proper attribution and coordination.
 

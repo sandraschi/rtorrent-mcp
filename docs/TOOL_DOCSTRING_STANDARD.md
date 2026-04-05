@@ -22,7 +22,7 @@ Every tool docstring MUST include:
 
 ## Format Rules
 
-### ✅ REQUIRED
+### REQUIRED
 
 - Use triple double-quotes (`"""`) to delimit docstrings
 - Start docstring immediately after function definition
@@ -30,7 +30,7 @@ Every tool docstring MUST include:
 - Blank line after brief description
 - All sections properly formatted
 
-### ❌ PROHIBITED
+### [FAIL] PROHIBITED
 
 - **NO triple quotes (`"""`) inside docstrings** - Use single quotes or escape
 - NO missing parameter documentation
@@ -139,10 +139,10 @@ async def tool_name(
 - No technical jargon unless necessary
 
 **Examples:**
-- ✅ `'''Execute SQL query on specified database connection.'''`
-- ✅ `'''List all available database connections with their status.'''`
-- ❌ `'''Does stuff'''` (too vague)
-- ❌ `'''This tool is used to maybe do things with databases'''` (too wordy)
+- [OK] `'''Execute SQL query on specified database connection.'''`
+- [OK] `'''List all available database connections with their status.'''`
+- [FAIL] `'''Does stuff'''` (too vague)
+- [FAIL] `'''This tool is used to maybe do things with databases'''` (too wordy)
 
 ---
 
@@ -436,7 +436,7 @@ This will break:
 def tool():
     '''
     Example usage:
-        data = {"key": """value"""}  # ❌ BREAKS!
+        data = {"key": """value"""}  # [FAIL] BREAKS!
     '''
 ```
 
@@ -447,7 +447,7 @@ def tool():
 def tool():
     '''
     Example usage:
-        data = {"key": "value"}  # ✅ GOOD
+        data = {"key": "value"}  # [OK] GOOD
     '''
 ```
 
@@ -457,7 +457,7 @@ def tool():
     '''
     Example usage:
         # Use escaped quotes for multi-line strings
-        query = "SELECT * FROM table"  # ✅ GOOD
+        query = "SELECT * FROM table"  # [OK] GOOD
     '''
 ```
 
@@ -467,7 +467,7 @@ def tool():
     '''
     Example usage:
         # For multi-line strings, use appropriate quoting
-        query = "Your SQL query here"  # ✅ GOOD
+        query = "Your SQL query here"  # [OK] GOOD
     '''
 ```
 

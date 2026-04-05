@@ -1,8 +1,8 @@
 # MCP Server Production Audit Checklist
 
-Use this checklist to audit any MCP server repo before marking it production-ready.
+Use this checklist as a **self-review** before calling a server “production-ready” for *your* environment. It is not a guarantee or external audit.
 
-## 🏗️ CORE MCP ARCHITECTURE
+## CORE MCP ARCHITECTURE
 
 - [x] FastMCP 2.12+ framework implemented
 - [x] stdio protocol for Claude Desktop connection
@@ -14,7 +14,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] **Health check tool** implemented
 - [x] `prompts/` folder with example prompt templates
 
-## ✨ CODE QUALITY
+## CODE QUALITY
 
 - [x] ALL `print()` / `console.log()` replaced with structured logging
 - [x] Comprehensive error handling (try/catch everywhere)
@@ -24,7 +24,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] Proper resource cleanup (connections, files, processes)
 - [x] No memory leaks (verified)
 
-## 📦 PACKAGING & DISTRIBUTION
+## PACKAGING & DISTRIBUTION
 
 - [x] Anthropic `mcpb validate` passes successfully
 - [x] Anthropic `mcpb pack` creates valid package
@@ -33,7 +33,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] Virtual environment setup script (`venv` for Python)
 - [x] Installation instructions tested and working
 
-## 🧪 TESTING
+## TESTING
 
 - [x] Unit tests in `tests/unit/` covering all tools
 - [x] Integration tests in `tests/integration/`
@@ -42,7 +42,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] PowerShell test runner scripts present
 - [x] All tests passing
 
-## 📚 DOCUMENTATION
+## DOCUMENTATION
 
 - [x] README.md updated: features, installation, usage, troubleshooting
 - [x] PRD updated with current capabilities
@@ -52,7 +52,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] `CONTRIBUTING.md` with contribution guidelines
 - [x] `SECURITY.md` with security policy
 
-## 🔧 GITHUB INFRASTRUCTURE
+## GITHUB INFRASTRUCTURE
 
 - [x] CI/CD workflows in `.github/workflows/`: test, lint, build, release
 - [x] Dependabot configured for dependency updates
@@ -62,7 +62,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] Branch protection rules documented
 - [ ] GitHub Actions all passing
 
-## 💻 PLATFORM REQUIREMENTS (Windows/PowerShell)
+## PLATFORM REQUIREMENTS (Windows/PowerShell)
 
 - [x] No Linux syntax (`&&`, `||`, etc.)
 - [x] PowerShell cmdlets used (`New-Item` not `mkdir`, `Copy-Item` not `cp`)
@@ -71,7 +71,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] Cross-platform path handling (`path.join` where needed)
 - [x] All PowerShell scripts tested on Windows
 
-## 🎁 EXTRAS
+## EXTRAS
 
 - [x] Example configurations for common use cases
 - [x] Performance benchmarks (if applicable)
@@ -80,7 +80,7 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 - [x] Error messages are user-friendly
 - [x] Logging levels properly configured
 
-## 📋 FINAL REVIEW
+## FINAL REVIEW
 
 - [x] All dependencies up to date
 - [x] No security vulnerabilities (npm audit / pip-audit)
@@ -91,11 +91,11 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 
 ---
 
-**Total Items:** 60
-**Completed:** 59 / 60
-**Coverage:** 98%
+**Total items:** 60 (example count—adjust for your repo)
 
-**Auditor:** Sandra's Austrian Anime Automation
-**Date:** Current Session
-**Repo:** qbtmcp
-**Status:** ⬜ In Progress | 🟡 Ready for Review | ⬜ Production Ready
+**Completed:** _fill in when you run the audit_
+
+**Auditor:** _your name / team_
+**Date:** _YYYY-MM-DD_
+**Repo:** rtorrent_mcp
+**Status:** In progress | Ready for internal review | Deployed internally (terms defined by you)

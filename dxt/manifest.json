@@ -9,12 +9,12 @@
   "license": "MIT",
   "server": {
     "type": "python",
-    "entry_point": "src/qbtmcp/server.py",
+    "entry_point": "src/rtorrent_mcp/server.py",
     "mcp_config": {
       "command": "python",
       "args": [
         "-m",
-        "qbtmcp.server",
+        "rtorrent_mcp.server",
         "--transport",
         "stdio"
       ],

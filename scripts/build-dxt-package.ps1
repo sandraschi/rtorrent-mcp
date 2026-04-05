@@ -6,32 +6,32 @@ param(
     [string]$OutputDir = "dist"
 )
 
-Write-Host "🚀 Building RTorrent MCP Server with UV + MCPB" -ForegroundColor Green
+Write-Host " Building RTorrent MCP Server with UV + MCPB" -ForegroundColor Green
 Write-Host "==============================================" -ForegroundColor Green
 
 # Check if UV is available
 try {
     $uvVersion = & uv --version 2>$null
-    Write-Host "✅ UV found: $uvVersion" -ForegroundColor Green
+    Write-Host "[OK] UV found: $uvVersion" -ForegroundColor Green
 } catch {
-    Write-Host "❌ UV not found. Please install with: pip install uv" -ForegroundColor Red
+    Write-Host "[FAIL] UV not found. Please install with: pip install uv" -ForegroundColor Red
     exit 1
 }
 
 # Check if MCPB is installed
 try {
     $mcpbVersion = & mcpb --version 2>$null
-    Write-Host "✅ MCPB version: $mcpbVersion" -ForegroundColor Green
+    Write-Host "[OK] MCPB version: $mcpbVersion" -ForegroundColor Green
 } catch {
-    Write-Host "❌ MCPB not found. Please install with: npm install -g @anthropic-ai/mcpb" -ForegroundColor Red
+    Write-Host "[FAIL] MCPB not found. Please install with: npm install -g @anthropic-ai/mcpb" -ForegroundColor Red
     exit 1
 }
 
 # Ensure dependencies are installed
-Write-Host "📚 Ensuring dependencies are installed..." -ForegroundColor Yellow
+Write-Host " Ensuring dependencies are installed..." -ForegroundColor Yellow
 & uv sync --dev
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Failed to install dependencies" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to install dependencies" -ForegroundColor Red
     exit 1
 }
 
@@ -40,7 +40,7 @@ if (!(Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir | Out-Null
 }
 
-Write-Host "📦 Building Python package with UV..." -ForegroundColor Yellow
+Write-Host " Building Python package with UV..." -ForegroundColor Yellow
 
 try {
     # Build the Python package first
@@ -50,20 +50,20 @@ try {
     }
 
     # Validate the manifest
-    Write-Host "🔍 Validating MCPB manifest..." -ForegroundColor Cyan
+    Write-Host " Validating MCPB manifest..." -ForegroundColor Cyan
     & mcpb validate dxt/manifest.json
     if ($LASTEXITCODE -ne 0) {
         throw "Manifest validation failed"
     }
 
     # Create MCPB package
-    Write-Host "🗜️  Creating MCPB package..." -ForegroundColor Cyan
+    Write-Host "[i]  Creating MCPB package..." -ForegroundColor Cyan
     $packagePath = "$OutputDir/rtorrent-mcp.mcpb"
     
     if (Test-Path "dxt") {
         & mcpb pack dxt $packagePath
     } else {
-        Write-Host "⚠️  dxt directory not found, creating fallback package..." -ForegroundColor Yellow
+        Write-Host "[WARN]  dxt directory not found, creating fallback package..." -ForegroundColor Yellow
         # Create a basic package structure
     $tempDir = Join-Path $env:TEMP "mcpb-build-$(Get-Random)"
     New-Item -ItemType Directory -Path $tempDir | Out-Null
@@ -100,39 +100,39 @@ try {
     # Check if package was created
     if (Test-Path $packagePath) {
         $fileSize = (Get-Item $packagePath).Length
-        Write-Host "📊 Package size: $([math]::Round($fileSize / 1MB, 2)) MB" -ForegroundColor Green
+        Write-Host " Package size: $([math]::Round($fileSize / 1MB, 2)) MB" -ForegroundColor Green
 
         # Verify package
-        Write-Host "✅ Verifying package..." -ForegroundColor Cyan
+        Write-Host "[OK] Verifying package..." -ForegroundColor Cyan
         & mcpb verify $packagePath
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Package verification successful" -ForegroundColor Green
+            Write-Host "[OK] Package verification successful" -ForegroundColor Green
         } else {
-            Write-Host "⚠️  Package verification failed, but continuing..." -ForegroundColor Yellow
+            Write-Host "[WARN]  Package verification failed, but continuing..." -ForegroundColor Yellow
         }
     } else {
         throw "Package file not found after build"
     }
 
     Write-Host ""
-    Write-Host "🎉 MCPB Package created successfully!" -ForegroundColor Green
-    Write-Host "📍 Location: $packagePath" -ForegroundColor White
+    Write-Host " MCPB Package created successfully!" -ForegroundColor Green
+    Write-Host " Location: $packagePath" -ForegroundColor White
     Write-Host ""
-    Write-Host "📋 Installation Instructions:" -ForegroundColor Yellow
+    Write-Host " Installation Instructions:" -ForegroundColor Yellow
     Write-Host "   1. Locate $packagePath" -ForegroundColor White
     Write-Host "   2. Drag the .mcpb file to Claude Desktop" -ForegroundColor White
     Write-Host "   3. Configure rTorrent connection settings in the extension setup" -ForegroundColor White
     Write-Host "   4. Restart Claude Desktop" -ForegroundColor White
     Write-Host ""
-    Write-Host "🔧 Configuration Required:" -ForegroundColor Yellow
+    Write-Host " Configuration Required:" -ForegroundColor Yellow
     Write-Host "   - rTorrent host: localhost (default)" -ForegroundColor White
     Write-Host "   - rTorrent port: 5000 (default)" -ForegroundColor White
     Write-Host "   - Download directory: Choose your preferred location" -ForegroundColor White
 
 } catch {
-    Write-Host "❌ Build failed: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FAIL] Build failed: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
 Write-Host ""
-Write-Host "🏁 UV + MCPB Build process completed" -ForegroundColor Green
+Write-Host " UV + MCPB Build process completed" -ForegroundColor Green

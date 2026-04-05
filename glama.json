@@ -1,0 +1,40 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["sandraschi"],
+  "name": "rtorrent-mcp",
+  "description": "FastMCP 2.13 server for anime torrenting automation with Austrian legal compliance using rTorrent. 6 consolidated tools for torrent, search, legal, system, and workflow management. Beta status.",
+  "type": "mcp_server",
+  "status": "beta",
+  "framework": "FastMCP 2.13",
+  "tools": 6,
+  "transport": ["stdio"],
+  "keywords": [
+    "rtorrent",
+    "torrent",
+    "anime",
+    "torrenting",
+    "scgi",
+    "mcp-server",
+    "fastmcp",
+    "legal-compliance"
+  ],
+  "features": {
+    "rtorrent_integration": {
+      "enabled": true,
+      "api": "XML-RPC (/RPC2)"
+    },
+    "multi_source_search": {
+      "enabled": true,
+      "sources": ["nyaa.si", "Pirate Bay", "YTS", "Anna's Archive"]
+    },
+    "post_processing": {
+      "enabled": true,
+      "features": ["completion_detection", "filename_normalization", "plex_integration"]
+    },
+    "legal_compliance": {
+      "enabled": true,
+      "region": "Austria"
+    }
+  }
+}
+

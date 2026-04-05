@@ -15,7 +15,7 @@ for /f "tokens=1" %%i in ('docker ps -a --filter "publish=12222" --format "{{.ID
     docker rm %%i >nul 2>&1
 )
 
-echo ✅ Cleanup complete
+echo [OK] Cleanup complete
 
 REM Create directories
 echo.
@@ -27,7 +27,7 @@ if not exist "logs" mkdir logs
 REM Create download directory in Windows Downloads
 set DOWNLOAD_PATH=%USERPROFILE%\Downloads\rtorrent
 if not exist "%DOWNLOAD_PATH%" mkdir "%DOWNLOAD_PATH%"
-echo ✅ Download directory: %DOWNLOAD_PATH%
+echo [OK] Download directory: %DOWNLOAD_PATH%
 
 REM Create rTorrent config
 echo.
@@ -53,7 +53,7 @@ echo max_uploads.set = 50
 echo max_connections.set = 200
 echo max_peers.set = 100
 ) > config\rtorrent.rc
-echo ✅ Configuration created
+echo [OK] Configuration created
 
 REM Create .env file
 echo.
@@ -71,7 +71,7 @@ echo # Application settings
 echo DEBUG=false
 echo LOG_LEVEL=INFO
 ) > .env
-echo ✅ Environment configuration created
+echo [OK] Environment configuration created
 
 REM Start container with port 12222
 echo.
@@ -93,13 +93,13 @@ docker run -d ^
   crazymax/rtorrent-rutorrent:latest
 
 if %errorlevel% neq 0 (
-    echo ❌ Failed to start container
+    echo [FAIL] Failed to start container
     echo Check Docker logs: docker logs rtorrent-mcp
     pause
     exit /b 1
 )
 
-echo ✅ Container started successfully
+echo [OK] Container started successfully
 
 REM Wait for container to be ready
 echo.
@@ -111,13 +111,13 @@ echo ========================================
 echo   Installation Complete!
 echo ========================================
 echo.
-echo 📁 Download directory: %DOWNLOAD_PATH%
+echo  Download directory: %DOWNLOAD_PATH%
 echo.
-echo 🌐 Access points:
+echo  Access points:
 echo    SCGI API:    http://localhost:12222/RPC2
 echo    Web UI:      http://localhost:12223
 echo.
-echo 🛠️  Management commands:
+echo [i]  Management commands:
 echo    docker ps                    - Check container status
 echo    docker logs rtorrent-mcp     - View logs
 echo    docker restart rtorrent-mcp  - Restart container

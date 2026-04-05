@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rtorrent-mcp"
-version = "1.0.0"
-description = "RTorrent MCP Server - Austrian anime automation with FastMCP 2.12"
+version = "3.0.0"
+description = "rTorrent MCP Server - Austrian anime automation with FastMCP 3.1 (portmanteau tools, sampling, skills, prompts, MCPB)"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -14,9 +14,13 @@ authors = [
 maintainers = [
     {name = "Sandra", email = "sandra@vienna.at"}
 ]
-keywords = ["rtorrent", "anime", "mcp", "torrents", "austria", "asw", "fastmcp", "scgi"]
+# Python import: rtorrent_mcp. Historic prototype used qBittorrent (package name qbtmcp).
+keywords = [
+    "rtorrent", "anime", "mcp", "torrents", "austria", "asw",
+    "fastmcp", "scgi", "portmanteau", "sota", "mcpb", "prompts", "workflow"
+]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -24,14 +28,18 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Communications :: File Sharing",
     "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     "Topic :: Multimedia :: Video",
     "Framework :: FastMCP",
+    "Framework :: FastMCP :: Portmanteau",
+    "Framework :: FastMCP :: MCPB",
     "Typing :: Typed"
 ]
 dependencies = [
-    "fastmcp>=2.12.0",
+    "fastmcp>=3.1.0,<4",
+    "httpx>=0.27.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
@@ -41,9 +49,19 @@ dependencies = [
     "psutil>=5.9.0",
     "python-multipart>=0.0.6",
     "pyyaml>=6.0",
-    "python-dateutil>=2.8.2"
+    "python-dateutil>=2.8.2",
+    "croniter>=2.0.0",
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "mkdocs>=1.4.3",
+    "mkdocs-material>=9.1.18",
+    "ruff>=0.14.2",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 [project.optional-dependencies]
 dev = [
@@ -82,39 +100,18 @@ docs = [
     "mkdocs-material>=9.1.18"
 ]
 
+[project.scripts]
+rtorrent-mcp = "rtorrent_mcp.__main__:main"
+
 [project.urls]
-Homepage = "https://github.com/sandraschi/qbtmcp"
-Documentation = "https://github.com/sandraschi/qbtmcp#readme"
-Issues = "https://github.com/sandraschi/qbtmcp/issues"
-Source = "https://github.com/sandraschi/qbtmcp"
+Homepage = "https://github.com/sandraschi/rtorrent-mcp"
+Documentation = "https://github.com/sandraschi/rtorrent-mcp#readme"
+Issues = "https://github.com/sandraschi/rtorrent-mcp/issues"
+Source = "https://github.com/sandraschi/rtorrent-mcp"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["qbtmcp*"]
-
-[tool.ruff]
-line-length = 100
-target-version = "py310"
-
-[tool.ruff.lint]
-select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4", # flake8-comprehensions
-    "UP", # pyupgrade
-]
-ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-line-ending = "auto"
+include = ["rtorrent_mcp*"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -144,7 +141,7 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=src/qbtmcp",
+    "--cov=src/rtorrent_mcp",
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
     "--cov-report=xml",
@@ -158,7 +155,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["src/qbtmcp"]
+source = ["src/rtorrent_mcp"]
 omit = [
     "*/tests/*",
     "*/test_*.py",
@@ -172,3 +169,32 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError"
 ]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# Hardened v13.1 Rule Set
+select = [
+    "E", "F", "I", "UP", "B", "S", "A", "ANN", "COM", "C4", "DTZ", "PIE", "T20", "PYI", "Q", "RSE", "RET", "SLF", "SIM", "TID", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "PERF", "FURB", "LOG", "RUF"
+]
+ignore = [
+    "ANN101", # Missing type annotation for self
+    "ANN102", # Missing type annotation for cls
+    "COM812", # Trailing comma missing (handled by formatter)
+    "ISC001", # Single line implicit string concatenation (handled by formatter)
+    "PLR0913", # Too many arguments
+    "S101",   # Use of assert (standard for pytest)
+    "TRY003", # Avoid specifying long messages in exceptions
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "ANN", "PLR", "TRY", "S105", "S106", "SLF001", "ARG002", "PLC0415"]
+"server.py" = ["T20", "ARG001", "ARG002"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -53,7 +53,7 @@ $projectPath = (Get-Location).Path
 }
 "@ | Out-File -FilePath ".cursor\mcp.json" -Encoding UTF8
 
-Write-Host "✅ Serena configured for: $projectPath" -ForegroundColor Green
+Write-Host "[OK] Serena configured for: $projectPath" -ForegroundColor Green
 ```
 
 ---
@@ -110,7 +110,7 @@ or
 
 ---
 
-## 📊 **Dashboard**
+## [stat] **Dashboard**
 
 **Open**: http://localhost:24282/dashboard/index.html
 
@@ -166,7 +166,7 @@ disabled_tools:
 
 ---
 
-## ✅ **That's It!**
+## [OK] **That's It!**
 
 **Three files added**:
 - `.cursor/mcp.json` - Serena config

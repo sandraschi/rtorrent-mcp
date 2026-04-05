@@ -1,3 +1,14 @@
+# rTorrent MCP Server - Docker Setup
+# Using crazymax/rtorrent-rutorrent image
+# GitHub: https://github.com/crazy-max/docker-rtorrent-rutorrent
+#
+# How MCP connects:
+#   MCP Server → XMLRPC (port 12224) → nginx → Unix Socket → rTorrent
+#
+# Access points:
+#   - XMLRPC: http://localhost:12224/RPC2 (MCP server connects here)
+#   - WebUI:  http://localhost:12222 (ruTorrent for visual management)
+
 services:
   rtorrent:
     image: crazymax/rtorrent-rutorrent:latest
@@ -14,8 +25,9 @@ services:
     ports:
       - "12224:8000"  # XMLRPC port through nginx (avoiding ports ending in 00/000)
       - "12222:8080"  # Web UI (ruTorrent) - custom port
-      - "51413:51413"  # DHT port
-      - "6881:6881/udp"  # DHT UDP port
+      - "51413:51413"  # Incoming connections (peer port; adjust if this conflicts too)
+      # Host 16881 avoids conflict when another app already binds 0.0.0.0:6881/udp (qBittorrent, old Docker, etc.)
+      - "16881:6881/udp"
     restart: unless-stopped
     networks:
       - rtorrent-net
