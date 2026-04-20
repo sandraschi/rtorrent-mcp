@@ -1,4 +1,14 @@
-﻿# Webapp start: uvicorn backend (repo root) + Vite (this folder)
+﻿Param([switch]$Headless)
+
+# --- SOTA Headless Standard ---
+if ($Headless -and ($Host.UI.RawUI.WindowTitle -notmatch 'Hidden')) {
+    Start-Process pwsh -ArgumentList '-NoProfile', '-File', $PSCommandPath, '-Headless' -WindowStyle Hidden
+    exit
+}
+$WindowStyle = if ($Headless) { 'Hidden' } else { 'Normal' }
+# ------------------------------
+
+# Webapp start: uvicorn backend (repo root) + Vite (this folder)
 $WebPort = 10909
 $BackendPort = 10910
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
@@ -52,5 +62,6 @@ Start-Process powershell -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "
 
 Write-Host "Browser will open automatically when Vite is ready." -ForegroundColor Gray
 npm run dev -- --port $WebPort --host
+
 
 

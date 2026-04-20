@@ -1,10 +1,12 @@
 # rTorrent MCP Server 
 
+[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.1.0-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastMCP](https://img.shields.io/badge/FastMCP-3.1-brightgreen)](https://gofastmcp.com)
+[![FastMCP](https://img.shields.io/badge/FastMCP-3.1-brightgreen)](https://goFastMCP 3.1.0com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**rTorrent MCP**  FastMCP 3.1 server for **anime BitTorrent automation** with Austrian legal context, talking to **rTorrent** over XML-RPC/SCGI (not a generic site scraper).
+**rTorrent MCP**  FastMCP 3.1.0 server for **anime BitTorrent automation** with Austrian legal context, talking to **rTorrent** over XML-RPC/SCGI (not a generic site scraper).
 
 **What this is:** A **BitTorrent** control plane: add/list/pause torrents, search indexers (Nyaa, etc.), workflows, and post-processing against your **rTorrent** instance. It is **not** a generic systems MCP, and it is **not** a qBittorrent Web API client.
 
@@ -20,7 +22,7 @@
 ## Features 
 
 - **rTorrent docs:** **[docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)** (architecture + env) and **[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md)** (Docker, plugins, long setup)
-- **FastMCP 3.1**: Portmanteau tools, MCPB packaging, prompts, skills provider, sampling, agentic workflow tool, CI/CD
+- **FastMCP 3.1.0**: Portmanteau tools, MCPB packaging, prompts, skills provider, sampling, agentic workflow tool, CI/CD
 - **6 Consolidated Tools**: torrent, search, nlp, legal, system, workflow management
 - **rTorrent integration**: Torrent operations via XML-RPC to your instance (add/list/pause/resume/delete, etc.)
 - **Multi-Source Search**: nyaa.si (anime), Pirate Bay (TV), YTS (movies), Anna's Archive (ebooks)
@@ -566,6 +568,17 @@ Add this configuration to your `claude_desktop_config.json`:
 4. Push to the branch (`git push origin feature/-feature`)
 5. Open a Pull Request
 
+
+## 🛡️ Industrial Quality Stack
+
+This project adheres to **SOTA 14.1** industrial standards for high-fidelity agentic orchestration:
+
+- **Python (Core)**: [Ruff](https://astral.sh/ruff) for linting and formatting. Zero-tolerance for `print` statements in core handlers (`T201`).
+- **Webapp (UI)**: [Biome](https://biomejs.dev/) for sub-millisecond linting. Strict `noConsoleLog` enforcement.
+- **Protocol Compliance**: Hardened `stdout/stderr` isolation to ensure crash-resistant JSON-RPC communication.
+- **Automation**: [Justfile](./justfile) recipes for all fleet operations (`just lint`, `just fix`, `just dev`).
+- **Security**: Automated audits via `bandit` and `safety`.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -574,7 +587,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [rTorrent](https://rakshasa.github.io/rtorrent/) - The lightweight torrent client
 - [Nyaa.si](https://nyaa.si/) - For the anime torrents
-- [FastMCP](https://fastmcp.anthropic.com) - The MCP framework
+- [FastMCP](https://FastMCP 3.1.0anthropic.com) - The MCP framework
 - [Claude Desktop](https://claude.ai/desktop) - For MCP integration
 
 ---
@@ -706,7 +719,7 @@ This tool is designed for Austrian legal context where personal downloading is g
 
 ## Dependencies 
 
-- **FastMCP 2.12+**: MCP server framework with stdio transport
+- **FastMCP 3.1.0+**: MCP server framework with stdio transport
 - **UV**: Modern Python package manager for fast, reliable builds
 - **aiohttp**: Async HTTP client for nyaa.si API
 - **beautifulsoup4**: HTML parsing for search results
