@@ -10,7 +10,6 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
-from ...config.settings import settings
 from ...services.post_processor import PostProcessor
 from ...services.rtorrent_client import get_rtorrent_client
 
@@ -18,21 +17,28 @@ logger = logging.getLogger(__name__)
 
 # Global post-processor instance
 _post_processor: PostProcessor | None = None
+_post_processor_lock = asyncio.Lock()
+_poll_task: asyncio.Task | None = None
+_post_processor_initialized = False
 
 
-def _get_post_processor() -> PostProcessor:
+async def _get_post_processor(settings) -> PostProcessor:
     """Get or create post-processor instance"""
-    global _post_processor
-    if _post_processor is None:
-        config = {
-            "ingestion_anime_path": settings.INGESTION_ANIME_PATH,
-            "ingestion_tv_path": settings.INGESTION_TV_PATH,
-            "ingestion_movies_path": settings.INGESTION_MOVIES_PATH,
-            "poll_interval": settings.POST_PROCESSING_POLL_INTERVAL,
-            "delete_torrent_after_complete": settings.DELETE_TORRENT_AFTER_COMPLETE,
-            "normalize_filenames": settings.NORMALIZE_FILENAMES,
-        }
-        _post_processor = PostProcessor(config)
+    global _post_processor, _post_processor_initialized
+    async with _post_processor_lock:
+        if _post_processor is None:
+            config = {
+                "ingestion_anime_path": settings.INGESTION_ANIME_PATH,
+                "ingestion_tv_path": settings.INGESTION_TV_PATH,
+                "ingestion_movies_path": settings.INGESTION_MOVIES_PATH,
+                "poll_interval": settings.POST_PROCESSING_POLL_INTERVAL,
+                "delete_torrent_after_complete": settings.DELETE_TORRENT_AFTER_COMPLETE,
+                "normalize_filenames": settings.NORMALIZE_FILENAMES,
+            }
+            _post_processor = PostProcessor(config)
+        if not _post_processor_initialized:
+            await _post_processor.initialize()
+            _post_processor_initialized = True
     return _post_processor
 
 
@@ -244,8 +250,7 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
 
             # POST-PROCESSING ACTIONS
             if action == "check_completed":
-                processor = _get_post_processor()
-                await processor.initialize()
+                processor = await _get_post_processor(settings)
                 completed = await processor.check_completed_downloads()
                 return {
                     "success": True,
@@ -260,8 +265,7 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "torrent_hash is required for 'process' action",
                     }
-                processor = _get_post_processor()
-                await processor.initialize()
+                processor = await _get_post_processor(settings)
                 torrents = await client.get_torrents()
                 torrent = next((t for t in torrents if t.get("hash") == torrent_hash), None)
                 if not torrent:
@@ -284,9 +288,15 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "Post-processing disabled. Set POST_PROCESSING_ENABLED=true",
                     }
-                processor = _get_post_processor()
-                await processor.initialize()
-                asyncio.create_task(processor.run_polling_loop())
+                global _poll_task
+                if _poll_task is not None and not _poll_task.done():
+                    return {
+                        "success": True,
+                        "action": action,
+                        "data": {"status": "already_running", "message": "Polling loop is already active"},
+                    }
+                processor = await _get_post_processor(settings)
+                _poll_task = asyncio.create_task(processor.run_polling_loop())
                 return {
                     "success": True,
                     "action": action,
@@ -298,8 +308,11 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 }
 
             if action == "stop_processing":
-                processor = _get_post_processor()
+                processor = await _get_post_processor(settings)
                 processor.stop()
+                if _poll_task is not None and not _poll_task.done():
+                    _poll_task.cancel()
+                _poll_task = None
                 return {"success": True, "action": action, "data": {"status": "stopped"}}
 
             if action == "normalize":
@@ -309,7 +322,7 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "filename is required for 'normalize' action",
                     }
-                processor = _get_post_processor()
+                processor = _get_post_processor(settings)
                 normalized = processor.normalize_filename(filename, category)
                 return {
                     "success": True,

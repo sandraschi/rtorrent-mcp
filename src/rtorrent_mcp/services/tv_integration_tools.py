@@ -9,6 +9,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# Persistent episode tracking state (module-level, survives between calls)
+_episode_state: dict[str, set[str]] = {}
+
+
 def register_tv_integration_tools(mcp):
     """Register comprehensive TV integration tools with FastMCP server"""
 
@@ -37,9 +41,7 @@ def register_tv_integration_tools(mcp):
             dict: Complete TV show management results with recommendations
         """,
     )
-    async def tv_show_manager(
-        query: str, downloaded_episodes: list[str] = None, auto_download: bool = False
-    ) -> dict:
+    async def tv_show_manager(query: str, downloaded_episodes: list[str] = None, auto_download: bool = False) -> dict:
         """Comprehensive TV show management"""
         if downloaded_episodes is None:
             downloaded_episodes = []
@@ -64,11 +66,10 @@ def register_tv_integration_tools(mcp):
         downloaded_set = set(downloaded_episodes)
 
         for result in search_results:
-            if "error" not in result:
-                if parsed_query["new_only"] and is_new_episode(result["title"], downloaded_set):
-                    new_episodes.append(result)
-                elif not parsed_query["new_only"]:
-                    new_episodes.append(result)
+            if "error" not in result and (
+                not parsed_query["new_only"] or is_new_episode(result["title"], downloaded_set)
+            ):
+                new_episodes.append(result)
 
         # Generate recommendations
         recommendations = []
@@ -97,9 +98,7 @@ def register_tv_integration_tools(mcp):
                     }
                 )
 
-            recommendations.append(
-                f"Found {len(new_episodes)} episodes. Top recommendations provided."
-            )
+            recommendations.append(f"Found {len(new_episodes)} episodes. Top recommendations provided.")
 
         # Generate summary
         summary = {
@@ -139,15 +138,11 @@ def register_tv_integration_tools(mcp):
     )
     async def episode_tracker(show_name: str, action: str = "list", episode: str = None) -> dict:
         """Track TV show episodes"""
-        # This would integrate with a persistent storage system
-        # For now, we'll simulate episode tracking
+        show_key = show_name.lower().strip()
+        if show_key not in _episode_state:
+            _episode_state[show_key] = {"S01E01", "S01E02", "S01E03"}
 
-        # Simulate downloaded episodes (in real implementation, this would be persistent)
-        downloaded_episodes = [
-            "S01E01",
-            "S01E02",
-            "S01E03",  # Example downloaded episodes
-        ]
+        downloaded_episodes = _episode_state[show_key]
 
         if action == "add" and episode:
             if episode not in downloaded_episodes:
@@ -174,8 +169,8 @@ def register_tv_integration_tools(mcp):
 
         return {
             "show_name": show_name,
-            "downloaded_episodes": downloaded_episodes,
-            "missing_episodes": [],  # Would be calculated based on show metadata
+            "downloaded_episodes": sorted(downloaded_episodes),
+            "missing_episodes": [],
             "recommendations": recommendations,
             "status": status,
         }

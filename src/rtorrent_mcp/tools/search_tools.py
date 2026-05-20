@@ -70,9 +70,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
     async def search_japanese_tv(query: str, subcategory: str = "translated") -> list[dict]:
         """Search nyaa.si for Japanese TV series"""
         try:
-            return await search_nyaa_extended(
-                query, content_type="japanese_tv", subcategory=subcategory
-            )
+            return await search_nyaa_extended(query, content_type="japanese_tv", subcategory=subcategory)
         except Exception as e:
             logger.error(f"Error searching Japanese TV '{query}': {e}")
             return [{"error": f"Search failed: {str(e)}"}]
@@ -86,9 +84,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
         "limit (int): Maximum results (default: 20). "
         "Returns: array of movie releases with torrent details and IMDb codes.",
     )
-    async def search_movies(
-        query: str, quality: str = "1080p", sort_by: str = "seeds", limit: int = 20
-    ) -> list[dict]:
+    async def search_movies(query: str, quality: str = "1080p", sort_by: str = "seeds", limit: int = 20) -> list[dict]:
         """Search YTS for movie releases"""
         try:
             return await search_yts_movies(query, quality, sort_by, limit)
@@ -124,9 +120,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
         "api_key (str, optional): OMDb API key (free at omdbapi.com). "
         "Returns: list of matching titles with basic info and IMDb IDs.",
     )
-    async def search_imdb_tool(
-        title: str, year: int | None = None, api_key: str | None = None
-    ) -> list[dict]:
+    async def search_imdb_tool(title: str, year: int | None = None, api_key: str | None = None) -> list[dict]:
         """Search IMDb for titles"""
         try:
             omdb_key = api_key or getattr(settings, "OMDB_API_KEY", None)
@@ -170,9 +164,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
         "max_results (int): Maximum results (default: 20). "
         "Returns: array of book/paper releases with detail URLs (visit detail_url for full torrent info).",
     )
-    async def search_ebooks_annas(
-        query: str, content_type: str = "books", max_results: int = 20
-    ) -> list[dict]:
+    async def search_ebooks_annas(query: str, content_type: str = "books", max_results: int = 20) -> list[dict]:
         """Search Anna's Archive for ebooks - the gold standard!"""
         try:
             return await search_annas_archive(query, content_type, max_results)
@@ -205,9 +197,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
     async def search_comics(query: str, max_results: int = 20) -> list[dict]:
         """Search Pirate Bay for comics"""
         try:
-            return await search_piratebay_category(
-                query, category="comics", max_results=max_results
-            )
+            return await search_piratebay_category(query, category="comics", max_results=max_results)
         except Exception as e:
             logger.error(f"Error searching comics for '{query}': {e}")
             return [{"error": f"Search failed: {str(e)}"}]
@@ -223,9 +213,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
     async def search_ebooks_pb(query: str, max_results: int = 20) -> list[dict]:
         """Search Pirate Bay for ebooks (weak selection)"""
         try:
-            return await search_piratebay_category(
-                query, category="ebooks", max_results=max_results
-            )
+            return await search_piratebay_category(query, category="ebooks", max_results=max_results)
         except Exception as e:
             logger.error(f"Error searching ebooks on Pirate Bay for '{query}': {e}")
             return [{"error": f"Search failed: {str(e)}"}]

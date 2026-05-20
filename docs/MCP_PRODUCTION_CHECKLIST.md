@@ -4,25 +4,28 @@ Use this checklist as a **self-review** before calling a server “production-re
 
 ## CORE MCP ARCHITECTURE
 
-- [x] FastMCP 2.12+ framework implemented
+- [x] FastMCP 3.1 framework implemented
 - [x] stdio protocol for Claude Desktop connection
-- [x] Proper tool registration with `@mcp.tool()` multiline decorators
-- [x] No `"""` inside `"""` delimited decorators
-- [x] Self-documenting tool descriptions present
-- [x] **Multilevel help tool** implemented
-- [x] **Status tool** implemented
-- [x] **Health check tool** implemented
-- [x] `prompts/` folder with example prompt templates
+- [x] 6 portmanteau tools + 1 agentic workflow tool (45 total actions)
+- [x] Proper tool registration with `@mcp.tool()` decorators
+- [x] Sampling handler (OpenAI-compatible HTTP) + agentic workflow
+- [x] Skills provider (`SkillsDirectoryProvider`) on bundled skills/
+- [x] Multilevel help tool implemented
+- [x] Status tool implemented
+- [x] Health check tool implemented (Windows-compatible)
+- [x] `prompts/` folder with 7 parameterized prompt templates
 
 ## CODE QUALITY
 
 - [x] ALL `print()` / `console.log()` replaced with structured logging
 - [x] Comprehensive error handling (try/catch everywhere)
-- [x] Graceful degradation on failures
-- [x] Type hints (Python) / TypeScript types throughout
-- [x] Input validation on ALL tool parameters
+- [x] REST API: proper status codes (401/503), error_code fields, sanitized messages
+- [x] Race condition fixes: `asyncio.Lock` on shared state (post_processor, workflows)
+- [x] Memory leak fixed: `processed_hashes` capped at 10k, poll task ref tracked
+- [x] Type hints (Python) throughout
+- [x] Input validation on ALL tool parameters + REST endpoints
 - [x] Proper resource cleanup (connections, files, processes)
-- [x] No memory leaks (verified)
+- [x] Deprecated `asyncio.get_event_loop()` migrated to `asyncio.get_running_loop()` (14 instances)
 
 ## PACKAGING & DISTRIBUTION
 
@@ -83,19 +86,21 @@ Use this checklist as a **self-review** before calling a server “production-re
 ## FINAL REVIEW
 
 - [x] All dependencies up to date
-- [x] No security vulnerabilities (npm audit / pip-audit)
+- [x] No security vulnerabilities (bandit / safety scans)
 - [x] License file present and correct
-- [x] Version number follows semantic versioning
-- [x] Git tags match releases
+- [x] Version number follows semantic versioning (3.0.1)
+- [x] REST API secured with API_KEY auth + CORS
+- [x] Fleet port compliance (10910 in 10700-11000 range)
+- [ ] GitHub Actions all passing (verify after bugbash fixes)
 - [ ] Repository description and topics set on GitHub
 
 ---
 
-**Total items:** 60 (example count—adjust for your repo)
+**Total items:** ~60
 
 **Completed:** _fill in when you run the audit_
 
 **Auditor:** _your name / team_
-**Date:** _YYYY-MM-DD_
+**Date:** 2026-05-10
 **Repo:** rtorrent_mcp
-**Status:** In progress | Ready for internal review | Deployed internally (terms defined by you)
+**Status:** Bugbash complete — ready for internal review

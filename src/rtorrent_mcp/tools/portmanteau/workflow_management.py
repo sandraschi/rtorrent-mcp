@@ -14,6 +14,7 @@ This could run for days and queue hundreds of torrents.
 """
 
 import logging
+import secrets
 from datetime import datetime
 from typing import Any, Literal
 
@@ -161,14 +162,16 @@ _active_workflows: dict[str, dict[str, Any]] = {}
 _workflow_queue: list[dict[str, Any]] = []
 
 
+def _new_workflow_id() -> str:
+    return f"wf_{datetime.now().strftime('%Y%m%d%H%M%S')}_{secrets.token_hex(4)}"
+
+
 def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
     """Register the workflow management portmanteau tool."""
 
     @mcp.tool()
     async def workflow_management(
-        action: Literal[
-            "franchise", "batch_series", "status", "cancel", "list", "estimate", "queue", "schedule"
-        ],
+        action: Literal["franchise", "batch_series", "status", "cancel", "list", "estimate", "queue", "schedule"],
         anime_family: str | None = None,
         include_series: bool = True,
         include_movies: bool = True,
@@ -370,25 +373,15 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
                     search_queries.extend(franchise["specials"])
 
                 # Rough estimates
-                avg_episode_size_mb = (
-                    350 if resolution == "720p" else 700 if resolution == "1080p" else 1500
-                )
+                avg_episode_size_mb = 350 if resolution == "720p" else 700 if resolution == "1080p" else 1500
                 estimated_series_episodes = (
-                    1000
-                    if anime_key == "one piece"
-                    else 500
-                    if anime_key == "detective conan"
-                    else 200
+                    1000 if anime_key == "one piece" else 500 if anime_key == "detective conan" else 200
                 )
                 estimated_movies = len(franchise["movies"]) * 2000  # ~2GB per movie
                 estimated_ovas = len(franchise["ovas"]) * 500  # ~500MB per OVA
 
                 total_size_gb = (
-                    (
-                        estimated_series_episodes * avg_episode_size_mb / 1024
-                        if include_series
-                        else 0
-                    )
+                    (estimated_series_episodes * avg_episode_size_mb / 1024 if include_series else 0)
                     + (estimated_movies / 1024 if include_movies else 0)
                     + (estimated_ovas / 1024 if include_ovas else 0)
                 )
@@ -414,7 +407,7 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
                 if not schedule_time:
                     return {"success": False, "action": action, "error": "schedule_time required"}
 
-                workflow_id = f"wf_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                workflow_id = _new_workflow_id()
                 scheduled_workflow = {
                     "id": workflow_id,
                     "anime_family": anime_key,
@@ -444,7 +437,7 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
                         "error": "episode_start and episode_end required",
                     }
 
-                workflow_id = f"wf_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                workflow_id = _new_workflow_id()
                 search_queries = []
                 for series in franchise["series"]:
                     for ep in range(episode_start, episode_end + 1):
@@ -465,13 +458,15 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
 
                 if not dry_run:
                     _active_workflows[workflow_id] = batch_workflow
-                    # In real implementation, would start async download
+                    # TODO: implement async batch download execution
+                    batch_workflow["status"] = "queued_not_executing"
+                    batch_workflow["warning"] = "Stub: workflow stored but download execution not yet implemented."
 
                 return {"success": True, "action": action, "data": batch_workflow}
 
             # FRANCHISE - Full franchise download
             if action == "franchise":
-                workflow_id = f"wf_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                workflow_id = _new_workflow_id()
 
                 search_queries = []
                 if include_series:
@@ -506,7 +501,12 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
 
                 if not dry_run:
                     _active_workflows[workflow_id] = franchise_workflow
-                    # In production: asyncio.create_task(_execute_franchise_workflow(workflow_id))
+                    # TODO: implement _execute_franchise_workflow
+                    franchise_workflow["status"] = "queued_not_executing"
+                    franchise_workflow["warning"] = (
+                        "[WARN] Stub: workflow stored but download execution "
+                        "not yet implemented. Large franchise downloads can take DAYS!"
+                    )
 
                 return {"success": True, "action": action, "data": franchise_workflow}
 

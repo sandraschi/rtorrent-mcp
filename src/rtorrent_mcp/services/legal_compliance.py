@@ -31,9 +31,7 @@ def check_country_legal_status(country: str) -> dict[str, Any]:
         "risk_level": risk_level,
         "warning": warnings.get(risk_level, "Unknown status"),
         "sandra_location": country_lower == "austria",
-        "recommendation": "Safe for Sandra in Vienna (AT)"
-        if country_lower == "austria"
-        else "Check local laws",
+        "recommendation": "Safe for Sandra in Vienna (AT)" if country_lower == "austria" else "Check local laws",
     }
 
 

@@ -14,6 +14,19 @@ function fmtBytes(n: number) {
     return `${v.toFixed(i === 0 ? 0 : 1)} ${u[i]}`;
 }
 
+const STATE_LABELS: Record<number, [string, string]> = {
+    0: ["stopped", "text-red-400"],
+    1: ["downloading", "text-blue-400"],
+    2: ["seeding", "text-green-400"],
+    3: ["hashing", "text-yellow-400"],
+};
+
+function torrentStateLabel(state: number | undefined): string {
+    const entry = STATE_LABELS[state ?? -1];
+    if (!entry) return "—";
+    return entry[0];
+}
+
 export function Status() {
     const { health, rtStatus, torrents, loading, error } = useRtorrentBridge(5000);
     const connected = rtStatus?.connected === true;
@@ -83,6 +96,7 @@ export function Status() {
                             <thead className="sticky top-0 bg-slate-900 text-xs uppercase text-slate-500">
                                 <tr>
                                     <th className="p-3">Name</th>
+                                    <th className="p-3">State</th>
                                     <th className="p-3">Progress</th>
                                     <th className="p-3">Done</th>
                                     <th className="p-3">Size</th>
@@ -93,6 +107,7 @@ export function Status() {
                                 {list.map((t) => (
                                     <tr key={t.hash} className="border-t border-slate-800/80">
                                         <td className="p-3 align-top break-all">{t.name}</td>
+                                        <td className="p-3 whitespace-nowrap"><span className={STATE_LABELS[t.state]?.[1] ?? ""}>{torrentStateLabel(t.state)}</span></td>
                                         <td className="p-3 whitespace-nowrap">{t.progress?.toFixed?.(1) ?? "—"}%</td>
                                         <td className="p-3 whitespace-nowrap">{fmtBytes(t.completed_bytes)}</td>
                                         <td className="p-3 whitespace-nowrap">{fmtBytes(t.size_bytes)}</td>
@@ -101,7 +116,7 @@ export function Status() {
                                 ))}
                                 {!loading && list.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="p-6 text-center text-slate-500">
+                                        <td colSpan={6} className="p-6 text-center text-slate-500">
                                             No torrents or cannot reach rTorrent. Check .env RTORRENT_HOST / RTORRENT_PORT.
                                         </td>
                                     </tr>

@@ -66,6 +66,7 @@ from mcp.types import (
 )
 
 from rtorrent_mcp.config.settings import Settings
+import contextlib
 
 if TYPE_CHECKING:
     from mcp.server.session import ServerSession
@@ -136,9 +137,7 @@ def _mcp_tools_to_openai(tools: list[Tool] | None) -> list[dict[str, Any]] | Non
                 "function": {
                     "name": t.name,
                     "description": t.description or f"MCP tool {t.name}",
-                    "parameters": (
-                        t.inputSchema if isinstance(t.inputSchema, dict) else {"type": "object"}
-                    ),
+                    "parameters": (t.inputSchema if isinstance(t.inputSchema, dict) else {"type": "object"}),
                 },
             }
         )
@@ -207,10 +206,7 @@ def _sampling_messages_to_openai(
                 tool_calls = []
                 for tu in tool_uses:
                     args = tu.input
-                    if isinstance(args, dict):
-                        arg_str = json.dumps(args, ensure_ascii=False)
-                    else:
-                        arg_str = str(args)
+                    arg_str = json.dumps(args, ensure_ascii=False) if isinstance(args, dict) else str(args)
                     tool_calls.append(
                         {
                             "id": tu.id or str(uuid.uuid4()),
@@ -281,9 +277,7 @@ class RTorrentSamplingHandler:
         _ = request_context  # reserved for tracing / future use
         cfg = self._cfg()
         api_key = getattr(cfg, "sampling_api_key", None)
-        base_url = (getattr(cfg, "sampling_base_url", None) or "http://127.0.0.1:11434/v1").rstrip(
-            "/"
-        )
+        base_url = (getattr(cfg, "sampling_base_url", None) or "http://127.0.0.1:11434/v1").rstrip("/")
         default_model = getattr(cfg, "sampling_model", None) or "llama3.2"
         model = _hint_model(params, default_model)
         max_tokens = params.maxTokens
@@ -332,10 +326,8 @@ class RTorrentSamplingHandler:
                 data = r.json()
         except httpx.HTTPStatusError as e:
             err_body = ""
-            try:
+            with contextlib.suppress(Exception):
                 err_body = e.response.text[:2000]
-            except Exception:
-                pass
             msg = (
                 f"[rtorrent-mcp sampling] HTTP {e.response.status_code} from {url}. "
                 f"Check Ollama is running, RTORRENT_SAMPLING_MODEL is pulled, URL/base path, "

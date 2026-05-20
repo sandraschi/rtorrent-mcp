@@ -31,7 +31,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import application settings
-from rtorrent_mcp.config.settings import settings  # noqa: E402
+from rtorrent_mcp.config.settings import get_settings, settings  # noqa: E402
 from rtorrent_mcp.sampling import RTorrentSamplingHandler  # noqa: E402
 
 from .transport import run_server_async  # noqa: E402
@@ -86,14 +86,16 @@ class RTorrentMCPServer(FastMCP):
         """
         # Load settings
         if config_path and os.path.exists(config_path):
-            os.environ["ENV_FILE"] = config_path
-        if settings.LOG_LEVEL:
-            os.environ["FASTMCP_LOG_LEVEL"] = settings.LOG_LEVEL
+            self._settings = get_settings(env_file=config_path)
+        else:
+            self._settings = settings
+        if self._settings.LOG_LEVEL:
+            os.environ["FASTMCP_LOG_LEVEL"] = self._settings.LOG_LEVEL
 
-        self._sampling_handler = RTorrentSamplingHandler(config=settings)
+        self._sampling_handler = RTorrentSamplingHandler(config=self._settings)
 
         super().__init__(
-            name=settings.APP_NAME,
+            name=self._settings.APP_NAME,
             instructions=self._get_instructions(),
             version=__version__,
             providers=_BUNDLED_SKILL_PROVIDERS or None,
@@ -104,32 +106,36 @@ class RTorrentMCPServer(FastMCP):
         )
 
         self.logger = logging.getLogger(__name__)
-        self._settings = settings
 
     def _get_instructions(self) -> str:
         """Generate server instructions with MCPB pattern."""
         return f"""
-{settings.APP_DESCRIPTION}
+{self._settings.APP_DESCRIPTION}
 
 ## FastMCP 3.1
 
 ### Portmanteau tools (6) + agentic_rtorrent_workflow
-1. **torrent_management** - Add, list, pause, resume, delete, status, info, check_completed, process, start_processing, stop_processing, normalize
-2. **search_management** - Anime, manga, japanese_tv, movies, tv_shows, tv_smart, ebooks_annas, ebooks_pb, comics, annas_detail, imdb, imdb_search, tvdb
+1. **torrent_management** - Add, list, pause, resume, delete, status, info,
+   check_completed, process, start_processing, stop_processing, normalize
+2. **search_management** - Anime, manga, japanese_tv, movies, tv_shows, tv_smart,
+   ebooks_annas, ebooks_pb, comics, annas_detail, imdb, imdb_search, tvdb
 3. **nlp_management** - Command processing, parsing, help
 4. **legal_management** - Risk assessment, legal checks, advice, status
 5. **system_management** - Help, status, health, info, analyze
 6. **workflow_management** - Franchise downloads, batch series, scheduling
-7. **agentic_rtorrent_workflow** - Natural-language multi-step automation (requires sampling LLM)
+7. **agentic_rtorrent_workflow** - LLM-orchestrated multi-step flows
 
 ### Sampling
-Default: OpenAI-compatible HTTP at RTORRENT_SAMPLING_BASE_URL (Ollama on localhost). Set RTORRENT_SAMPLING_USE_CLIENT_LLM=1 to prefer the MCP host LLM.
+Default: OpenAI-compatible HTTP at RTORRENT_SAMPLING_BASE_URL (Ollama localhost).
+Set RTORRENT_SAMPLING_USE_CLIENT_LLM=1 to prefer the MCP host LLM.
 
 ### Skills
 Bundled skills under skill:// (see skills/rtorrent-mcp/SKILL.md).
 
 ### Prompt templates
-anime_search_prompt, franchise_download_prompt, legal_check_prompt, tv_show_search_prompt, ebook_search_prompt, torrent_workflow_prompt, system_status_prompt
+anime_search_prompt, franchise_download_prompt, legal_check_prompt,
+tv_show_search_prompt, ebook_search_prompt, torrent_workflow_prompt,
+system_status_prompt
 
 ### Legal hints (AT)
 Tool output may include Austria-oriented risk context; users must verify local law.
@@ -148,9 +154,7 @@ Tool output may include Austria-oriented risk context; users must verify local l
         self.logger.info("Legal hints: AT-oriented defaults in tools (not legal advice)")
         self.logger.info(
             "Focus: %s",
-            ", ".join(self._settings.ALLOWED_CATEGORIES)
-            + " @ "
-            + "/".join(self._settings.ALLOWED_RESOLUTIONS),
+            ", ".join(self._settings.ALLOWED_CATEGORIES) + " @ " + "/".join(self._settings.ALLOWED_RESOLUTIONS),
         )
 
         self.logger.info("Mode: FastMCP 3.1 — 6 portmanteau tools + agentic_rtorrent_workflow")
@@ -171,6 +175,16 @@ Tool output may include Austria-oriented risk context; users must verify local l
 
         register_web_api(self, app_version=__version__)
         self.logger.info("HTTP REST API registered: /api/health, /api/info, /api/rtorrent/*")
+
+        if hasattr(self, "_app") and self._app is not None:
+            from starlette.middleware.cors import CORSMiddleware
+
+            self._app.add_middleware(
+                CORSMiddleware,
+                allow_origins=["*"],
+                allow_methods=["GET", "POST", "OPTIONS"],
+                allow_headers=["*"],
+            )
 
         self.logger.info("[OK] Server setup complete")
 
@@ -205,9 +219,7 @@ Examples:
   python -m rtorrent_mcp.server --config .env.prod # Custom config
         """,
     )
-    parser.add_argument(
-        "--config", type=str, default=".env", help="Path to configuration file (.env)"
-    )
+    parser.add_argument("--config", type=str, default=".env", help="Path to configuration file (.env)")
     parser.add_argument(
         "--transport",
         type=str,
@@ -245,7 +257,11 @@ Examples:
         server.setup()
         import asyncio
 
-        asyncio.run(run_server_async(server, args=transport_args, server_name="rtorrent-mcp"))
+        try:
+            asyncio.run(run_server_async(server, args=transport_args, server_name="rtorrent-mcp"))
+        except RuntimeError:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(run_server_async(server, args=transport_args, server_name="rtorrent-mcp"))
     except Exception as e:
         logger.error("[FAIL] Failed to start server: %s", str(e), exc_info=True)
         sys.exit(1)
@@ -265,10 +281,25 @@ class _UvicornASGIApp:
 
     async def __call__(self, scope, receive, send):
         if self._inner is None:
-            srv = RTorrentMCPServer()
-            srv.setup()
-            path = os.environ.get("MCP_PATH", "/mcp")
-            self._inner = srv.http_app(path=path)
+            try:
+                srv = RTorrentMCPServer()
+                srv.setup()
+                path = os.environ.get("MCP_PATH", "/mcp")
+                if not path.startswith("/"):
+                    path = "/" + path
+                self._inner = srv.http_app(path=path)
+            except Exception:
+                logger.exception("Failed to build ASGI app")
+                from starlette.responses import Response
+
+                resp = Response(
+                    content='{"ok":false,"error":"Failed to initialize server"}',
+                    status_code=500,
+                    media_type="application/json",
+                    headers={"content-type": "application/json"},
+                )
+                await resp(scope, receive, send)
+                return
         return await self._inner(scope, receive, send)
 
 

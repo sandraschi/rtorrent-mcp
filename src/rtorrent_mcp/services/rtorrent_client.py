@@ -28,7 +28,7 @@ class RTorrentClient:
             if not self.server:
                 self.server = xmlrpc.client.ServerProxy(f"http://{self.host}:{self.port}/RPC2")
             # Test connection
-            await asyncio.get_event_loop().run_in_executor(None, self.server.system.listMethods)
+            await asyncio.get_running_loop().run_in_executor(None, self.server.system.listMethods)
             self.connected = True
             logger.info("Connected to rTorrent successfully")
             return True
@@ -44,7 +44,7 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             torrent_hashes = await loop.run_in_executor(None, self.server.download_list)
 
             torrents = []
@@ -53,9 +53,7 @@ class RTorrentClient:
                     info = await loop.run_in_executor(None, self.server.d.get_name, hash_str)
                     state = await loop.run_in_executor(None, self.server.d.get_state, hash_str)
                     size = await loop.run_in_executor(None, self.server.d.get_size_bytes, hash_str)
-                    completed = await loop.run_in_executor(
-                        None, self.server.d.get_completed_bytes, hash_str
-                    )
+                    completed = await loop.run_in_executor(None, self.server.d.get_completed_bytes, hash_str)
 
                     torrents.append(
                         {
@@ -81,7 +79,7 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             # rTorrent XMLRPC method is load.start (not load_start)
             await loop.run_in_executor(None, self.server.load.start, "", magnet_link)
 
@@ -95,9 +93,7 @@ class RTorrentClient:
                 # Set custom1 for category (rTorrent custom field)
                 # rTorrent uses d.custom1.set method
                 try:
-                    await loop.run_in_executor(
-                        None, lambda: self.server.d.custom1.set(hash_str, category)
-                    )
+                    await loop.run_in_executor(None, self.server.d.custom1.set, hash_str, category)
                 except Exception as e:
                     logger.warning(f"Could not set category: {e}")
                     # Continue anyway - torrent was added successfully
@@ -121,7 +117,7 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, self.server.d.pause, torrent_hash)
             return {"status": "success", "hash": torrent_hash, "action": "paused"}
         except Exception as e:
@@ -133,7 +129,7 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, self.server.d.resume, torrent_hash)
             return {"status": "success", "hash": torrent_hash, "action": "resumed"}
         except Exception as e:
@@ -145,12 +141,10 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, self.server.d.close, torrent_hash)
             if delete_files:
                 await loop.run_in_executor(None, self.server.d.erase, torrent_hash)
-            else:
-                await loop.run_in_executor(None, self.server.d.close, torrent_hash)
-                await loop.run_in_executor(None, self.server.d.remove, torrent_hash)
 
             return {
                 "status": "success",
@@ -167,7 +161,7 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             base_path = await loop.run_in_executor(None, self.server.d.get_base_path, torrent_hash)
             return base_path or ""
         except Exception as e:
@@ -180,7 +174,7 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             directory = await loop.run_in_executor(None, self.server.d.get_directory, torrent_hash)
             return directory or ""
         except Exception as e:
@@ -193,13 +187,9 @@ class RTorrentClient:
             await self.connect()
 
         try:
-            loop = asyncio.get_event_loop()
-            size_bytes = await loop.run_in_executor(
-                None, self.server.d.get_size_bytes, torrent_hash
-            )
-            completed_bytes = await loop.run_in_executor(
-                None, self.server.d.get_completed_bytes, torrent_hash
-            )
+            loop = asyncio.get_running_loop()
+            size_bytes = await loop.run_in_executor(None, self.server.d.get_size_bytes, torrent_hash)
+            completed_bytes = await loop.run_in_executor(None, self.server.d.get_completed_bytes, torrent_hash)
 
             if size_bytes == 0:
                 return False

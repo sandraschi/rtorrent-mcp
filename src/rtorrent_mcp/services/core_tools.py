@@ -72,7 +72,7 @@ def register_core_tools(mcp):
             },
         },
     )
-    def help() -> dict[str, Any]:
+    def _help_tool() -> dict[str, Any]:
         """Get comprehensive help information"""
         try:
             return {
@@ -142,7 +142,7 @@ def register_core_tools(mcp):
                 ],
                 "configuration": {
                     "app_name": "RTorrent MCP",
-                    "version": "1.0.0",
+                    "version": "3.0.0",
                     "legal_status": "Safe for Sandra in Vienna - Austrian legal compliance",
                     "allowed_categories": ["Anime"],
                     "allowed_resolutions": ["720p", "1080p"],
@@ -242,7 +242,7 @@ def register_core_tools(mcp):
                 },
                 "configuration": {
                     "app_name": "RTorrent MCP",
-                    "version": "1.0.0",
+                    "version": "3.0.0",
                     "log_level": "INFO",
                     "allowed_categories": ["Anime"],
                 },
@@ -342,8 +342,8 @@ def register_core_tools(mcp):
             analysis = {
                 "project_info": {
                     "name": "RTorrent MCP Server",
-                    "version": "1.0.0",
-                    "description": "FastMCP 2.12 compliant server for anime torrenting automation with Austrian legal compliance",
+                    "version": "3.0.0",
+                    "description": "FastMCP 3.1 server for anime torrenting automation with Austrian legal compliance",
                     "author": "Sandra's Austrian Anime Automation",
                 },
                 "structure": {"directories": [], "files": [], "total_lines": 0, "total_files": 0},
@@ -400,14 +400,10 @@ def register_core_tools(mcp):
                     analysis["structure"]["files"].append(str(item.relative_to(project_root)))
 
             # Count Python files
-            analysis["code_quality"]["python_files"] = len(
-                [f for f in project_root.rglob("*.py") if f.is_file()]
-            )
+            analysis["code_quality"]["python_files"] = len([f for f in project_root.rglob("*.py") if f.is_file()])
 
             # Count test files
-            analysis["code_quality"]["test_files"] = len(
-                [f for f in project_root.rglob("test_*.py") if f.is_file()]
-            )
+            analysis["code_quality"]["test_files"] = len([f for f in project_root.rglob("test_*.py") if f.is_file()])
 
             # Count documentation files
             analysis["code_quality"]["documentation_files"] = len(

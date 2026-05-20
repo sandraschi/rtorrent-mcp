@@ -88,7 +88,10 @@ def register_legal_management_tool(mcp: FastMCP, settings) -> None:
 
         Examples:
             # Assess risk for a torrent
-            result = await legal_management(action="risk", torrent_info={"name": "Detective Conan", "category": "anime"})
+            result = await legal_management(
+                action="risk",
+                torrent_info={"name": "Detective Conan", "category": "anime"},
+            )
 
             # Check if anime is legal in Austria
             result = await legal_management(action="check", content_type="anime")
@@ -134,8 +137,8 @@ def register_legal_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "content_type is required for 'check' action",
                     }
-                # Check Austrian legal status using existing service
-                result = check_country_legal_status("austria")
+                # Check legal status for specified country
+                result = check_country_legal_status(country)
                 content_risk = {
                     "anime": "LOW",
                     "manga": "LOW",
@@ -157,9 +160,7 @@ def register_legal_management_tool(mcp: FastMCP, settings) -> None:
             if action == "advice":
                 result = check_country_legal_status(country)
                 result["activity"] = activity
-                result["advice"] = (
-                    f"For {activity} in {country}: {result.get('recommendation', 'Check local laws')}"
-                )
+                result["advice"] = f"For {activity} in {country}: {result.get('recommendation', 'Check local laws')}"
                 return {
                     "success": True,
                     "action": action,

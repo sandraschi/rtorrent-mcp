@@ -11,6 +11,7 @@ export default defineConfig({
   },
   server: {
     port: 10912,
+    strictPort: true,
     host: "127.0.0.1",
     proxy: {
       // Same port as start.ps1 backend — MCP streamable HTTP + REST bridge for the SPA

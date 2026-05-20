@@ -126,8 +126,8 @@ def _get_help(topic: str | None, level: str) -> dict:
     """Get help documentation."""
     base_help = {
         "title": "RTorrent MCP Server (AT)",
-        "description": "FastMCP 2.12 compliant server for anime torrenting automation with Austrian legal compliance",
-        "version": "1.0.0",
+        "description": "FastMCP 3.1 server for anime torrenting automation with Austrian legal compliance",
+        "version": "3.0.0",
         "portmanteau_tools": {
             "torrent_management": {
                 "description": "All rTorrent operations (add, list, pause, resume, delete, status)",
@@ -177,11 +177,7 @@ def _get_help(topic: str | None, level: str) -> dict:
     }
 
     if topic and topic != "all":
-        filtered = {
-            k: v
-            for k, v in base_help.items()
-            if topic.lower() in k.lower() or topic.lower() in str(v).lower()
-        }
+        filtered = {k: v for k, v in base_help.items() if topic.lower() in k.lower() or topic.lower() in str(v).lower()}
         if filtered:
             return filtered
 
@@ -208,7 +204,8 @@ async def _get_health(settings) -> dict:
     """Get detailed health metrics."""
     cpu_percent = psutil.cpu_percent()
     memory = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
+    disk_path = "C:\\" if sys.platform == "win32" else "/"
+    disk = psutil.disk_usage(disk_path)
 
     return {
         "status": "healthy" if cpu_percent < 90 and memory.percent < 90 else "degraded",
@@ -234,7 +231,7 @@ def _get_info(settings) -> dict:
         "name": getattr(settings, "APP_NAME", "RTorrent MCP Server"),
         "version": getattr(settings, "APP_VERSION", "1.0.0"),
         "description": getattr(settings, "APP_DESCRIPTION", "Austrian anime automation"),
-        "framework": "FastMCP 2.12",
+        "framework": "FastMCP 3.1",
         "transport": "stdio",
         "configuration": {
             "rtorrent_host": getattr(settings, "RTORRENT_HOST", "localhost"),
@@ -257,7 +254,7 @@ def _get_info(settings) -> dict:
 
 async def _analyze_repo() -> dict:
     """Analyze repository structure."""
-    project_root = Path(__file__).parent.parent.parent.parent.parent
+    project_root = Path(__file__).resolve().parents[4]  # src/rtorrent_mcp/tools/portmanteau → repo root
 
     # Count files by type
     py_files = list(project_root.rglob("*.py"))

@@ -106,7 +106,7 @@ def register_nlp_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "text is required for 'command' action",
                     }
-                result = await process_sandra_command(text, language)
+                result = await process_sandra_command(text)
                 return {"success": True, "action": action, "data": result}
 
             if action == "parse":
@@ -121,11 +121,7 @@ def register_nlp_management_tool(mcp: FastMCP, settings) -> None:
                     "anime_name": extract_anime_name(text),
                     "resolution": extract_resolution(text),
                     "release_group": extract_release_group(text),
-                    "language": (
-                        "german"
-                        if any(w in text.lower() for w in ("lade", "herunterladen"))
-                        else "english"
-                    ),
+                    "language": ("german" if any(w in text.lower() for w in ("lade", "herunterladen")) else "english"),
                 }
                 return {"success": True, "action": action, "data": parsed}
 

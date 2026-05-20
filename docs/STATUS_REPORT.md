@@ -1,19 +1,23 @@
 # RTorrent MCP Server - Status Report
 
-**Date:** 2025-01-27  
+**Date:** 2026-05-10  
 **Project:** rtorrent_mcp (RTorrent MCP Server)  
-**Version:** 1.0.0  
-**Status:** Active development (self-hosted MCP server)
+**Version:** 3.0.1  
+**Status:** Active development (bugbash complete, production-capable)
 
 ---
 
 ## Executive Summary
 
-FastMCP 3.x MCP server for rTorrent automation and multi-source search, with AT-oriented legal **risk hints** in tool outputs. This report mixes historical notes with snapshot metrics; re-run tests and `pytest --cov` for current numbers.
+FastMCP 3.1 MCP server for rTorrent automation and multi-source search, with AT-oriented legal
+risk hints in tool outputs. Comprehensive bugbash completed 2026-05-10 (25+ fixes across 16 files).
 
-**Current state (indicative):**
-- [OK] Core torrent + search paths exercised in development
-- [WARN] Line coverage has historically been below an 80% target (verify locally)
+**Current state:**
+- [OK] Core torrent + search paths stable with race-condition fixes
+- [OK] REST API secured (API_KEY auth, CORS, input validation)
+- [OK] Fleet port compliance (10910)
+- [WARN] Test coverage below 80% target
+- [WARN] Workflow management `franchise`/`batch_series` are stubs (queued, not executing)
 - Active development: post-processing, extended search, metadata helpers
 
 ---
@@ -34,11 +38,12 @@ FastMCP 3.x MCP server for rTorrent automation and multi-source search, with AT-
 ## Completed Features
 
 ### 1. Core Infrastructure
-- [OK] **FastMCP**: Tools registered via FastMCP (`@mcp.tool` / portmanteau handlers)
-- [OK] **rTorrent Integration**: HTTP XMLRPC communication (port 12224:8000)
-- [OK] **Windows Compatibility**: No Unix socket dependencies
+- [OK] **FastMCP 3.1**: Portmanteau tools, sampling, skills provider, agentic workflow
+- [OK] **rTorrent Integration**: HTTP XMLRPC via nginx (port 12224→container 8000)
+- [OK] **Windows Compatibility**: No Unix socket dependencies; `disk_usage` platform-aware
 - [OK] **Docker Support**: docker-compose.yml with rTorrent + ruTorrent
-- [OK] **Configuration Management**: Environment variables and .env support
+- [OK] **Configuration Management**: Environment variables, `.env` support, `--config` flag works
+- [OK] **REST API**: Auth (API_KEY), CORS, input validation, error codes
 
 ### 2. Search Capabilities
 - [OK] **nyaa.si Anime Search**: ASW release group prioritization
@@ -121,10 +126,9 @@ FastMCP 3.x MCP server for rTorrent automation and multi-source search, with AT-
 
 ## [WARN] Areas Requiring Attention
 
-### 1. Test Coverage (CRITICAL)
-**Current:** 34.43% line coverage  
-**Target:** 80% line coverage  
-**Gap:** 45.57% coverage needed
+### 1. Test Coverage
+**Current:** Below 80% target
+**Target:** 80% line coverage
 
 **Action Items:**
 - [ ] Add unit tests for post-processing service
@@ -133,49 +137,12 @@ FastMCP 3.x MCP server for rTorrent automation and multi-source search, with AT-
 - [ ] Increase integration test coverage
 - [ ] Add tests for error handling paths
 
-**Files Needing Tests:**
-- `src/rtorrent_mcp/services/post_processor.py`
-- `src/rtorrent_mcp/services/annas_archive_search.py`
-- `src/rtorrent_mcp/services/metadata_service.py`
-- `src/rtorrent_mcp/services/nyaa_extended_search.py`
-- `src/rtorrent_mcp/services/piratebay_extended_search.py`
-- `src/rtorrent_mcp/services/yts_search.py`
-
-### 2. Uncommitted Changes
-**Status:** 7 modified files, 12 untracked files
-
-**Modified Files:**
-- `src/rtorrent_mcp/config/settings.py`
-- `src/rtorrent_mcp/services/nyaa_search.py`
-- `src/rtorrent_mcp/services/piratebay_search.py`
-- `src/rtorrent_mcp/services/rtorrent_client.py`
-- `src/rtorrent_mcp/tools/__init__.py`
-- `src/rtorrent_mcp/tools/search_tools.py`
-- `tests/test_basic.py`
-
-**New Files (Untracked):**
-- `docs/MEDIA_DASHBOARD_PLAN.md`
-- `docs/POST_PROCESSING_SETUP.md`
-- `pyrightconfig.json`
-- `src/rtorrent_mcp/services/annas_archive_search.py`
-- `src/rtorrent_mcp/services/metadata_service.py`
-- `src/rtorrent_mcp/services/nyaa_extended_search.py`
-- `src/rtorrent_mcp/services/piratebay_extended_search.py`
-- `src/rtorrent_mcp/services/post_processor.py`
-- `src/rtorrent_mcp/services/yts_search.py`
-- `src/rtorrent_mcp/tools/post_processing_tools.py`
-- `tests/test_extended_search.py`
-- `tests/test_post_processing.py`
-
-**Action:** Review and commit changes, or document why they're uncommitted
+### 2. Workflow Stubs
+**Status:** `franchise` and `batch_series` actions queue workflows but do not execute downloads.
+The `_execute_franchise_workflow` function is not yet implemented.
 
 ### 3. GitHub Actions
-**Status:** [WARN] Not verified as passing
-
-**Action Items:**
-- [ ] Verify all GitHub Actions workflows pass
-- [ ] Fix any failing CI/CD checks
-- [ ] Ensure automated testing runs on PRs
+**Status:** [WARN] Verify all GitHub Actions workflows pass after bugbash changes.
 
 ---
 
@@ -195,10 +162,12 @@ FastMCP 3.x MCP server for rTorrent automation and multi-source search, with AT-
 
 ### Code Quality
 - [OK] Type hints throughout codebase
-- [OK] Comprehensive error handling
-- [OK] Structured logging
-- [OK] FastMCP 2.12 compliant
+- [OK] Comprehensive error handling with error_code fields
+- [OK] Structured logging (%s format, not f-strings)
+- [OK] FastMCP 3.1 compliant (portmanteau tools, sampling, skills, agentic workflow)
 - [OK] PowerShell-first (Windows compatibility)
+- [OK] No deprecated `asyncio.get_event_loop()` — migrated to `asyncio.get_running_loop()`
+- [OK] REST API: auth, CORS, input validation, sanitized error messages
 
 ---
 
@@ -287,13 +256,14 @@ src/rtorrent_mcp/
 └── server.py              # FastMCP server entry point
 ```
 
-### Tool Distribution
-- **Torrent Tools:** 6 tools (add, list, pause, resume, delete, status)
-- **Search Tools:** 11+ tools (anime, TV, movies, ebooks, extended)
-- **NLP Tools:** 3 tools (anime commands, TV commands, parsing)
-- **Legal Tools:** 2 tools (status check, warnings)
-- **System Tools:** 4 tools (help, status, analysis, validation)
-- **Post-Processing Tools:** 5 tools (check, process, start, stop, normalize)
+### Tool Distribution (Portmanteau)
+- **6 Portmanteau Tools + 1 Agentic Workflow** (45 total actions)
+- **Torrent Management** (12 actions): add, list, pause, resume, delete, status, info, check_completed, process, start_processing, stop_processing, normalize
+- **Search Management** (13 actions): anime, manga, japanese_tv, movies, tv_shows, tv_smart, ebooks_annas, ebooks_pb, comics, annas_detail, imdb, imdb_search, tvdb
+- **NLP Management** (3 actions): command, parse, help
+- **Legal Management** (4 actions): risk, check, advice, status
+- **System Management** (5 actions): help, status, health, info, analyze
+- **Workflow Management** (8 actions): franchise, batch_series, status, cancel, list, estimate, queue, schedule
 
 ---
 
@@ -302,8 +272,11 @@ src/rtorrent_mcp/
 ### Security Measures
 - [OK] No hardcoded credentials
 - [OK] Environment variable configuration
-- [OK] Input validation on all tool parameters
-- [OK] Error handling prevents information leakage
+- [OK] Input validation on all tool parameters + API endpoints
+- [OK] REST API: Bearer/X-API-Key auth when API_KEY is set
+- [OK] Magnet link format validation via regex
+- [OK] Error messages sanitized (no internal path/stack leakage)
+- [OK] OMDb API over HTTPS (was HTTP)
 - [OK] User-Agent headers prevent blocking
 - [OK] Dependency scanning configured (bandit, safety)
 
@@ -371,13 +344,17 @@ src/rtorrent_mcp/
 
 ## Conclusion
 
-The server targets self-hosted rTorrent + search workflows; numbers elsewhere in this file may be outdated—regenerate with tests and coverage locally. Do not treat internal checklists as external certification.
+Production-capable rTorrent MCP server with 6 portmanteau tools, agentic workflow (FastMCP 3.1),
+multi-source search, post-processing, and AT-oriented legal hints. Bugbash completed 2026-05-10
+with 25+ fixes addressing critical (crashes, security), high (memory leaks, race conditions),
+and medium (logic, design) issues.
 
-**Status:** Active development
+Known gaps: test coverage below target, workflow stubs (franchise/batch_series not executing).
+
+**Status:** Active development — version 3.0.1
 
 ---
 
-*Generated: 2025-01-27*  
+*Updated: 2026-05-10*  
 *Project: rtorrent_mcp (RTorrent MCP Server)*  
-*Version: 1.0.0*  
-*lgr1 - Rules verified*
+*Version: 3.0.1*

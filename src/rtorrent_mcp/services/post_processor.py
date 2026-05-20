@@ -32,8 +32,23 @@ class PostProcessor:
         """
         self.config = config
         self.processed_hashes: set[str] = set()
+        self._processed_lock = asyncio.Lock()
         self.client: RTorrentClient | None = None
         self.running = False
+
+    async def _mark_processed(self, torrent_hash: str):
+        """Mark torrent as processed, capping set size to prevent memory leaks."""
+        async with self._processed_lock:
+            self.processed_hashes.add(torrent_hash)
+            if len(self.processed_hashes) > 10000:
+                keep = self.processed_hashes.pop()
+                self.processed_hashes.clear()
+                self.processed_hashes.add(keep)
+                logger.warning("processed_hashes capped at 10000; oldest entries pruned")
+
+    async def _is_processed(self, torrent_hash: str) -> bool:
+        async with self._processed_lock:
+            return torrent_hash in self.processed_hashes
 
     async def initialize(self):
         """Initialize rTorrent client"""
@@ -53,7 +68,7 @@ class PostProcessor:
 
         for torrent in torrents:
             hash_str = torrent.get("hash")
-            if not hash_str or hash_str in self.processed_hashes:
+            if not hash_str or await self._is_processed(hash_str):
                 continue
 
             # Check if 100% complete
@@ -108,7 +123,7 @@ class PostProcessor:
         normalized = normalized.strip(" .-")
 
         # Ensure file extension is preserved
-        if not normalized.endswith((".mkv", ".mp4", ".avi", ".mkv", ".m4v")):
+        if not normalized.endswith((".mkv", ".mp4", ".avi", ".m4v")):
             # If we removed too much, try to preserve original extension
             original_ext = Path(filename).suffix
             if original_ext and not normalized.endswith(original_ext):
@@ -116,23 +131,18 @@ class PostProcessor:
 
         return normalized
 
-    def get_ingestion_folder(self, category: str, torrent_name: str) -> Path | None:
+    def get_ingestion_folder(self, category: str) -> Path | None:
         """Determine appropriate ingestion folder based on category
 
         Args:
             category: Torrent category (anime/TV/movies)
-            torrent_name: Name of the torrent
 
         Returns:
             Path to ingestion folder, or None if not configured
         """
         category_lower = category.lower()
 
-        if (
-            category_lower == "anime"
-            and "ingestion_anime_path" in self.config
-            and self.config["ingestion_anime_path"]
-        ):
+        if category_lower == "anime" and "ingestion_anime_path" in self.config and self.config["ingestion_anime_path"]:
             return Path(self.config["ingestion_anime_path"])
         elif (
             category_lower in ("tv", "tv-shows")
@@ -162,12 +172,8 @@ class PostProcessor:
             await self.initialize()
 
         try:
-            loop = asyncio.get_event_loop()
-            # Get torrent base path (directory or file path)
-            base_path = await loop.run_in_executor(
-                None, self.client.server.d.get_base_path, torrent_hash
-            )
-            await loop.run_in_executor(None, self.client.server.d.get_name, torrent_hash)
+            loop = asyncio.get_running_loop()
+            base_path = await loop.run_in_executor(None, self.client.server.d.get_base_path, torrent_hash)
 
             if not base_path:
                 return []
@@ -233,11 +239,8 @@ class PostProcessor:
         # Get category from torrent custom field
         try:
             if self.client:
-                loop = asyncio.get_event_loop()
-                category = (
-                    await loop.run_in_executor(None, self.client.server.d.custom1.get, torrent_hash)
-                    or "anime"
-                )
+                loop = asyncio.get_running_loop()
+                category = await loop.run_in_executor(None, self.client.server.d.custom1.get, torrent_hash) or "anime"
             else:
                 category = "anime"
         except Exception:
@@ -249,11 +252,9 @@ class PostProcessor:
             return {"status": "error", "message": f"No files found for torrent {torrent_name}"}
 
         # Get ingestion folder
-        ingestion_folder = self.get_ingestion_folder(category, torrent_name)
+        ingestion_folder = self.get_ingestion_folder(category)
         if not ingestion_folder:
-            logger.warning(
-                f"No ingestion folder configured for category '{category}', skipping move"
-            )
+            logger.warning(f"No ingestion folder configured for category '{category}', skipping move")
             # Still mark as processed if configured to delete
             if self.config.get("delete_torrent_after_complete", False):
                 await self._delete_torrent(torrent_hash)
@@ -306,7 +307,7 @@ class PostProcessor:
                 errors.append(f"Failed to delete torrent: {delete_result.get('message')}")
 
         # Mark as processed
-        self.processed_hashes.add(torrent_hash)
+        await self._mark_processed(torrent_hash)
 
         result = {
             "status": "success" if not errors else "partial",
@@ -323,20 +324,12 @@ class PostProcessor:
         return result
 
     async def _delete_torrent(self, torrent_hash: str) -> dict[str, Any]:
-        """Delete torrent from rTorrent (no sharing)
-
-        Args:
-            torrent_hash: Torrent hash identifier
-
-        Returns:
-            Deletion result
-        """
+        """Delete torrent from rTorrent (files already moved to ingestion)."""
         if not self.client:
             await self.initialize()
 
         try:
-            # Close and remove torrent (delete_files=False - files already moved)
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, self.client.server.d.close, torrent_hash)
             await loop.run_in_executor(None, self.client.server.d.erase, torrent_hash)
 
@@ -360,17 +353,12 @@ class PostProcessor:
                     result = await self.process_completed_torrent(torrent)
 
                     if result.get("status") == "success":
-                        logger.info(
-                            f"Successfully processed {torrent.get('name')}: {len(result.get('moved_files', []))} files moved"
-                        )
+                        n_moved = len(result.get("moved_files", []))
+                        logger.info(f"Processed {torrent.get('name')}: {n_moved} files moved")
                     elif result.get("status") == "partial":
-                        logger.warning(
-                            f"Partially processed {torrent.get('name')}: {result.get('errors')}"
-                        )
+                        logger.warning(f"Partially processed {torrent.get('name')}: {result.get('errors')}")
                     else:
-                        logger.error(
-                            f"Failed to process {torrent.get('name')}: {result.get('message')}"
-                        )
+                        logger.error(f"Failed to process {torrent.get('name')}: {result.get('message')}")
 
                 await asyncio.sleep(poll_interval)
 

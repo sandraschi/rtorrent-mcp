@@ -1,10 +1,11 @@
 # rTorrent MCP Server 
 
-[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.1.0-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
-
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastMCP](https://img.shields.io/badge/FastMCP-3.1-brightgreen)](https://goFastMCP 3.1.0com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <a href="https://github.com/casey/just"><img src="https://img.shields.io/badge/just-ready_to_go-7c5cfc?style=flat-square&logo=just&logoColor=white" alt="Just"></a>
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+  <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
+  <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.2-7c5cfc?style=flat-square" alt="FastMCP"></a>
+</p>
 
 **rTorrent MCP**  FastMCP 3.1.0 server for **anime BitTorrent automation** with Austrian legal context, talking to **rTorrent** over XML-RPC/SCGI (not a generic site scraper).
 
@@ -38,60 +39,44 @@
 
 ## Quick Start
 
-### Prerequisites
+```powershell
+git clone https://github.com/sandraschi/qbt-mcp
+cd qbt-mcp
+just
+```
 
+This opens an interactive dashboard showing all available commands. Run `just bootstrap` to install dependencies, then `just serve` or `just dev` to start.
+
+### Manual Setup
+
+If you don't have `just` installed:
+### Prerequisites
 - Python 3.10 or higher
 - Docker Desktop (for rTorrent) - **Recommended**
 - Claude Desktop (for MCP integration)
-
 ### rTorrent stack (Docker, recommended)
-
 #### What [crazy-max/docker-rtorrent-rutorrent](https://github.com/crazy-max/docker-rtorrent-rutorrent) is
-
 **CrazyMax** maintains a well-used Docker setup that packages **rTorrent** (the actual client), **ruTorrent** (a PHP web UI on top of rTorrent), and **nginx** as a front door. Nginx exposes **XML-RPC** on a TCP port so clients (this MCP server, scripts, other tools) can call rTorrents RPC at `/RPC2` without you wiring SCGI sockets by hand. The image is aimed at install Docker, get a working rTorrent + classic WebUI, not at building rTorrent from source.
-
 This repos root [`docker-compose.yml`](docker-compose.yml) pins **`crazymax/rtorrent-rutorrent:latest`**, maps **XML-RPC** to **12224** and **ruTorrent** to **12222**, and uses volumes under `./config`, your downloads folder, `./watch`, and `./logs` (see the compose file for exact bind paths on Windows).
-
 #### Install (minimal)
-
 1. Install **Docker Desktop** and ensure it is running.
 2. Clone this repository (or copy `docker-compose.yml` and related layout).
 3. From the **repository root**:
-
-   ```bash
-   docker compose up -d
-   ```
-
-   (Use `docker-compose up -d` if your Docker install only provides the hyphenated CLI.)
-
+docker compose up -d
+(Use `docker-compose up -d` if your Docker install only provides the hyphenated CLI.)
 4. Check the container:
-
-   ```bash
-   docker logs rtorrent-mcp
-   ```
-
+docker logs rtorrent-mcp
 5. **Endpoints (defaults in this repo):**
-   - **XML-RPC (for MCP):** `http://localhost:12224/RPC2`
-   - **ruTorrent WebUI:** `http://localhost:12222`
-
+- **XML-RPC (for MCP):** `http://localhost:12224/RPC2`
+- **ruTorrent WebUI:** `http://localhost:12222`
 Point the MCP server at the RPC endpoint with **`RTORRENT_HOST`** / **`RTORRENT_PORT`** (see [docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)).
-
 #### ruTorrent vs this projects webapp (`web_sota/`)
-
 **ruTorrent** (bundled in CrazyMaxs image) is the full UI: plugins, RSS, autotools, labels, and a lot of surface area. Many people find it **overcomplicated** and the UI **dated**; it is still the right place when you need **plugin workflows** (RSS rules, auto-move, unpack, etc.) that we do not replicate.
-
 **Our webapp** under [`web_sota/`](web_sota/) is intentionally **rudimentary**: a small **Vite + React** dashboard on a **REST bridge** (`/api/*`) served by the same Python process as MCPsee [`web_sota/README.md`](web_sota/README.md). Today it is a **light substitute** for day-to-day glances: health, rTorrent probe, torrent list, **magnet add**. It is **not** a feature-complete ruTorrent replacement. Use it when you want something simple; keep ruTorrent (or MCP tools) when you need depth.
-
 Run the stack (backend + Vite) with:
-
-```powershell
 .\web_sota\start.ps1
-```
-
 Default dev URLs are documented in `web_sota/README.md` (Vite + uvicorn ports).
-
 #### Optional: ruTorrent plugins (CrazyMax image)
-
 The upstream image ships ruTorrent with many plugins; common automation-related ones include RSS/feeds, autotools, scheduler, unpack, ratio/seedingtime. See [docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md) for a longer list and configuration notes.
 
 ## Installation
@@ -265,7 +250,7 @@ For Windows, macOS, Docker, and advanced configuration options, see [docs/RTORRE
    ```env
    # rTorrent settings
    RTORRENT_HOST=localhost
-   RTORRENT_PORT=5000
+   RTORRENT_PORT=12224
    RTORRENT_PATH=/var/lib/rtorrent/session
 
    # Nyaa.si settings
@@ -455,7 +440,7 @@ await analyze_repo()
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `RTORRENT_HOST` | `localhost` | rTorrent SCGI host |
-| `RTORRENT_PORT` | `5000` | rTorrent SCGI port |
+| `RTORRENT_PORT` | `12224` | rTorrent XML-RPC port |
 | `RTORRENT_PATH` | `/var/lib/rtorrent/session` | rTorrent session path |
 | `NYAA_BASE_URL` | `https://nyaa.si` | Nyaa.si base URL |
 | `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
@@ -480,7 +465,7 @@ await analyze_repo()
 For detailed API documentation, run the server and visit:
 
 ```
-http://localhost:8000/docs
+http://localhost:10910/api/health
 ```
 
 ### Product Requirements Document
@@ -547,7 +532,7 @@ Add this configuration to your `claude_desktop_config.json`:
       "env": {
         "PYTHONPATH": "/path/to/your/rtorrent_mcp/src",
         "RTORRENT_HOST": "localhost",
-        "RTORRENT_PORT": "5000",
+        "RTORRENT_PORT": "12224",
         "NYAA_BASE_URL": "https://nyaa.si"
       }
     }
@@ -622,7 +607,7 @@ Copy `.env.example` to `.env` and configure:
 
 ```env
 RTORRENT_HOST=localhost
-RTORRENT_PORT=5000
+RTORRENT_PORT=12224
 NYAA_BASE_URL=https://nyaa.si
 ALLOWED_CATEGORIES=Anime
 ALLOWED_RESOLUTIONS=720p,1080p
@@ -721,9 +706,9 @@ This tool is designed for Austrian legal context where personal downloading is g
 
 - **FastMCP 3.1.0+**: MCP server framework with stdio transport
 - **UV**: Modern Python package manager for fast, reliable builds
-- **aiohttp**: Async HTTP client for nyaa.si API
+- **aiohttp**: Async HTTP client for indexer APIs
 - **beautifulsoup4**: HTML parsing for search results
-- **rtorrent-xmlrpc**: rTorrent SCGI communication
+- **xmlrpc.client**: rTorrent SCGI communication (Python stdlib)
 - **psutil**: System monitoring and health checks
 - **pydantic**: Data validation and settings management
 - **python-dotenv**: Environment configuration

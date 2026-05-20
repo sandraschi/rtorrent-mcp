@@ -1,8 +1,8 @@
 # rtorrent-mcp - Project Assessment
 
 **Category**: MCP Server  
-**Assessment Date**: 2026-01-01  
-**Status**: Runt
+**Assessment Date**: 2026-05-10  
+**Status**: Active Development
 
 ---
 
@@ -10,49 +10,44 @@
 
 | Metric | Value |
 |--------|-------|
-| **Status** | Runt |
-| **Development Status** | Needs Major Work |
-| **Runt Status** | RUNT - No MCPB packaging |
-| **Last Modified** | 12/14/2025 20:22:06 |
+| **Status** | Active Development |
+| **Development Status** | Production-capable with known gaps |
+| **Last Modified** | 2026-05-10 |
+| **Version** | 3.0.1 |
 | **Has Git Repository** | True |
 | **Has Proper Structure** | True |
-| **Has MCPB Packaging** | False |
 | **Has CI/CD Pipeline** | True |
-| **Has Monitoring Stack** | True |
+| **Bugbash Completed** | 2026-05-10 (25+ fixes) |
 
 ---
 
 ## **Standards Compliance**
 
-- [OK] Proper project structure
-- [OK] CI/CD pipeline
-- [OK] Monitoring stack
+- [OK] Proper project structure (portmanteau tools, services, config, web_sota)
+- [OK] CI/CD pipeline (GitHub Actions: lint, test, security, publish)
+- [OK] FastMCP 3.1 with sampling, skills, agentic workflow
+- [OK] Fleet port compliance (10910, not 8000/5000/etc.)
+- [OK] REST API secured with API_KEY auth + CORS
+- [OK] Version unified to 3.0.0 across all modules
+- [WARN] Test coverage below 80% target
+- [WARN] Workflow management actions are stubs (queued, not executing)
+
 ---
 
-## **Important TODOs**
+## **Recent Bugbash (2026-05-10)**
 
--  **CRITICAL**: RUNT - No MCPB packaging
--  **CRITICAL**: Implement MCPB packaging (manifest.json)
+25+ fixes across 16 files. Key areas:
+- Security: OMDb API HTTP→HTTPS, REST API auth, port 0.0.0.0→127.0.0.1
+- Crashes: `process_sandra_command` signature, Windows `disk_usage`, `help()` shadowing
+- Memory: `processed_hashes` capped, poll task ref stored
+- Correctness: `tv_shows` group default, OMDb API key required, TPB domain configurable
+- Deprecations: `asyncio.get_event_loop()` → `get_running_loop()` (14 instances)
+
 ---
 
 ## **Next Steps**
 
-### **Major Refactoring Required**
-1. **Initialize Git repository** if missing
-2. **Implement proper project structure**
-3. **Set up MCPB packaging**
-4. **Create CI/CD pipeline**
-5. **Update documentation**
-6. **Implement monitoring stack**
----
-
-## **References**
-
-- [MCP Central Documentation Standards](../STANDARDS.md)
-- [FastMCP 2.12 Migration Guide](../FASTMCP_2.12_MIGRATION.md)
-- [MCPB Packaging Standards](../MCPB_PACKAGING_STANDARDS.md)
-- [Monitoring Standards](../monitoring/README.md)
-
----
-
-*Assessment generated on 2026-01-01 21:47:42*
+1. **Test coverage**: Increase to 80% (services, tools, error paths)
+2. **Workflow execution**: Implement `_execute_franchise_workflow` stubs
+3. **GitHub Actions**: Verify all CI workflows pass after fixes
+4. **Persistent storage**: Episode tracking, workflow state (currently in-memory)

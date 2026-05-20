@@ -37,81 +37,78 @@ async def search_yts_movies(
 
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, headers=headers) as response:
-                if response.status != 200:
-                    logger.error(f"YTS API returned {response.status}")
-                    return [{"error": f"YTS API returned {response.status}"}]
+        async with aiohttp.ClientSession() as session, session.get(url, params=params, headers=headers) as response:
+            if response.status != 200:
+                logger.error(f"YTS API returned {response.status}")
+                return [{"error": f"YTS API returned {response.status}"}]
 
-                data = await response.json()
+            data = await response.json()
 
-                if data.get("status") != "ok":
-                    error_msg = data.get("status_message", "Unknown error")
-                    logger.error(f"YTS API error: {error_msg}")
-                    return [{"error": f"YTS API error: {error_msg}"}]
+            if data.get("status") != "ok":
+                error_msg = data.get("status_message", "Unknown error")
+                logger.error(f"YTS API error: {error_msg}")
+                return [{"error": f"YTS API error: {error_msg}"}]
 
-                movies = data.get("data", {}).get("movies", [])
-                if not movies:
-                    logger.info(f"No movies found for query: {query}")
-                    return []
+            movies = data.get("data", {}).get("movies", [])
+            if not movies:
+                logger.info(f"No movies found for query: {query}")
+                return []
 
-                results = []
+            results = []
 
-                for movie in movies:
-                    try:
-                        movie_title = movie.get("title", "Unknown")
-                        movie_year = movie.get("year", 0)
-                        movie_rating = movie.get("rating", 0)
-                        movie_runtime = movie.get("runtime", 0)
+            for movie in movies:
+                try:
+                    movie_title = movie.get("title", "Unknown")
+                    movie_year = movie.get("year", 0)
+                    movie_rating = movie.get("rating", 0)
+                    movie_runtime = movie.get("runtime", 0)
 
-                        # Get torrents for the preferred quality
-                        torrents = movie.get("torrents", [])
-                        preferred_torrents = [
-                            t for t in torrents if t.get("quality", "").lower() == quality.lower()
-                        ]
+                    # Get torrents for the preferred quality
+                    torrents = movie.get("torrents", [])
+                    preferred_torrents = [t for t in torrents if t.get("quality", "").lower() == quality.lower()]
 
-                        # If no preferred quality, use all available
-                        if not preferred_torrents:
-                            preferred_torrents = torrents
+                    # If no preferred quality, use all available
+                    if not preferred_torrents:
+                        preferred_torrents = torrents
 
-                        # Sort by seeds within quality
-                        preferred_torrents.sort(key=lambda x: x.get("seeds", 0), reverse=True)
+                    # Sort by seeds within quality
+                    preferred_torrents.sort(key=lambda x: x.get("seeds", 0), reverse=True)
 
-                        # Take the best torrent for this movie
-                        if preferred_torrents:
-                            best_torrent = preferred_torrents[0]
+                    # Take the best torrent for this movie
+                    if preferred_torrents:
+                        best_torrent = preferred_torrents[0]
 
-                            # YTS provides magnet links
-                            magnet = best_torrent.get("url", "")
-                            if not magnet.startswith("magnet:"):
-                                # YTS sometimes provides hash, construct magnet
-                                hash_str = best_torrent.get("hash", "")
-                                if hash_str:
-                                    magnet = f"magnet:?xt=urn:btih:{hash_str}&dn={quote_plus(movie_title)}"
+                        # YTS provides magnet links
+                        magnet = best_torrent.get("url", "")
+                        if not magnet.startswith("magnet:"):
+                            # YTS sometimes provides hash, construct magnet
+                            hash_str = best_torrent.get("hash", "")
+                            if hash_str:
+                                magnet = f"magnet:?xt=urn:btih:{hash_str}&dn={quote_plus(movie_title)}"
 
-                            results.append(
-                                {
-                                    "title": movie_title,
-                                    "year": movie_year,
-                                    "rating": movie_rating,
-                                    "runtime": movie_runtime,
-                                    "quality": best_torrent.get("quality", quality),
-                                    "size": best_torrent.get("size", "Unknown"),
-                                    "seeds": best_torrent.get("seeds", 0),
-                                    "peers": best_torrent.get("peers", 0),
-                                    "magnet": magnet,
-                                    "imdb_code": movie.get("imdb_code", ""),
-                                    "yts_id": movie.get("id", 0),
-                                }
-                            )
+                        results.append(
+                            {
+                                "title": movie_title,
+                                "year": movie_year,
+                                "rating": movie_rating,
+                                "runtime": movie_runtime,
+                                "quality": best_torrent.get("quality", quality),
+                                "size": best_torrent.get("size", "Unknown"),
+                                "seeds": best_torrent.get("seeds", 0),
+                                "peers": best_torrent.get("peers", 0),
+                                "magnet": magnet,
+                                "imdb_code": movie.get("imdb_code", ""),
+                                "yts_id": movie.get("id", 0),
+                            }
+                        )
 
-                    except Exception as e:
-                        logger.warning(f"Error parsing YTS movie: {e}")
-                        continue
+                except Exception as e:
+                    logger.warning(f"Error parsing YTS movie: {e}")
+                    continue
 
-                # Sort by seeds (most active first)
-                results.sort(key=lambda x: x["seeds"], reverse=True)
-                return results[:10]  # Top 10 results
+            # Sort by seeds (most active first)
+            results.sort(key=lambda x: x["seeds"], reverse=True)
+            return results[:10]  # Top 10 results
 
     except aiohttp.ClientError as e:
         logger.error(f"YTS search network error: {e}")

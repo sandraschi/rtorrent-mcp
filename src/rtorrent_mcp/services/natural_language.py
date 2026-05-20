@@ -25,17 +25,20 @@ async def process_sandra_command(command: str) -> dict[str, Any]:
     command_lower = command.lower()
 
     # Parse common Sandra patterns
-    if "asw" in command_lower and "720p" in command_lower:
-        if "this week" in command_lower or "latest" in command_lower or "recent" in command_lower:
-            # Search for recent ASW releases
-            results = await search_nyaa_anime("", "720p", "ASW")
-            return {
-                "command_understood": command,
-                "action": "search_recent_asw_720p",
-                "results": results[:3],
-                "austrian_efficiency": True,
-                "benny_approved": "Woof! (Good anime choice!)",
-            }
+    if (
+        "asw" in command_lower
+        and "720p" in command_lower
+        and ("this week" in command_lower or "latest" in command_lower or "recent" in command_lower)
+    ):
+        # Search for recent ASW releases with a generic timestamp-based query
+        results = await search_nyaa_anime("new", "720p", "ASW")
+        return {
+            "command_understood": command,
+            "action": "search_recent_asw_720p",
+            "results": results[:3],
+            "austrian_efficiency": True,
+            "benny_approved": "Woof! (Good anime choice!)",
+        }
 
     # Detective Conan specific (Sandra's favorite)
     if "detective conan" in command_lower or "conan" in command_lower:
@@ -51,9 +54,7 @@ async def process_sandra_command(command: str) -> dict[str, Any]:
         }
 
     # German language commands (Austrian context)
-    if any(
-        german_word in command_lower for german_word in ["lade", "herunterladen", "anime", "folge"]
-    ):
+    if any(german_word in command_lower for german_word in ["lade", "herunterladen", "anime", "folge"]):
         return await process_german_command(command_lower)
 
     # General anime search pattern
@@ -170,12 +171,19 @@ def extract_resolution(command: str) -> str:
 
 def extract_release_group(command: str) -> str:
     """Extract release group from command"""
-    groups = ["asw", "subsplease", "erai-raws", "ember", "judas", "horriblesubs"]
-    command_lower = command.lower()
+    GROUPS_CLEANED = {
+        "asw": "ASW",
+        "subsplease": "SubsPlease",
+        "erairaws": "Erai-raws",
+        "ember": "EMBER",
+        "judas": "Judas",
+        "horriblesubs": "HorribleSubs",
+    }
+    command_cleaned = command.lower().replace("-", "")
 
-    for group in groups:
-        if group.replace("-", "") in command_lower.replace("-", ""):
-            return group.upper() if group == "asw" else group.title()
+    for raw, display in GROUPS_CLEANED.items():
+        if raw.replace("-", "") in command_cleaned:
+            return display
 
     return ""
 
@@ -215,9 +223,7 @@ def register_nlp_tools(mcp):
             "anime_name": extract_anime_name(command),
             "resolution": extract_resolution(command),
             "release_group": extract_release_group(command),
-            "language": "german"
-            if any(word in command.lower() for word in ["lade", "herunterladen"])
-            else "english",
+            "language": "german" if any(word in command.lower() for word in ["lade", "herunterladen"]) else "english",
         }
 
     @mcp.tool()

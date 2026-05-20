@@ -3,7 +3,7 @@ import { ExternalLink, Box } from "lucide-react";
 
 /** Optional bookmarks only — not scanned or discovered at runtime */
 const SHORTCUTS = [
-    { name: "This app (Vite)", port: 10909, description: "rtorrent-mcp web shell" },
+    { name: "This app (Vite)", port: 10911, description: "rtorrent-mcp web shell" },
     { name: "MCP HTTP (same machine)", port: 10910, description: "Streamable MCP path /mcp" },
 ];
 

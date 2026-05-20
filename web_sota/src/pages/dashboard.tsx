@@ -15,6 +15,19 @@ function fmtBytes(n: number) {
     return `${v.toFixed(i === 0 ? 0 : 1)} ${u[i]}`;
 }
 
+const STATE_LABELS: Record<number, [string, string]> = {
+    0: ["stopped", "text-red-400"],
+    1: ["downloading", "text-blue-400"],
+    2: ["seeding", "text-green-400"],
+    3: ["hashing", "text-yellow-400"],
+};
+
+function torrentStateLabel(state: number | undefined): string {
+    const entry = STATE_LABELS[state ?? -1];
+    if (!entry) return "—";
+    return entry[0];
+}
+
 export function Dashboard() {
     const { health, rtStatus, torrents, loading, error, refresh } = useRtorrentBridge(10000);
     const [magnet, setMagnet] = useState("");
@@ -167,6 +180,7 @@ export function Dashboard() {
                             <thead className="sticky top-0 bg-slate-900 text-slate-500">
                                 <tr>
                                     <th className="p-2">Name</th>
+                                    <th className="p-2">State</th>
                                     <th className="p-2">Progress</th>
                                     <th className="p-2">Size</th>
                                 </tr>
@@ -175,13 +189,14 @@ export function Dashboard() {
                                 {(torrents?.torrents ?? []).slice(0, 12).map((t) => (
                                     <tr key={t.hash} className="border-t border-slate-800/80">
                                         <td className="p-2 align-top break-all">{t.name}</td>
+                                        <td className="p-2 whitespace-nowrap"><span className={STATE_LABELS[t.state]?.[1] ?? ""}>{torrentStateLabel(t.state)}</span></td>
                                         <td className="p-2 whitespace-nowrap">{t.progress?.toFixed?.(1) ?? "—"}%</td>
                                         <td className="p-2 whitespace-nowrap">{fmtBytes(t.size_bytes)}</td>
                                     </tr>
                                 ))}
                                 {!loading && (torrents?.torrents?.length ?? 0) === 0 ? (
                                     <tr>
-                                        <td colSpan={3} className="p-4 text-slate-500">
+                                        <td colSpan={4} className="p-4 text-slate-500">
                                             No torrents (or rTorrent unreachable).
                                         </td>
                                     </tr>

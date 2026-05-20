@@ -386,18 +386,14 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     validation["recommendations"].append(f"[OK] rTorrent found at: {rtorrent_path}")
                 else:
                     validation["errors"].append("[FAIL] rTorrent binary not found in PATH")
-                    validation["recommendations"].append(
-                        "Install rTorrent: sudo apt install rtorrent (Ubuntu/Debian)"
-                    )
+                    validation["recommendations"].append("Install rTorrent: sudo apt install rtorrent (Ubuntu/Debian)")
             except Exception as e:
                 validation["errors"].append(f"Error checking rTorrent binary: {e}")
 
             # Check 2: SCGI support
             try:
                 if validation["checks"]["binary_exists"]:
-                    result = subprocess.run(
-                        ["rtorrent", "-h"], capture_output=True, text=True, timeout=10
-                    )
+                    result = subprocess.run(["rtorrent", "-h"], capture_output=True, text=True, timeout=10)
                     if "scgi" in result.stdout.lower() or "scgi" in result.stderr.lower():
                         validation["checks"]["scgi_support"] = True
                         validation["recommendations"].append("[OK] SCGI support detected")
@@ -422,16 +418,12 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     if config_path.exists():
                         validation["checks"]["config_file"] = True
                         config_found = True
-                        validation["recommendations"].append(
-                            f"[OK] Configuration file found: {config_path}"
-                        )
+                        validation["recommendations"].append(f"[OK] Configuration file found: {config_path}")
                         break
 
                 if not config_found:
                     validation["errors"].append("[FAIL] rTorrent configuration file not found")
-                    validation["recommendations"].append(
-                        "Create ~/.rtorrent.rc with SCGI configuration"
-                    )
+                    validation["recommendations"].append("Create ~/.rtorrent.rc with SCGI configuration")
             except Exception as e:
                 validation["errors"].append(f"Error checking configuration: {e}")
 
@@ -481,9 +473,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                         validation["recommendations"].append("[OK] XML-RPC interface working")
                     else:
                         validation["errors"].append("[FAIL] XML-RPC interface not responding")
-                        validation["recommendations"].append(
-                            "Check rTorrent SCGI configuration and restart"
-                        )
+                        validation["recommendations"].append("Check rTorrent SCGI configuration and restart")
             except Exception as e:
                 validation["errors"].append(f"Error checking XML-RPC: {e}")
 
@@ -494,9 +484,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             elif any(all_checks):
                 validation["installation_status"] = "[WARN] Partial - Some issues found"
             else:
-                validation["installation_status"] = (
-                    "[FAIL] Failed - rTorrent not properly installed"
-                )
+                validation["installation_status"] = "[FAIL] Failed - rTorrent not properly installed"
 
             # Add general recommendations
             if not validation["checks"]["binary_exists"]:
@@ -747,14 +735,10 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     analysis["structure"]["files"].append(str(item.relative_to(project_root)))
 
             # Count Python files
-            analysis["code_quality"]["python_files"] = len(
-                [f for f in project_root.rglob("*.py") if f.is_file()]
-            )
+            analysis["code_quality"]["python_files"] = len([f for f in project_root.rglob("*.py") if f.is_file()])
 
             # Count test files
-            analysis["code_quality"]["test_files"] = len(
-                [f for f in project_root.rglob("test_*.py") if f.is_file()]
-            )
+            analysis["code_quality"]["test_files"] = len([f for f in project_root.rglob("test_*.py") if f.is_file()])
 
             # Count documentation files
             analysis["code_quality"]["documentation_files"] = len(

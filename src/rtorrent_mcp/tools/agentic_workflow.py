@@ -70,9 +70,7 @@ def register_agentic_rtorrent_workflow(app) -> None:
                     error="No tools specified",
                     error_code="EMPTY_TOOLS",
                     message="Pass at least one portmanteau tool name",
-                    recovery_options=[
-                        "Example: ['search_management','torrent_management','legal_management']"
-                    ],
+                    recovery_options=["Example: ['search_management','torrent_management','legal_management']"],
                 )
             if context is None or not hasattr(context, "sample_step"):
                 return _err(
@@ -125,7 +123,7 @@ def register_agentic_rtorrent_workflow(app) -> None:
                         name = getattr(tc, "name", None) or getattr(tc, "tool_name", str(tc))
                         if name:
                             executed.append(name)
-                if not getattr(step, "is_tool_use", True):
+                if not getattr(step, "is_tool_use", False):
                     final_text = getattr(step, "text", "") or ""
                     return _ok(
                         operation="agentic_rtorrent_workflow",

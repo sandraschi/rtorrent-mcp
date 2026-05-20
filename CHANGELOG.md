@@ -173,70 +173,67 @@ python -m rtorrent_mcp.server --legacy
 - **Rename:** GitHub / distribution **`rtorrent-mcp`**, Python package **`rtorrent_mcp`**. Historic **`qbtmcp`** (qBittorrent prototype) is retired — update imports and clone URL.
 - **Docs:** New **[docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)**; Help page in **`web_sota`** expanded with rTorrent / XML-RPC / env details.
 - **README**: Opening section now states **BitTorrent** + **rTorrent (SCGI)** explicitly and clarifies that **`web_sota` is a shell/demo**, not the control plane.
-- **`web_sota`**: Replaced misleading “fleet auto-discovery”, fake throughput, qBittorrent Web API help text, and static “System Online” with honest copy; added **`web_sota/README.md`**, **MCP HTTP** reachability (proxied `GET /mcp`), and port **10909** in Vite to match `start.ps1`.
+- **`web_sota`**: Replaced misleading "fleet auto-discovery", fake throughput, qBittorrent Web API help text, and static "System Online" with honest copy; added **`web_sota/README.md`**, **MCP HTTP** reachability (proxied `GET /mcp`), and port **10909** in Vite to match `start.ps1`.
 
 ### Added
 - **Post-Processing System**: Automatic completion detection, filename normalization, and Plex integration
-  - `check_completed_downloads`: Check for 100% complete downloads
-  - `process_completed_download`: Process and move completed downloads
-  - `start_post_processing`: Start automatic background polling
-  - `stop_post_processing`: Stop automatic post-processing
-  - `normalize_filename`: Clean filenames by removing release group tags
-  - Configuration via environment variables (POST_PROCESSING_ENABLED, INGESTION_*_PATH)
-  - See [POST_PROCESSING_SETUP.md](docs/POST_PROCESSING_SETUP.md) for details
-
-- **Extended Search Capabilities**:
-  - **Manga Search**: Search nyaa.si for manga (raw/translated/english)
-  - **Japanese TV Search**: Search nyaa.si for Japanese TV shows
-  - **Movie Search**: YTS (yify) integration - gold standard for movies
-  - **Anna's Archive Search**: Ebook and academic paper search (60M+ books!)
-  - **Comic Search**: Search The Pirate Bay for western comics
-  - **Extended Pirate Bay Search**: Enhanced TV show and category search
-  - See [EXTENDED_SEARCH_GUIDE.md](docs/EXTENDED_SEARCH_GUIDE.md) for usage
-
-- **Metadata Services**:
-  - **IMDb Metadata**: Get movie/TV show metadata via OMDb API
-  - **IMDb Search**: Search IMDb for multiple title matches
-  - **TVDB Metadata**: Get TV show metadata (requires subscription)
-  - **Anna's Archive Detail**: Get detailed torrent info with magnet links
-
-- Initial release of RTorrent MCP Server
-- rTorrent XMLRPC API integration (through nginx)
-- NYAA.si anime search with quality scoring
-- Austrian legal compliance checking
-- Natural language command processing (English/German)
-- MCPB packaging support
-- Comprehensive CI/CD pipeline
-- Security scanning and vulnerability assessment
-- Code quality tools (Black, isort, mypy, flake8)
-- Unit and integration test suites
-- Self-documenting tools with JSON schemas
-- Claude Desktop integration guides
-- Comprehensive status reporting and documentation
+- **Extended Search Capabilities**: Manga, Japanese TV, Movies (YTS), Anna's Archive, Comics, extended Pirate Bay
+- **Metadata Services**: IMDb and TVDB metadata retrieval
+- Initial release of RTorrent MCP Server (rTorrent XMLRPC, NYAA.si search, legal compliance, NLP, MCPB, CI/CD)
 
 ### Changed
 - Implemented rTorrent SCGI backend (after qBittorrent proved unusable)
 - Updated to FastMCP 2.12 for better Claude integration
-- Improved error handling and logging
-- Enhanced security and privacy features
 
 ### Fixed
--  **rTorrent connection issue resolved**: Fixed SCGI connection problem by using XMLRPC through nginx (port 8000) instead of direct SCGI configuration
-  - Updated docker-compose.yml to map port 12224 to container port 8000 (XMLRPC)
-  - Removed unnecessary custom startup scripts and socat bridge
-  - Connection now works using standard XMLRPC protocol through nginx proxy
-  - Verified with rTorrent version 0.15.5
+- rTorrent connection via XMLRPC through nginx (port 8000→12224 mapping)
+- Connection now works using standard XMLRPC protocol through nginx proxy
 
-### Technical Details
-- **Framework**: FastMCP 2.12
-- **Backend**: rTorrent XMLRPC API (through nginx)
-- **Search Engines**: NYAA.si, The Pirate Bay, YTS, Anna's Archive
-- **Legal Compliance**: Austria-focused
-- **Languages**: English/German NLP support
-- **Packaging**: MCPB bundles
-- **CI/CD**: GitHub Actions with security scanning
-- **Total MCP Tools**: 52 tools registered
-- **Test Coverage**: 34.43% (target: 80%)
+---
+
+## [3.0.1] - 2026-05-10
+
+### Fixed — Comprehensive bugbash (25+ fixes across 16 files)
+
+#### Critical
+- **nlp_management**: `process_sandra_command` called with wrong parameter count (TypeError crash)
+- **metadata_service**: OMDb API endpoint upgraded HTTP→HTTPS (cleartext API key exposure)
+- **metadata_service**: OMDb API key now required with clear error (dead code path since 2017)
+- **api/web_routes**: REST API now requires `API_KEY` auth; magnet links validated with regex
+- **server/config**: `--config` CLI flag now works (was dead — Settings loaded at import time)
+
+#### High (crashes / memory leaks / race conditions)
+- **core_tools**: `help()` renamed to `_help_tool()` (shadowed Python builtin)
+- **system_management**: `psutil.disk_usage("/")` → platform-aware `C:\` on Windows
+- **tv_integration_tools**: Episode tracker now persists state (was fully stateless, data lost)
+- **piratebay_search/extended**: Hardcoded TPB domain → `settings.PIRATEBAY_BASE_URL`
+- **settings**: Default port 8000 (forbidden) → **10910** (fleet-compliant); bind 0.0.0.0 → 127.0.0.1
+- **torrent_management**: Poll task reference stored to prevent double-start leaks
+- **post_processor**: `processed_hashes` set capped at 10k entries (was unbounded memory leak)
+- **search_management**: `tv_shows` action defaults to `MeGusta` instead of `ASW`
+- **agentic_workflow**: Infinite loop guard default fixed (`True` → `False`)
+- **rtorrent_client + post_processor**: 14 instances `asyncio.get_event_loop()` → `asyncio.get_running_loop()`
+
+#### Medium (logic / design)
+- **post_processor**: Added `_processed_lock` for check/mark race condition
+- **natural_language**: Empty query for "this week" → `"new"`; release group casing via lookup dict
+- **api/web_routes**: Error codes use proper status (401/503) + `error_code` fields + CORS middleware
+- **tv_nlp_tools**: Stop-word removal removed (was corrupting show titles like "Law and Order")
+- **web_routes**: REST API uses singleton `get_rtorrent_client()` instead of creating per-request
+- **workflow_management**: Workflow IDs include `secrets.token_hex(4)` suffix to prevent collisions
+- **rtorrent_client**: `d.remove` (non-standard) → `d.close` only; lambda → direct arg pass
+- **post_processor**: Dead XMLRPC call removed; duplicate `.mkv` fixed; unused param dropped
+- **torrent_management**: TOCTOU race in `_get_post_processor` → `asyncio.Lock`
+- **server/transport**: Event loop fallback for `asyncio.run()` inside existing loops; `MCP_PORT` validation
+
+#### Docs / metadata
+- Version unified to **3.0.0** across `__init__.py`, `settings.py`, `core_tools.py`, `system_management.py`
+- FastMCP references updated 2.12 → 3.1 throughout
+- `transport.py` docstring updated 2.14.4 → 3.1
+- `_UvicornASGIApp` now handles startup errors with proper ASGI 500 response
+- MCP path normalized to include leading `/`
+- Stub `franchise`/`batch_series` workflows return `"queued_not_executing"` + clear warning
+- `legal_management` "check" action now uses `country` parameter instead of hardcoded "austria"
 
 ---
 

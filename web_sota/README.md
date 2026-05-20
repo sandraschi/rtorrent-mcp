@@ -25,7 +25,7 @@ From repo root:
 .\web_sota\start.ps1
 ```
 
-- **Vite:** `http://127.0.0.1:10909`
+- **Vite:** `http://127.0.0.1:10911`
 - **Backend (uvicorn):** `http://127.0.0.1:10910` — MCP + REST on one ASGI app
 
 Configure rTorrent in `.env` (`RTORRENT_HOST`, `RTORRENT_PORT`, default `12224` if using nginx/RPC2).

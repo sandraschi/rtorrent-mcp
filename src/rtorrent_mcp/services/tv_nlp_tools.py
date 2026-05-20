@@ -97,34 +97,12 @@ class TVShowNLPProcessor:
         return result
 
     def _clean_show_name(self, name: str) -> str:
-        """Clean and normalize show name"""
-        # Remove common words that might interfere with search
-        stop_words = [
-            "the",
-            "a",
-            "an",
-            "and",
-            "or",
-            "but",
-            "in",
-            "on",
-            "at",
-            "to",
-            "for",
-            "of",
-            "with",
-            "by",
-        ]
-
-        # Split and clean
+        """Clean and normalize show name."""
         words = name.strip().split()
         cleaned_words = []
-
         for word in words:
             word = word.strip(".,!?;:'\"()[]{}")
-            if word.lower() not in stop_words or len(cleaned_words) == 0:
-                cleaned_words.append(word)
-
+            cleaned_words.append(word)
         return " ".join(cleaned_words)
 
     def extract_episode_tracking_info(self, query: str) -> dict[str, Any]:

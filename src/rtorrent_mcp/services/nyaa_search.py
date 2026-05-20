@@ -45,12 +45,12 @@ async def search_nyaa_anime(
         if group and group.upper() == "ASW":
             # Try with requested resolution first
             asw_query = quote_plus(f"{query} {resolution}")
-            asw_user_url = (
-                f"https://nyaa.si/user/AkihitoSubsWeeklies?f=0&c=1_2&q={asw_query}&s=seeders&o=desc"
-            )
+            asw_user_url = f"https://nyaa.si/user/AkihitoSubsWeeklies?f=0&c=1_2&q={asw_query}&s=seeders&o=desc"
             # Also prepare fallback without resolution (ASW often uses 1080p)
             asw_query_no_res = quote_plus(query)
-            asw_user_url_fallback = f"https://nyaa.si/user/AkihitoSubsWeeklies?f=0&c=1_2&q={asw_query_no_res}&s=seeders&o=desc"
+            asw_user_url_fallback = (
+                f"https://nyaa.si/user/AkihitoSubsWeeklies?f=0&c=1_2&q={asw_query_no_res}&s=seeders&o=desc"
+            )
         else:
             asw_user_url_fallback = None
 
@@ -63,9 +63,7 @@ async def search_nyaa_anime(
                         if asw_response.status == 200:
                             asw_html = await asw_response.text()
                             asw_soup = BeautifulSoup(asw_html, "html.parser")
-                            asw_table = asw_soup.select_one(
-                                "table.torrent-list"
-                            ) or asw_soup.select_one("table")
+                            asw_table = asw_soup.select_one("table.torrent-list") or asw_soup.select_one("table")
 
                             if asw_table:
                                 asw_rows = asw_table.select("tr")[1:21]  # Top 20 from ASW user
@@ -76,11 +74,7 @@ async def search_nyaa_anime(
                                             continue
                                         title_cell = cells[1]
                                         title_link = title_cell.select_one('a[href^="/view/"]')
-                                        title = (
-                                            title_link.text.strip()
-                                            if title_link
-                                            else title_cell.text.strip()
-                                        )
+                                        title = title_link.text.strip() if title_link else title_cell.text.strip()
                                         if not title:
                                             continue
 
@@ -88,9 +82,7 @@ async def search_nyaa_anime(
                                         magnet = magnet_link.get("href") if magnet_link else None
                                         seeders = cells[5].text.strip() if len(cells) > 5 else "0"
                                         leechers = cells[6].text.strip() if len(cells) > 6 else "0"
-                                        size = (
-                                            cells[3].text.strip() if len(cells) > 3 else "Unknown"
-                                        )
+                                        size = cells[3].text.strip() if len(cells) > 3 else "Unknown"
 
                                         score = calculate_quality_score(title, resolution)
                                         release_group = detect_release_group(title)
@@ -100,9 +92,7 @@ async def search_nyaa_anime(
                                                 "title": title,
                                                 "magnet": magnet,
                                                 "seeders": int(seeders) if seeders.isdigit() else 0,
-                                                "leechers": int(leechers)
-                                                if leechers.isdigit()
-                                                else 0,
+                                                "leechers": int(leechers) if leechers.isdigit() else 0,
                                                 "size": size,
                                                 "quality_score": score,
                                                 "release_group": release_group,
@@ -121,9 +111,7 @@ async def search_nyaa_anime(
                         if asw_response.status == 200:
                             asw_html = await asw_response.text()
                             asw_soup = BeautifulSoup(asw_html, "html.parser")
-                            asw_table = asw_soup.select_one(
-                                "table.torrent-list"
-                            ) or asw_soup.select_one("table")
+                            asw_table = asw_soup.select_one("table.torrent-list") or asw_soup.select_one("table")
 
                             if asw_table:
                                 asw_rows = asw_table.select("tr")[1:21]  # Top 20 from ASW user
@@ -134,11 +122,7 @@ async def search_nyaa_anime(
                                             continue
                                         title_cell = cells[1]
                                         title_link = title_cell.select_one('a[href^="/view/"]')
-                                        title = (
-                                            title_link.text.strip()
-                                            if title_link
-                                            else title_cell.text.strip()
-                                        )
+                                        title = title_link.text.strip() if title_link else title_cell.text.strip()
                                         if not title:
                                             continue
 
@@ -150,9 +134,7 @@ async def search_nyaa_anime(
                                         magnet = magnet_link.get("href") if magnet_link else None
                                         seeders = cells[5].text.strip() if len(cells) > 5 else "0"
                                         leechers = cells[6].text.strip() if len(cells) > 6 else "0"
-                                        size = (
-                                            cells[3].text.strip() if len(cells) > 3 else "Unknown"
-                                        )
+                                        size = cells[3].text.strip() if len(cells) > 3 else "Unknown"
 
                                         score = calculate_quality_score(title, resolution)
                                         release_group = detect_release_group(title)
@@ -162,18 +144,14 @@ async def search_nyaa_anime(
                                                 "title": title,
                                                 "magnet": magnet,
                                                 "seeders": int(seeders) if seeders.isdigit() else 0,
-                                                "leechers": int(leechers)
-                                                if leechers.isdigit()
-                                                else 0,
+                                                "leechers": int(leechers) if leechers.isdigit() else 0,
                                                 "size": size,
                                                 "quality_score": score,
                                                 "release_group": release_group,
                                             }
                                         )
                                     except Exception as e:
-                                        logger.warning(
-                                            f"Error parsing ASW user page fallback row: {e}"
-                                        )
+                                        logger.warning(f"Error parsing ASW user page fallback row: {e}")
                                         continue
                 except Exception as e:
                     logger.warning(f"Error searching ASW user page fallback: {e}")
@@ -222,10 +200,7 @@ async def search_nyaa_anime(
 
                         # Get title from link or text
                         title_link = title_cell.select_one('a[href^="/view/"]')
-                        if title_link:
-                            title = title_link.text.strip()
-                        else:
-                            title = title_cell.text.strip()
+                        title = title_link.text.strip() if title_link else title_cell.text.strip()
 
                         if not title:
                             continue
@@ -278,19 +253,13 @@ async def search_nyaa_anime(
                 # If group is specified, prioritize that group's results
                 if group and results:
                     # Separate results by group (case-insensitive match)
-                    preferred_results = [
-                        r for r in results if r["release_group"].upper() == group.upper()
-                    ]
-                    other_results = [
-                        r for r in results if r["release_group"].upper() != group.upper()
-                    ]
+                    preferred_results = [r for r in results if r["release_group"].upper() == group.upper()]
+                    other_results = [r for r in results if r["release_group"].upper() != group.upper()]
 
                     # If we found preferred group results, return ONLY those (no fallback)
                     if preferred_results:
                         # Sort preferred results by quality score (highest first)
-                        preferred_results.sort(
-                            key=lambda x: (x["quality_score"], x["seeders"]), reverse=True
-                        )
+                        preferred_results.sort(key=lambda x: (x["quality_score"], x["seeders"]), reverse=True)
                         logger.info(
                             f"Found {len(preferred_results)} {group} results, prioritizing over {len(other_results)} other results"
                         )
@@ -298,9 +267,7 @@ async def search_nyaa_anime(
                         return preferred_results[:5]
                     else:
                         # No preferred group found, log warning but return best available
-                        logger.warning(
-                            f"No {group} results found in search, returning best available results"
-                        )
+                        logger.warning(f"No {group} results found in search, returning best available results")
 
                 # Sort by quality score (ASW preference built into scoring)
                 results.sort(key=lambda x: x["quality_score"], reverse=True)
@@ -338,7 +305,7 @@ def detect_release_group(title: str) -> str:
     """Detect release group from anime title"""
     title_upper = title.upper()
 
-    for group in PREFERRED_RELEASE_GROUPS.keys():
+    for group in PREFERRED_RELEASE_GROUPS:
         if group.upper() in title_upper:
             return group
 

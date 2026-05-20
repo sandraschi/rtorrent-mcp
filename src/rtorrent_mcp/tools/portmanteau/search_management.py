@@ -206,9 +206,7 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "query is required for 'manga' action",
                     }
-                results = await search_nyaa_extended(
-                    query, content_type="manga", subcategory=subcategory
-                )
+                results = await search_nyaa_extended(query, content_type="manga", subcategory=subcategory)
                 return {"success": True, "action": action, "data": results, "count": len(results)}
 
             # Japanese TV search
@@ -219,9 +217,7 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "query is required for 'japanese_tv' action",
                     }
-                results = await search_nyaa_extended(
-                    query, content_type="japanese_tv", subcategory=subcategory
-                )
+                results = await search_nyaa_extended(query, content_type="japanese_tv", subcategory=subcategory)
                 return {"success": True, "action": action, "data": results, "count": len(results)}
 
             # Movies search (YTS - gold standard)
@@ -254,9 +250,7 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "query is required for 'ebooks_pb' action",
                     }
-                results = await search_piratebay_category(
-                    query, category="ebooks", max_results=max_results
-                )
+                results = await search_piratebay_category(query, category="ebooks", max_results=max_results)
                 return {"success": True, "action": action, "data": results, "count": len(results)}
 
             # Comics search
@@ -267,9 +261,7 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "query is required for 'comics' action",
                     }
-                results = await search_piratebay_category(
-                    query, category="comics", max_results=max_results
-                )
+                results = await search_piratebay_category(query, category="comics", max_results=max_results)
                 return {"success": True, "action": action, "data": results, "count": len(results)}
 
             # TV Shows search (Pirate Bay with MeGusta priority)
@@ -280,15 +272,12 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "query is required for 'tv_shows' action",
                     }
-                results = await search_piratebay_tv(query, resolution, group)
+                tv_group = group if group != "ASW" else "MeGusta"
+                results = await search_piratebay_tv(query, resolution, tv_group)
                 # Filter for new episodes if requested
                 if new_only and downloaded_episodes:
                     downloaded_set = set(downloaded_episodes)
-                    results = [
-                        r
-                        for r in results
-                        if "error" not in r and is_new_episode(r["title"], downloaded_set)
-                    ]
+                    results = [r for r in results if "error" not in r and is_new_episode(r["title"], downloaded_set)]
                 return {"success": True, "action": action, "data": results, "count": len(results)}
 
             # Smart TV search with NLP
@@ -310,9 +299,7 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                 if parsed_query["new_only"] and downloaded_episodes:
                     downloaded_set = set(downloaded_episodes or [])
                     new_episodes = [
-                        r
-                        for r in results
-                        if "error" not in r and is_new_episode(r["title"], downloaded_set)
+                        r for r in results if "error" not in r and is_new_episode(r["title"], downloaded_set)
                     ]
                 elif not parsed_query["new_only"]:
                     new_episodes = [r for r in results if "error" not in r]
