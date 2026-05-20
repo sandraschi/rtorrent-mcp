@@ -7,6 +7,9 @@
   <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.2-7c5cfc?style=flat-square" alt="FastMCP"></a>
 </p>
 
+
+> 📖 **[Installation Guide](INSTALL.md)** — quick start, manual setup, and troubleshooting
+
 **rTorrent MCP**  FastMCP 3.1.0 server for **anime BitTorrent automation** with Austrian legal context, talking to **rTorrent** over XML-RPC/SCGI (not a generic site scraper).
 
 **What this is:** A **BitTorrent** control plane: add/list/pause torrents, search indexers (Nyaa, etc.), workflows, and post-processing against your **rTorrent** instance. It is **not** a generic systems MCP, and it is **not** a qBittorrent Web API client.
