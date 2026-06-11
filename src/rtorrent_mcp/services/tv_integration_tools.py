@@ -41,7 +41,9 @@ def register_tv_integration_tools(mcp):
             dict: Complete TV show management results with recommendations
         """,
     )
-    async def tv_show_manager(query: str, downloaded_episodes: list[str] = None, auto_download: bool = False) -> dict:
+    async def tv_show_manager(
+        query: str, downloaded_episodes: list[str] | None = None, auto_download: bool = False
+    ) -> dict:
         """Comprehensive TV show management"""
         if downloaded_episodes is None:
             downloaded_episodes = []
@@ -106,7 +108,7 @@ def register_tv_integration_tools(mcp):
             "total_results": len(search_results),
             "new_episodes_count": len(new_episodes),
             "high_quality_count": len([e for e in new_episodes if e["quality_score"] > 100]),
-            "megusta_count": len([e for e in new_episodes if "MeGusta" in e["release_group"]]),
+            "megusta_count": len([e for e in new_episodes if e.get("release_group") == "MeGusta"]),
             "confidence": parsed_query["confidence"],
         }
 
@@ -136,7 +138,7 @@ def register_tv_integration_tools(mcp):
             dict: Episode tracking information and recommendations
         """,
     )
-    async def episode_tracker(show_name: str, action: str = "list", episode: str = None) -> dict:
+    async def episode_tracker(show_name: str, action: str = "list", episode: str | None = None) -> dict:
         """Track TV show episodes"""
         show_key = show_name.lower().strip()
         if show_key not in _episode_state:

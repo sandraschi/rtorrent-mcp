@@ -292,7 +292,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
         except Exception as e:
             logger.error(f"Error generating help information: {e}")
             return {
-                "error": f"Failed to generate help information: {str(e)}",
+                "error": f"Failed to generate help information: {e!s}",
                 "tools": [],
                 "resources": [],
                 "configuration": {},
@@ -393,7 +393,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
             # Check 2: SCGI support
             try:
                 if validation["checks"]["binary_exists"]:
-                    result = subprocess.run(["rtorrent", "-h"], capture_output=True, text=True, timeout=10)
+                    result = subprocess.run(["/usr/bin/rtorrent", "-h"], capture_output=True, text=True, timeout=10)
                     if "scgi" in result.stdout.lower() or "scgi" in result.stderr.lower():
                         validation["checks"]["scgi_support"] = True
                         validation["recommendations"].append("[OK] SCGI support detected")
@@ -429,7 +429,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
 
             # Check 4: Service running
             try:
-                result = subprocess.run(["pgrep", "-x", "rtorrent"], capture_output=True, text=True)
+                result = subprocess.run(["/usr/bin/pgrep", "-x", "rtorrent"], capture_output=True, text=True)
                 if result.returncode == 0:
                     validation["checks"]["service_running"] = True
                     validation["recommendations"].append("[OK] rTorrent process is running")
@@ -464,7 +464,10 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
 
                     response = requests.post(
                         "http://localhost:12224/RPC2",
-                        data='<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>',
+                        data=(
+                            '<?xml version="1.0"?>'
+                            "<methodCall><methodName>system.listMethods</methodName></methodCall>"
+                        ),
                         headers={"Content-Type": "text/xml"},
                         timeout=5,
                     )
@@ -505,7 +508,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                 "installation_status": "[FAIL] Error during validation",
                 "checks": {},
                 "recommendations": ["Check logs for detailed error information"],
-                "errors": [f"Validation failed: {str(e)}"],
+                "errors": [f"Validation failed: {e!s}"],
             }
 
     @mcp.tool(
@@ -689,7 +692,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                 "project_info": {
                     "name": "RTorrent MCP Server",
                     "version": "1.0.0",
-                    "description": "FastMCP 2.12 compliant server for anime torrenting automation with Austrian legal compliance",
+                    "description": "FastMCP-compliant server for anime torrenting automation with AT legal compliance",
                     "author": "Sandra's Austrian Anime Automation",
                 },
                 "structure": {"directories": [], "files": [], "total_lines": 0, "total_files": 0},
@@ -760,7 +763,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
         except Exception as e:
             logger.error(f"Error analyzing repository: {e}")
             return {
-                "error": f"Failed to analyze repository: {str(e)}",
+                "error": f"Failed to analyze repository: {e!s}",
                 "project_info": {},
                 "structure": {},
                 "dependencies": [],

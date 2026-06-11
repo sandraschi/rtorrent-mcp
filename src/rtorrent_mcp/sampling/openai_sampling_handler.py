@@ -43,6 +43,7 @@ Cloud endpoints: set ``RTORRENT_SAMPLING_API_KEY`` (or ``OPENAI_API_KEY``) and b
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import uuid
@@ -66,7 +67,6 @@ from mcp.types import (
 )
 
 from rtorrent_mcp.config.settings import Settings
-import contextlib
 
 if TYPE_CHECKING:
     from mcp.server.session import ServerSession

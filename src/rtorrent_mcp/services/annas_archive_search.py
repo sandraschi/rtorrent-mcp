@@ -30,7 +30,10 @@ async def search_annas_archive(query: str, content_type: str = "books", max_resu
     """
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            ),
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
         }
@@ -65,6 +68,9 @@ async def search_annas_archive(query: str, content_type: str = "books", max_resu
                 soup.select("div.search-result")
                 or soup.select("div.result")
                 or soup.select('div[class*="result"]')
+                or soup.select('div[class*="search-result-item"]')
+                or soup.select("div.is-relative")
+                or soup.select("tr.search-result")
                 or soup.select("article")
                 or soup.select("div.book")
                 or soup.select("div.paper")
@@ -196,10 +202,10 @@ async def search_annas_archive(query: str, content_type: str = "books", max_resu
 
     except aiohttp.ClientError as e:
         logger.error(f"Anna's Archive network error: {e}")
-        return [{"error": f"Network error: {str(e)}"}]
+        return [{"error": f"Network error: {e!s}"}]
     except Exception as e:
         logger.error(f"Anna's Archive search failed: {e}")
-        return [{"error": f"Search failed: {str(e)}"}]
+        return [{"error": f"Search failed: {e!s}"}]
 
 
 async def get_annas_archive_detail(book_url: str) -> dict[str, Any]:
@@ -229,7 +235,7 @@ async def get_annas_archive_detail(book_url: str) -> dict[str, Any]:
             torrent_links = soup.select('a[href$=".torrent"]')
 
             # Extract metadata
-            title = soup.select_one("h1") or soup.select_one("h2")
+            title = soup.select_one("h1") or soup.select_one("h2") or soup.select_one("title")
             title_text = title.text.strip() if title else "Unknown"
 
             result = {
@@ -242,7 +248,13 @@ async def get_annas_archive_detail(book_url: str) -> dict[str, Any]:
             }
 
             # Try to extract size (Anna's Archive can have massive files - 100TB+!)
-            size_elem = soup.select_one('[class*="size"]') or soup.select_one(".file-size")
+            size_elem = (
+                soup.select_one('[class*="size"]')
+                or soup.select_one(".file-size")
+                or soup.select_one('[id*="size"]')
+                or soup.select_one("dd")
+                or soup.select_one('[class*="metadata"]')
+            )
             if size_elem:
                 result["size"] = size_elem.text.strip()
 
@@ -250,4 +262,4 @@ async def get_annas_archive_detail(book_url: str) -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error fetching Anna's Archive detail: {e}")
-        return {"error": f"Detail fetch failed: {str(e)}"}
+        return {"error": f"Detail fetch failed: {e!s}"}

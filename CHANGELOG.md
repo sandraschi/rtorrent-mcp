@@ -235,6 +235,35 @@ python -m rtorrent_mcp.server --legacy
 - Stub `franchise`/`batch_series` workflows return `"queued_not_executing"` + clear warning
 - `legal_management` "check" action now uses `country` parameter instead of hardcoded "austria"
 
+#### Webapp
+- **Torrent tables**: Both dashboard + status pages now render `state` column (stopped/downloading/seeding/hashing) with color-coded badges
+- **Port conflict**: Frontend moved from 10909 (taken by speech-mcp) → 10911; backend 10910 registered in fleet port registry
+- **Cleanup**: Removed dead `App.css` (Vite boilerplate, unused), removed dead `@tanstack/react-query` dep (never imported), removed `start.ps1.bak` clutter
+
+#### Configuration & scraping
+- **nyaa_search.py**: Hardcoded ASW username `"AkihitoSubsWeeklies"` → `settings.NYAA_ASW_USERNAME` (configurable via `.env`)
+- **nyaa_search.py**: Dedup key `title` → `(title, size)` so different-resolution releases are not lost
+- **piratebay_search.py**: Duplicated TV constants → imported from `services/__init__.py` with fallback
+- **tv_integration_tools.py**: `"MeGusta" in group` → `== "MeGusta"` (exact match)
+- **core_tools.py**: Fake `recent_activity` stubs → honest placeholder
+- **annas_archive_search.py**: Added more CSS selectors for Anna's Archive search + detail page; title fallback to `<title>`
+- **settings**: Added `NYAA_ASW_USERNAME`, `API_KEY`, `PIRATEBAY_BASE_URL` settings
+
+#### Cross-connect: media service integration
+- **New service** `media_integrator.py`: Plex/Jellyfin scan notification for direct rTorrent downloads
+  - `scan_plex()` — refreshes Plex library sections (auto-discovers all or target specific)
+  - `scan_jellyfin()` — triggers Jellyfin library scan (path-aware incremental or full refresh)
+  - `notify_all()` — fires Plex + Jellyfin scans after post-processing
+- **PostProcessor**: After successful file move, automatically calls `notify_all()` — results in response
+- **`torrent_management(action="notify_media")`**: Manual trigger for Plex/Jellyfin scan
+- **Design note**: *arr apps (Radarr/Sonarr) are NOT notified by rtorrent-mcp — *arr should be configured
+  with rTorrent as a download client directly. *arr handles its own completion detection, import, and
+  media server notification.
+- **Settings**: `PLEX_URL`, `PLEX_TOKEN`, `JELLYFIN_URL`, `JELLYFIN_API_KEY` — all optional
+- **Port registry**: Added missing `arr-mcp` entries (10938/10939) to WEBAPP_PORTS.md
+- **Tests**: Added `test_media_integrator.py` (6 tests); Playwright e2e suite (11 tests) in `web_sota/e2e/app.spec.ts`
+- **Docs**: Added `docs/ARR_RTORRENT_SETUP.md` — guide for configuring rTorrent as a download client in *arr apps (Radarr, Sonarr, Prowlarr)
+
 ---
 
 ## [1.0.0] - 2025-09-23

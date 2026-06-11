@@ -43,7 +43,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_nyaa_anime(query, resolution, group)
         except Exception as e:
             logger.error(f"Error searching anime '{query}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]
 
     @mcp.tool(
         name="search_manga",
@@ -58,7 +58,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_nyaa_extended(query, content_type="manga", subcategory=subcategory)
         except Exception as e:
             logger.error(f"Error searching manga '{query}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]
 
     @mcp.tool(
         name="search_japanese_tv",
@@ -73,7 +73,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_nyaa_extended(query, content_type="japanese_tv", subcategory=subcategory)
         except Exception as e:
             logger.error(f"Error searching Japanese TV '{query}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]
 
     @mcp.tool(
         name="search_movies",
@@ -90,7 +90,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_yts_movies(query, quality, sort_by, limit)
         except Exception as e:
             logger.error(f"Error searching movies '{query}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]
 
     @mcp.tool(
         name="get_imdb_metadata",
@@ -110,7 +110,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await get_imdb_metadata(title, year, imdb_id, omdb_key)
         except Exception as e:
             logger.error(f"Error getting IMDb metadata for '{title}': {e}")
-            return {"error": f"Metadata retrieval failed: {str(e)}"}
+            return {"error": f"Metadata retrieval failed: {e!s}"}
 
     @mcp.tool(
         name="search_imdb",
@@ -127,7 +127,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_imdb(title, year, omdb_key)
         except Exception as e:
             logger.error(f"Error searching IMDb for '{title}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]
 
     @mcp.tool(
         name="get_tvdb_metadata",
@@ -153,13 +153,12 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await get_tvdb_metadata(title, year, tvdb_id, tvdb_key, tvdb_pin)
         except Exception as e:
             logger.error(f"Error getting TVDB metadata for '{title}': {e}")
-            return {"error": f"Metadata retrieval failed: {str(e)}"}
+            return {"error": f"Metadata retrieval failed: {e!s}"}
 
     @mcp.tool(
         name="search_ebooks_annas",
-        description="Search Anna's Archive for ebooks - THE GOLD STANDARD! 60M books, 50M papers, can have 100TB torrents! "
-        "Very idiosyncratic UI, but we love Anna! "
-        "Args: query (str): Book title, author, or ISBN, "
+        description="Search Anna's Archive for ebooks - 60M+ books, 50M papers, huge torrents. "
+        "Args: query (str): title/author/ISBN, "
         "content_type (str): 'books' or 'papers' (default: 'books'), "
         "max_results (int): Maximum results (default: 20). "
         "Returns: array of book/paper releases with detail URLs (visit detail_url for full torrent info).",
@@ -170,7 +169,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_annas_archive(query, content_type, max_results)
         except Exception as e:
             logger.error(f"Error searching Anna's Archive for '{query}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]
 
     @mcp.tool(
         name="get_annas_detail",
@@ -185,7 +184,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await get_annas_archive_detail(book_url)
         except Exception as e:
             logger.error(f"Error getting Anna's Archive detail from '{book_url}': {e}")
-            return {"error": f"Detail fetch failed: {str(e)}"}
+            return {"error": f"Detail fetch failed: {e!s}"}
 
     @mcp.tool(
         name="search_comics",
@@ -200,7 +199,7 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_piratebay_category(query, category="comics", max_results=max_results)
         except Exception as e:
             logger.error(f"Error searching comics for '{query}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]
 
     @mcp.tool(
         name="search_ebooks_pb",
@@ -216,4 +215,4 @@ def register_search_tools(mcp: FastMCP, settings) -> None:
             return await search_piratebay_category(query, category="ebooks", max_results=max_results)
         except Exception as e:
             logger.error(f"Error searching ebooks on Pirate Bay for '{query}': {e}")
-            return [{"error": f"Search failed: {str(e)}"}]
+            return [{"error": f"Search failed: {e!s}"}]

@@ -22,8 +22,8 @@ from .agentic_workflow import register_agentic_rtorrent_workflow
 from .portmanteau import register_all_portmanteau_tools
 
 __all__ = [
-    "register_all_portmanteau_tools",
     "register_agentic_rtorrent_workflow",
+    "register_all_portmanteau_tools",
     "register_all_tools",
 ]
 

@@ -112,7 +112,7 @@ async def search_yts_movies(
 
     except aiohttp.ClientError as e:
         logger.error(f"YTS search network error: {e}")
-        return [{"error": f"Network error: {str(e)}"}]
+        return [{"error": f"Network error: {e!s}"}]
     except Exception as e:
         logger.error(f"YTS search failed: {e}")
-        return [{"error": f"Search failed: {str(e)}"}]
+        return [{"error": f"Search failed: {e!s}"}]

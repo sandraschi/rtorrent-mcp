@@ -14,11 +14,25 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-# The Pirate Bay search defaults
-PREFERRED_TV_RELEASE_GROUPS = {"MeGusta": 50, "RARBG": 40, "EZTV": 35, "YIFY": 30, "YTS": 25}
+# The Pirate Bay search defaults (use __init__ versions if available)
+try:
+    from . import (
+        DEFAULT_TV_RELEASE_GROUP as _INIT_GROUP,
+    )
+    from . import (
+        DEFAULT_TV_RESOLUTION as _INIT_RESOLUTION,
+    )
+    from . import (
+        PREFERRED_TV_RELEASE_GROUPS as _INIT_GROUPS,
+    )
 
-DEFAULT_TV_RESOLUTION = "1080p"
-DEFAULT_TV_RELEASE_GROUP = "MeGusta"
+    PREFERRED_TV_RELEASE_GROUPS = _INIT_GROUPS
+    DEFAULT_TV_RESOLUTION = _INIT_RESOLUTION
+    DEFAULT_TV_RELEASE_GROUP = _INIT_GROUP
+except ImportError:
+    PREFERRED_TV_RELEASE_GROUPS = {"MeGusta": 50, "RARBG": 40, "EZTV": 35, "YIFY": 30, "YTS": 25}
+    DEFAULT_TV_RESOLUTION = "1080p"
+    DEFAULT_TV_RELEASE_GROUP = "MeGusta"
 
 
 def _get_piratebay_base_url() -> str:
@@ -46,7 +60,10 @@ async def search_piratebay_tv(
     try:
         # Use User-Agent to avoid being blocked
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            )
         }
 
         # Optimized search: Pirate Bay format is "show name season/episode group"
@@ -267,7 +284,7 @@ async def search_piratebay_tv(
 
     except Exception as e:
         logger.error(f"The Pirate Bay search failed: {e}")
-        return [{"error": f"Search failed: {str(e)}"}]
+        return [{"error": f"Search failed: {e!s}"}]
 
 
 def calculate_tv_quality_score(title: str, preferred_resolution: str, preferred_group: str) -> int:
@@ -398,7 +415,7 @@ def register_tv_search_tools(mcp):
     )
     async def get_new_episodes(
         show_name: str,
-        downloaded_episodes: list[str] = None,
+        downloaded_episodes: list[str] | None = None,
         resolution: str = "1080p",
         group: str = "MeGusta",
     ) -> list[dict]:

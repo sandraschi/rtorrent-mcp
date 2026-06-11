@@ -34,6 +34,11 @@ async def _get_post_processor(settings) -> PostProcessor:
                 "poll_interval": settings.POST_PROCESSING_POLL_INTERVAL,
                 "delete_torrent_after_complete": settings.DELETE_TORRENT_AFTER_COMPLETE,
                 "normalize_filenames": settings.NORMALIZE_FILENAMES,
+                # media service integration (Plex/Jellyfin — *arr not notified; it manages rTorrent itself)
+                "plex_url": getattr(settings, "PLEX_URL", ""),
+                "plex_token": getattr(settings, "PLEX_TOKEN", ""),
+                "jellyfin_url": getattr(settings, "JELLYFIN_URL", ""),
+                "jellyfin_api_key": getattr(settings, "JELLYFIN_API_KEY", ""),
             }
             _post_processor = PostProcessor(config)
         if not _post_processor_initialized:
@@ -50,6 +55,7 @@ TORRENT_ACTIONS = {
     "delete": "Delete a torrent (optionally with files)",
     "status": "Get rTorrent connection status",
     "info": "Get detailed info about a specific torrent",
+    "notify_media": "Notify media services (*arr/Plex/Jellyfin) for a processed torrent",
     # Post-processing actions
     "check_completed": "Check for completed downloads ready for processing",
     "process": "Process a completed download (normalize, move)",
@@ -72,6 +78,7 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
             "delete",
             "status",
             "info",
+            "notify_media",
             "check_completed",
             "process",
             "start_processing",
@@ -163,6 +170,8 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 result = await client.add_torrent(magnet_link, category)
                 return {
                     "success": result.get("status") == "success",
+                    "message": result.get("message", ""),
+                    "next_steps": result.get("next_steps", []),
                     "action": action,
                     "data": result,
                 }
@@ -171,6 +180,8 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 torrents = await client.get_torrents()
                 return {
                     "success": True,
+                    "message": f"Found {len(torrents)} torrents",
+                    "next_steps": [],
                     "action": action,
                     "data": {"torrents": torrents, "count": len(torrents)},
                 }
@@ -179,12 +190,16 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 if not torrent_hash:
                     return {
                         "success": False,
+                        "message": "torrent_hash is required for 'pause' action",
+                        "next_steps": [],
                         "action": action,
                         "error": "torrent_hash is required for 'pause' action",
                     }
                 result = await client.pause_torrent(torrent_hash)
                 return {
                     "success": result.get("status") == "success",
+                    "message": result.get("message", ""),
+                    "next_steps": result.get("next_steps", []),
                     "action": action,
                     "data": result,
                 }
@@ -193,12 +208,16 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 if not torrent_hash:
                     return {
                         "success": False,
+                        "message": "torrent_hash is required for 'resume' action",
+                        "next_steps": [],
                         "action": action,
                         "error": "torrent_hash is required for 'resume' action",
                     }
                 result = await client.resume_torrent(torrent_hash)
                 return {
                     "success": result.get("status") == "success",
+                    "message": result.get("message", ""),
+                    "next_steps": result.get("next_steps", []),
                     "action": action,
                     "data": result,
                 }
@@ -207,12 +226,16 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 if not torrent_hash:
                     return {
                         "success": False,
+                        "message": "torrent_hash is required for 'delete' action",
+                        "next_steps": [],
                         "action": action,
                         "error": "torrent_hash is required for 'delete' action",
                     }
                 result = await client.delete_torrent(torrent_hash, delete_files)
                 return {
                     "success": result.get("status") == "success",
+                    "message": result.get("message", ""),
+                    "next_steps": result.get("next_steps", []),
                     "action": action,
                     "data": result,
                 }
@@ -248,6 +271,31 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                     "error": f"Torrent with hash '{torrent_hash}' not found",
                 }
 
+            if action == "notify_media":
+                processor = await _get_post_processor(settings)
+                if not hasattr(processor, "_media_integrator") or processor._media_integrator is None:
+                    return {
+                        "success": False,
+                        "action": action,
+                        "error": "No media services configured. Set PLEX_URL or JELLYFIN_URL in .env",
+                    }
+                # Get torrent path if hash provided
+                path = ""
+                if torrent_hash:
+                    try:
+                        path = await client.get_torrent_base_path(torrent_hash)
+                    except Exception:  # noqa: S110
+                        pass
+                category = category or "anime"
+                result = await processor._media_integrator.notify_all(category, [path] if path else [])
+                return {
+                    "success": True,
+                    "message": "Media library notified",
+                    "next_steps": [],
+                    "action": action,
+                    "data": result,
+                }
+
             # POST-PROCESSING ACTIONS
             if action == "check_completed":
                 processor = await _get_post_processor(settings)
@@ -277,6 +325,8 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 result = await processor.process_completed_torrent(torrent)
                 return {
                     "success": result.get("status") == "success",
+                    "message": result.get("message", ""),
+                    "next_steps": result.get("next_steps", []),
                     "action": action,
                     "data": result,
                 }
@@ -340,6 +390,8 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
             logger.error(f"rTorrent connection error: {e}", exc_info=True)
             return {
                 "success": False,
+                "message": "Failed to connect to rTorrent. Is it running?",
+                "next_steps": ["Check rTorrent is running", "Verify RTORRENT_HOST/RTORRENT_PORT"],
                 "action": action,
                 "error": "Failed to connect to rTorrent. Is it running?",
                 "error_type": "connection_error",
@@ -348,10 +400,18 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
             logger.error(f"Timeout error: {e}", exc_info=True)
             return {
                 "success": False,
+                "message": "Operation timed out. rTorrent may be unresponsive.",
+                "next_steps": ["Check rTorrent health", "Increase timeout if needed"],
                 "action": action,
                 "error": "Operation timed out. rTorrent may be unresponsive.",
                 "error_type": "timeout_error",
             }
         except Exception as e:
             logger.error(f"Error in torrent management action '{action}': {e}", exc_info=True)
-            return {"success": False, "action": action, "error": f"Failed to execute: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Failed to execute: {e!s}",
+                "next_steps": ["Check logs for details"],
+                "action": action,
+                "error": f"Failed to execute: {e!s}",
+            }

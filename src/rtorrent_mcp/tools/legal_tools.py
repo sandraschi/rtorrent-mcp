@@ -112,7 +112,7 @@ def register_legal_tools(mcp: FastMCP, settings) -> None:
             return json.dumps(get_austrian_legal_framework())
         except Exception as e:
             logger.error(f"Error generating Austrian legal info: {e}")
-            return json.dumps({"error": f"Failed to load legal information: {str(e)}"})
+            return json.dumps({"error": f"Failed to load legal information: {e!s}"})
 
     @mcp.resource("legal://overview")
     def legal_overview() -> str:
@@ -135,4 +135,4 @@ def register_legal_tools(mcp: FastMCP, settings) -> None:
             )
         except Exception as e:
             logger.error(f"Error generating legal overview: {e}")
-            return json.dumps({"error": f"Failed to load overview: {str(e)}"})
+            return json.dumps({"error": f"Failed to load overview: {e!s}"})

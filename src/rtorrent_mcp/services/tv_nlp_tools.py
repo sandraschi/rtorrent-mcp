@@ -197,7 +197,7 @@ def register_tv_nlp_tools(mcp):
             dict: Search results with parsed query information
         """,
     )
-    async def smart_tv_search(query: str, downloaded_episodes: list[str] = None) -> dict:
+    async def smart_tv_search(query: str, downloaded_episodes: list[str] | None = None) -> dict:
         if downloaded_episodes is None:
             downloaded_episodes = []
 

@@ -52,7 +52,7 @@ def register_post_processing_tools(mcp: FastMCP, settings) -> None:
             return completed
         except Exception as e:
             logger.error(f"Error checking completed downloads: {e}")
-            return [{"error": f"Failed to check completed downloads: {str(e)}"}]
+            return [{"error": f"Failed to check completed downloads: {e!s}"}]
 
     @mcp.tool(
         name="process_completed_download",
@@ -80,7 +80,7 @@ def register_post_processing_tools(mcp: FastMCP, settings) -> None:
             return result
         except Exception as e:
             logger.error(f"Error processing completed download {torrent_hash}: {e}")
-            return {"status": "error", "message": f"Failed to process download: {str(e)}"}
+            return {"status": "error", "message": f"Failed to process download: {e!s}"}
 
     @mcp.tool(
         name="start_post_processing",
@@ -101,7 +101,7 @@ def register_post_processing_tools(mcp: FastMCP, settings) -> None:
             await processor.initialize()
 
             # Start polling loop in background
-            asyncio.create_task(processor.run_polling_loop())
+            asyncio.create_task(processor.run_polling_loop())  # noqa: RUF006
 
             return {
                 "status": "started",
@@ -112,7 +112,7 @@ def register_post_processing_tools(mcp: FastMCP, settings) -> None:
             }
         except Exception as e:
             logger.error(f"Error starting post-processing: {e}")
-            return {"status": "error", "message": f"Failed to start post-processing: {str(e)}"}
+            return {"status": "error", "message": f"Failed to start post-processing: {e!s}"}
 
     @mcp.tool(
         name="stop_post_processing",
@@ -126,7 +126,7 @@ def register_post_processing_tools(mcp: FastMCP, settings) -> None:
             return {"status": "stopped", "message": "Post-processing polling loop stopped"}
         except Exception as e:
             logger.error(f"Error stopping post-processing: {e}")
-            return {"status": "error", "message": f"Failed to stop post-processing: {str(e)}"}
+            return {"status": "error", "message": f"Failed to stop post-processing: {e!s}"}
 
     @mcp.tool(
         name="normalize_filename",
@@ -143,4 +143,4 @@ def register_post_processing_tools(mcp: FastMCP, settings) -> None:
             return {"original": filename, "normalized": normalized, "category": category}
         except Exception as e:
             logger.error(f"Error normalizing filename: {e}")
-            return {"status": "error", "message": f"Failed to normalize filename: {str(e)}"}
+            return {"status": "error", "message": f"Failed to normalize filename: {e!s}"}

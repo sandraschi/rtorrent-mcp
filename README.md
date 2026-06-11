@@ -460,6 +460,71 @@ await analyze_repo()
 | `INGESTION_MOVIES_PATH` | - | Path to temporary ingestion folder for movies |
 | `OMDB_API_KEY` | - | OMDb API key for IMDb metadata (free at omdbapi.com) |
 | `TVDB_API_KEY` | - | TVDB API key for TV metadata (requires subscription) |
+| `API_KEY` | - | Bearer/X-API-Key auth for REST API (optional, set to enable) |
+| `NYAA_ASW_USERNAME` | `AkihitoSubsWeeklies` | ASW user page on nyaa.si for direct lookup |
+| `PIRATEBAY_BASE_URL` | `https://thepiratebay10.xyz` | The Pirate Bay domain (changes frequently) |
+| `RTORRENT_SAMPLING_BASE_URL` | `http://127.0.0.1:11434/v1` | OpenAI-compatible LLM endpoint (Ollama default) |
+| `RTORRENT_SAMPLING_MODEL` | `llama3.2` | LLM model for agentic workflow |
+| `RTORRENT_SAMPLING_USE_CLIENT_LLM` | - | Set to `1` to prefer host LLM over server-side |
+| `PLEX_URL` | - | Plex server URL (enables library refresh after post-process) |
+| `PLEX_TOKEN` | - | Plex authentication token |
+| `JELLYFIN_URL` | - | Jellyfin server URL (enables library scan after post-process) |
+| `JELLYFIN_API_KEY` | - | Jellyfin API key |
+
+## Media Service Integration
+
+### Architecture
+
+**Two paths**, depending on whether *arr is in the loop:
+
+#### Direct (anime via nyaa — no *arr)
+```
+rTorrent (rtorrent-mcp initiated)
+  → PostProcessor (normalize + move to ingestion)
+    → MediaIntegrator (scan Plex/Jellyfin)
+```
+For content downloaded directly through rtorrent-mcp (anime, manga from nyaa),
+the MediaIntegrator fires Plex/Jellyfin scans so files appear in your media
+libraries without waiting for a scheduled scan.
+
+#### *arr-managed (movies/TV)
+```
+*arr (searches, decides what to grab)
+  → *arr sends magnet/torrent to rTorrent (via Download Client config)
+    → rTorrent downloads
+      → *arr polls rTorrent' or watches folder
+        → *arr imports + renames
+          → *arr notifies Plex/Jellyfin
+```
+For *arr-managed content, **configure rTorrent as a download client directly
+in Radarr/Sonarr** (Settings > Download Clients > rTorrent). The *arr handles
+everything: dispatch, completion detection, import, and media server notification.
+No rtorrent-mcp integration needed.
+
+### Enable Plex/Jellyfin scanning
+
+Set the URL + API key in `.env`:
+
+```env
+# Plex
+PLEX_URL=http://localhost:32400
+PLEX_TOKEN=your_plex_token
+
+# Jellyfin
+JELLYFIN_URL=http://localhost:8096
+JELLYFIN_API_KEY=your_jellyfin_key
+```
+
+Only services with both URL and key set are contacted — others are skipped silently.
+
+### Manual trigger
+
+```python
+await torrent_management(action="notify_media", torrent_hash="...", category="tv")
+```
+
+This fires the scan pipeline for an already-processed torrent without re-running
+the file move.
 
 ## Documentation
 

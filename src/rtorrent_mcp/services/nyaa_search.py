@@ -16,6 +16,15 @@ from . import DEFAULT_RELEASE_GROUP, DEFAULT_RESOLUTION, PREFERRED_RELEASE_GROUP
 logger = logging.getLogger(__name__)
 
 
+def _get_asw_username() -> str:
+    try:
+        from rtorrent_mcp.config.settings import settings
+
+        return settings.NYAA_ASW_USERNAME
+    except Exception:
+        return "AkihitoSubsWeeklies"
+
+
 async def search_nyaa_anime(
     query: str, resolution: str = DEFAULT_RESOLUTION, group: str = DEFAULT_RELEASE_GROUP
 ) -> list[dict[str, Any]]:
@@ -32,7 +41,10 @@ async def search_nyaa_anime(
     try:
         # Use User-Agent to avoid being blocked
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            )
         }
 
         # Optimized search: When ASW is requested, also search ASW user page directly
@@ -45,11 +57,11 @@ async def search_nyaa_anime(
         if group and group.upper() == "ASW":
             # Try with requested resolution first
             asw_query = quote_plus(f"{query} {resolution}")
-            asw_user_url = f"https://nyaa.si/user/AkihitoSubsWeeklies?f=0&c=1_2&q={asw_query}&s=seeders&o=desc"
+            asw_user_url = f"https://nyaa.si/user/{_get_asw_username()}?f=0&c=1_2&q={asw_query}&s=seeders&o=desc"
             # Also prepare fallback without resolution (ASW often uses 1080p)
             asw_query_no_res = quote_plus(query)
             asw_user_url_fallback = (
-                f"https://nyaa.si/user/AkihitoSubsWeeklies?f=0&c=1_2&q={asw_query_no_res}&s=seeders&o=desc"
+                f"https://nyaa.si/user/{_get_asw_username()}?f=0&c=1_2&q={asw_query_no_res}&s=seeders&o=desc"
             )
         else:
             asw_user_url_fallback = None
@@ -193,7 +205,7 @@ async def search_nyaa_anime(
                             continue
 
                         # Extract torrent info
-                        # Cell structure: 0=icon, 1=title, 2=comments, 3=size, 4=date, 5=seeders, 6=leechers, 7=downloads
+                        # Cell: 0=icon, 1=title, 2=comments, 3=size, 4=date, 5=seeders, 6=leechers, 7=downloads
                         title_cell = cells[1] if len(cells) > 1 else None
                         if not title_cell:
                             continue
@@ -240,13 +252,13 @@ async def search_nyaa_anime(
                 if asw_results:
                     # Add ASW results to main results (they're already from ASW user, so guaranteed ASW)
                     results.extend(asw_results)
-                    # Remove duplicates based on title
-                    seen_titles = set()
+                    # Remove duplicates based on title + size (defends against same-named different encodes)
+                    seen = set()
                     unique_results = []
                     for r in results:
-                        title_key = r["title"].lower()
-                        if title_key not in seen_titles:
-                            seen_titles.add(title_key)
+                        key = (r["title"].lower(), r.get("size", ""))
+                        if key not in seen:
+                            seen.add(key)
                             unique_results.append(r)
                     results = unique_results
 
@@ -261,7 +273,7 @@ async def search_nyaa_anime(
                         # Sort preferred results by quality score (highest first)
                         preferred_results.sort(key=lambda x: (x["quality_score"], x["seeders"]), reverse=True)
                         logger.info(
-                            f"Found {len(preferred_results)} {group} results, prioritizing over {len(other_results)} other results"
+                             f"Found {len(preferred_results)} {group} results (prio over {len(other_results)} others)"
                         )
                         # Return top preferred results only
                         return preferred_results[:5]
@@ -279,7 +291,7 @@ async def search_nyaa_anime(
 
     except Exception as e:
         logger.error(f"nyaa.si search failed: {e}")
-        return [{"error": f"Search failed: {str(e)}"}]
+        return [{"error": f"Search failed: {e!s}"}]
 
 
 def calculate_quality_score(title: str, preferred_resolution: str) -> int:

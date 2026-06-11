@@ -40,7 +40,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
     """Attach /api/* routes to the FastMCP server (idempotent)."""
     if getattr(server, "_rtorrent_web_api_registered", False):
         return
-    server._rtorrent_web_api_registered = True  # noqa: SLF001
+    server._rtorrent_web_api_registered = True
 
     @server.custom_route("/api/health", methods=["GET"])
     async def api_health(_request: Request) -> Response:

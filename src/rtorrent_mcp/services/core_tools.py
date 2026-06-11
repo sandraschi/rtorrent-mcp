@@ -159,7 +159,7 @@ def register_core_tools(mcp):
         except Exception as e:
             logger.error(f"Error generating help information: {e}")
             return {
-                "error": f"Failed to generate help information: {str(e)}",
+                "error": f"Failed to generate help information: {e!s}",
                 "tools": [],
                 "resources": [],
                 "configuration": {},
@@ -226,14 +226,12 @@ def register_core_tools(mcp):
 
             # Get recent log entries (simplified)
             recent_activity = [
-                "Server started successfully",
-                "rTorrent connection established",
-                "Configuration loaded from environment",
+                "Server running (status stub — use system_management for live health)",
             ]
 
             return {
                 "server_status": "running",
-                "rtorrent_status": "connected",
+                "rtorrent_status": "unknown (use system_management for live check)",
                 "system_metrics": {
                     "python_version": sys.version,
                     "working_directory": os.getcwd(),
@@ -425,7 +423,7 @@ def register_core_tools(mcp):
         except Exception as e:
             logger.error(f"Error analyzing repository: {e}")
             return {
-                "error": f"Failed to analyze repository: {str(e)}",
+                "error": f"Failed to analyze repository: {e!s}",
                 "project_info": {},
                 "structure": {},
                 "dependencies": [],

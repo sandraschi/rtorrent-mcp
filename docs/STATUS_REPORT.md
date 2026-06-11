@@ -10,15 +10,19 @@
 ## Executive Summary
 
 FastMCP 3.1 MCP server for rTorrent automation and multi-source search, with AT-oriented legal
-risk hints in tool outputs. Comprehensive bugbash completed 2026-05-10 (25+ fixes across 16 files).
+risk hints in tool outputs. Two bugbash passes completed 2026-05-10.
 
 **Current state:**
 - [OK] Core torrent + search paths stable with race-condition fixes
-- [OK] REST API secured (API_KEY auth, CORS, input validation)
-- [OK] Fleet port compliance (10910)
+- [OK] REST API secured (API_KEY auth, CORS, input validation, sanitized errors)
+- [OK] Fleet port compliance (10910 backend, 10911 frontend, registered)
+- [OK] Webapp torrent tables: state column (stopped/downloading/seeding/hashing) with color badges
+- [OK] ASW username configurable (NYAA_ASW_USERNAME), PirateBay constants deduplicated
+- [OK] Anna's Archive scraping: expanded CSS selectors, dedup key includes size
+- [OK] Media service cross-connect: `MediaIntegrator` notifies Plex/Jellyfin after post-processing (no *arr — they manage rTorrent directly)
 - [WARN] Test coverage below 80% target
 - [WARN] Workflow management `franchise`/`batch_series` are stubs (queued, not executing)
-- Active development: post-processing, extended search, metadata helpers
+- [WARN] Settings page is cosmetic placeholder (not wired to backend)
 
 ---
 
@@ -82,17 +86,18 @@ risk hints in tool outputs. Comprehensive bugbash completed 2026-05-10 (25+ fixe
 ## New Features (In Development)
 
 ### 1. Post-Processing System
-**Status:** [OK] Implemented, [WARN] Needs testing
+**Status:** [OK] Implemented
 
 **Capabilities:**
 - Automatic completion detection (polling)
 - Torrent removal after completion
 - Filename normalization (removes release group tags)
 - Ingestion folder management (anime/TV/movies)
-- Plex integration ready
+- Media service notification: **Radarr**, **Sonarr**, **Plex**, **Jellyfin** (via `MediaIntegrator`)
 
 **Files:**
-- `src/rtorrent_mcp/services/post_processor.py` (352 lines)
+- `src/rtorrent_mcp/services/post_processor.py`
+- `src/rtorrent_mcp/services/media_integrator.py`
 - `src/rtorrent_mcp/tools/post_processing_tools.py`
 - `docs/POST_PROCESSING_SETUP.md`
 
@@ -242,6 +247,7 @@ src/rtorrent_mcp/
 │   ├── yts_search.py      # YTS movie search
 │   ├── metadata_service.py      # IMDb/TVDB metadata
 │   ├── post_processor.py  # Post-processing service
+│   ├── media_integrator.py # Media service notification (*arr, Plex, Jellyfin)
 │   ├── natural_language.py      # NLP for anime
 │   ├── tv_nlp_tools.py    # NLP for TV shows
 │   └── legal_compliance.py      # Legal framework
@@ -258,7 +264,7 @@ src/rtorrent_mcp/
 
 ### Tool Distribution (Portmanteau)
 - **6 Portmanteau Tools + 1 Agentic Workflow** (45 total actions)
-- **Torrent Management** (12 actions): add, list, pause, resume, delete, status, info, check_completed, process, start_processing, stop_processing, normalize
+- **Torrent Management** (13 actions): add, list, pause, resume, delete, status, info, notify_media, check_completed, process, start_processing, stop_processing, normalize
 - **Search Management** (13 actions): anime, manga, japanese_tv, movies, tv_shows, tv_smart, ebooks_annas, ebooks_pb, comics, annas_detail, imdb, imdb_search, tvdb
 - **NLP Management** (3 actions): command, parse, help
 - **Legal Management** (4 actions): risk, check, advice, status
@@ -345,11 +351,12 @@ src/rtorrent_mcp/
 ## Conclusion
 
 Production-capable rTorrent MCP server with 6 portmanteau tools, agentic workflow (FastMCP 3.1),
-multi-source search, post-processing, and AT-oriented legal hints. Bugbash completed 2026-05-10
-with 25+ fixes addressing critical (crashes, security), high (memory leaks, race conditions),
-and medium (logic, design) issues.
+multi-source search, post-processing, and AT-oriented legal hints. Two bugbash passes completed
+2026-05-10 addressing critical (crashes, security), high (memory leaks, race conditions),
+medium (logic, design), and minor (config, scraping) issues.
 
-Known gaps: test coverage below target, workflow stubs (franchise/batch_series not executing).
+Known gaps: test coverage below target, workflow stubs (franchise/batch_series not executing),
+settings page is cosmetic, settings page unwired.
 
 **Status:** Active development — version 3.0.1
 

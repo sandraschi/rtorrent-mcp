@@ -28,13 +28,13 @@ from .torrent_management import register_torrent_management_tool
 from .workflow_management import register_workflow_management_tool
 
 __all__ = [
-    "register_torrent_management_tool",
-    "register_search_management_tool",
-    "register_nlp_management_tool",
-    "register_legal_management_tool",
-    "register_system_management_tool",
-    "register_workflow_management_tool",
     "register_all_portmanteau_tools",
+    "register_legal_management_tool",
+    "register_nlp_management_tool",
+    "register_search_management_tool",
+    "register_system_management_tool",
+    "register_torrent_management_tool",
+    "register_workflow_management_tool",
 ]
 
 

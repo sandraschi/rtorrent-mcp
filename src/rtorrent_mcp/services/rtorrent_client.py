@@ -109,7 +109,7 @@ class RTorrentClient:
                 return {"status": "error", "message": "Torrent added but could not retrieve hash"}
         except Exception as e:
             logger.error(f"Error adding torrent: {e}")
-            return {"status": "error", "message": f"Error adding torrent: {str(e)}"}
+            return {"status": "error", "message": f"Error adding torrent: {e!s}"}
 
     async def pause_torrent(self, torrent_hash: str) -> dict[str, Any]:
         """Pause a torrent"""

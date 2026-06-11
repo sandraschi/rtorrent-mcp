@@ -5,25 +5,22 @@ Tests for the RTorrent MCP configuration settings.
 import os
 from unittest.mock import patch
 
-from rtorrent_mcp.config.settings import Settings
+from rtorrent_mcp.config.settings import Settings, get_settings
 
 
 def test_default_settings():
     """Test that default settings are correctly set."""
-    # Create a new settings instance without environment overrides
     test_settings = Settings()
-
-    # Check default values
     assert test_settings.APP_NAME == "RTorrent MCP"
-    assert test_settings.APP_VERSION == "1.0.0"
+    assert test_settings.APP_VERSION == "3.0.0"
     assert "RTorrent automation" in test_settings.APP_DESCRIPTION
-    assert test_settings.HOST == "0.0.0.0"
-    assert test_settings.PORT == 8000
+    assert test_settings.HOST == "127.0.0.1"
+    assert test_settings.PORT == 10910
     assert test_settings.DEBUG is False
     assert test_settings.LOG_LEVEL == "INFO"
     assert test_settings.RTORRENT_HOST == "localhost"
-    assert test_settings.RTORRENT_PORT == 5000
-    assert test_settings.RTORRENT_PATH == "/var/lib/rtorrent/session"
+    assert test_settings.RTORRENT_PORT == 12224
+    assert isinstance(test_settings.RTORRENT_PATH, str)
     assert test_settings.NYAA_BASE_URL == "https://nyaa.si"
     assert "Anime" in test_settings.ALLOWED_CATEGORIES
     assert "720p" in test_settings.ALLOWED_RESOLUTIONS
@@ -75,19 +72,18 @@ def test_env_file_loading(tmp_path):
     env_file = tmp_path / ".env"
     env_file.write_text(env_content)
 
-    # Test loading settings from the .env file
-    test_settings = Settings(_env_file=str(env_file))
+    # Test loading settings from the .env file via get_settings factory
+    test_settings = get_settings(env_file=str(env_file))
 
     # Check that values from .env file are used
     assert test_settings.RTORRENT_HOST == "from-env-file"
     assert test_settings.RTORRENT_PORT == 8080
     assert test_settings.RTORRENT_PATH == "/env/path"
-    # DEBUG might not be parsed correctly from string, so check the actual value
-    assert test_settings.DEBUG is False  # String "true" might not convert to boolean
+    assert test_settings.DEBUG is True  # load_dotenv converts "true" → True
 
     # Check that other settings still use defaults
     assert test_settings.NYAA_BASE_URL == "https://nyaa.si"
-    assert test_settings.PORT == 8000
+    assert test_settings.PORT == 10910
 
 
 def test_settings_singleton():

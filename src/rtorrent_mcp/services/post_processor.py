@@ -12,6 +12,14 @@ from typing import Any
 
 from .rtorrent_client import RTorrentClient, get_rtorrent_client
 
+try:
+    from .media_integrator import MediaIntegrator
+
+    _HAS_MEDIA_INTEGRATOR = True
+except ImportError:
+    MediaIntegrator = None  # type: ignore
+    _HAS_MEDIA_INTEGRATOR = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,6 +43,14 @@ class PostProcessor:
         self._processed_lock = asyncio.Lock()
         self.client: RTorrentClient | None = None
         self.running = False
+        self._media_integrator: MediaIntegrator | None = (
+            MediaIntegrator(config)
+            if _HAS_MEDIA_INTEGRATOR and (
+                config.get("plex_url")
+                or config.get("jellyfin_url")
+            )
+            else None
+        )
 
     async def _mark_processed(self, torrent_hash: str):
         """Mark torrent as processed, capping set size to prevent memory leaks."""
@@ -320,6 +336,18 @@ class PostProcessor:
 
         if errors:
             result["errors"] = errors
+
+        # Notify downstream media services (*arr / Plex / Jellyfin)
+        if not errors and self._media_integrator is not None:
+            try:
+                notify_results = await self._media_integrator.notify_all(category, moved_files)
+                result["media_notifications"] = notify_results
+                failed = [r for r in notify_results if r.get("status") in ("error",)]
+                if failed:
+                    logger.warning("Media notifications had errors: %s", failed)
+            except Exception as e:
+                logger.exception("media integration failed")
+                result["media_notifications"] = [{"status": "error", "error": str(e)}]
 
         return result
 

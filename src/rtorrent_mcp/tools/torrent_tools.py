@@ -62,7 +62,7 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
             logger.error(f"Unexpected error adding torrent: {e}", exc_info=True)
             return {
                 "status": "error",
-                "message": f"Failed to add torrent: {str(e)}",
+                "message": f"Failed to add torrent: {e!s}",
                 "error_type": "unexpected_error",
                 "details": str(e),
             }
@@ -81,7 +81,7 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
             return await client.get_torrents()
         except Exception as e:
             logger.error(f"Error listing torrents: {e}")
-            return [{"error": f"Failed to list torrents: {str(e)}"}]
+            return [{"error": f"Failed to list torrents: {e!s}"}]
 
     @mcp.tool(
         name="pause_torrent",
@@ -159,4 +159,4 @@ def register_torrent_tools(mcp: FastMCP, settings) -> None:
                 }
         except Exception as e:
             logger.error(f"Error getting rTorrent status: {e}")
-            return {"status": "error", "message": f"Failed to get status: {str(e)}"}
+            return {"status": "error", "message": f"Failed to get status: {e!s}"}

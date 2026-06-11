@@ -43,7 +43,10 @@ async def search_piratebay_category(
     """
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                " (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            )
         }
 
         # Get category code
@@ -134,7 +137,7 @@ async def search_piratebay_category(
 
     except aiohttp.ClientError as e:
         logger.error(f"Pirate Bay network error: {e}")
-        return [{"error": f"Network error: {str(e)}"}]
+        return [{"error": f"Network error: {e!s}"}]
     except Exception as e:
         logger.error(f"Pirate Bay search failed: {e}")
-        return [{"error": f"Search failed: {str(e)}"}]
+        return [{"error": f"Search failed: {e!s}"}]

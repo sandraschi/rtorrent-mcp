@@ -89,10 +89,10 @@ async def get_imdb_metadata(
 
     except aiohttp.ClientError as e:
         logger.error(f"IMDb metadata network error: {e}")
-        return {"error": f"Network error: {str(e)}"}
+        return {"error": f"Network error: {e!s}"}
     except Exception as e:
         logger.error(f"IMDb metadata retrieval failed: {e}")
-        return {"error": f"Metadata retrieval failed: {str(e)}"}
+        return {"error": f"Metadata retrieval failed: {e!s}"}
 
 
 async def search_imdb(title: str, year: int | None = None, api_key: str | None = None) -> list[dict[str, Any]]:
@@ -144,7 +144,7 @@ async def search_imdb(title: str, year: int | None = None, api_key: str | None =
 
     except Exception as e:
         logger.error(f"IMDb search failed: {e}")
-        return [{"error": f"Search failed: {str(e)}"}]
+        return [{"error": f"Search failed: {e!s}"}]
 
 
 async def get_tvdb_metadata(
@@ -245,4 +245,4 @@ async def get_tvdb_metadata(
 
     except Exception as e:
         logger.error(f"TVDB metadata retrieval failed: {e}")
-        return {"error": f"Metadata retrieval failed: {str(e)}"}
+        return {"error": f"Metadata retrieval failed: {e!s}"}

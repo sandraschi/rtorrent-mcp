@@ -69,7 +69,7 @@ def register_nlp_tools(mcp: FastMCP, settings) -> None:
             }
         except Exception as e:
             logger.error(f"Error parsing command '{command}': {e}")
-            return {"original_command": command, "error": f"Failed to parse command: {str(e)}"}
+            return {"original_command": command, "error": f"Failed to parse command: {e!s}"}
 
     @mcp.tool(
         name="get_command_help",
@@ -98,7 +98,7 @@ def register_nlp_tools(mcp: FastMCP, settings) -> None:
         except Exception as e:
             logger.error(f"Error generating command help: {e}")
             return {
-                "error": f"Failed to generate help: {str(e)}",
+                "error": f"Failed to generate help: {e!s}",
                 "examples": {},
                 "supported_anime": [],
                 "supported_groups": [],
@@ -130,4 +130,4 @@ def register_nlp_tools(mcp: FastMCP, settings) -> None:
             )
         except Exception as e:
             logger.error(f"Error generating command examples: {e}")
-            return json.dumps({"error": f"Failed to load examples: {str(e)}"})
+            return json.dumps({"error": f"Failed to load examples: {e!s}"})
