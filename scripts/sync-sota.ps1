@@ -13,9 +13,9 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║         SOTA Script Synchronization (Spoke)         ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+Write-Host "`nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Cyan
+Write-Host "â•‘         SOTA Script Synchronization (Spoke)         â•‘" -ForegroundColor Cyan
+Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•`n" -ForegroundColor Cyan
 
 # 1. Locate the Hub (mcp-central-docs)
 $currentRepoRoot = Join-Path $PSScriptRoot ".."

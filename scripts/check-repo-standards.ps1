@@ -40,9 +40,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║     MCP Server Repository Standards Checker        ║" -ForegroundColor Magenta
-Write-Host "╚═══════════════════════════════════════════════════════════╝`n" -ForegroundColor Magenta
+Write-Host "`nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Magenta
+Write-Host "â•‘     MCP Server Repository Standards Checker        â•‘" -ForegroundColor Magenta
+Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•`n" -ForegroundColor Magenta
 
 # Check if we're in a repo
 if (-not (Test-Path "pyproject.toml") -and -not (Test-Path ".git")) {
@@ -575,9 +575,9 @@ if ($GenerateFixScript -and $results.Fixes.Count -gt 0) {
 # Display Summary
 # ============================================================================
 
-Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║               Analysis Complete!                   ║" -ForegroundColor Magenta
-Write-Host "╚═══════════════════════════════════════════════════════════╝`n" -ForegroundColor Magenta
+Write-Host "`nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Magenta
+Write-Host "â•‘               Analysis Complete!                   â•‘" -ForegroundColor Magenta
+Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•`n" -ForegroundColor Magenta
 
 Write-Host " Overall Score: $($results.Summary.OverallScore)/10 - $grade" -ForegroundColor $(if($overallScore -ge 8){"Green"}else{"Yellow"})
 Write-Host ""
