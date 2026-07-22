@@ -4,15 +4,8 @@ name: SOTA CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-  release:
-    types: [published]
-
-env:
-  PYTHON_VERSION: "3.12"
-  FASTMCP_VERSION: "2.13.0"
+    tags: ["v*"]
+  workflow_dispatch:
 
 jobs:
   # ============================================================================
@@ -20,7 +13,7 @@ jobs:
   # ============================================================================
   lint:
     name:  Lint & Type Check
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       
@@ -51,7 +44,7 @@ jobs:
   # ============================================================================
   security:
     name:  Security Scan
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       
@@ -76,7 +69,7 @@ jobs:
   # ============================================================================
   test:
     name:  Test (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
@@ -106,7 +99,7 @@ jobs:
   # ============================================================================
   build:
     name:  Build Package
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [lint, test]
     steps:
       - uses: actions/checkout@v4
@@ -136,7 +129,7 @@ jobs:
   # ============================================================================
   fastmcp-validate:
     name:  FastMCP 2.13 Validation
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [lint]
     steps:
       - uses: actions/checkout@v4
@@ -186,7 +179,7 @@ jobs:
   # ============================================================================
   publish:
     name:  Publish to PyPI
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [build, fastmcp-validate, security]
     if: github.event_name == 'release'
     environment:
