@@ -284,7 +284,7 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 if torrent_hash:
                     try:
                         path = await client.get_torrent_base_path(torrent_hash)
-                    except Exception:  # noqa: S110
+                    except Exception:
                         pass
                 category = category or "anime"
                 result = await processor._media_integrator.notify_all(category, [path] if path else [])

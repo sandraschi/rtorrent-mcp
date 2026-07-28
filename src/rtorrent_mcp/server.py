@@ -31,10 +31,10 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import application settings
-from rtorrent_mcp.config.settings import get_settings, settings  # noqa: E402
-from rtorrent_mcp.sampling import RTorrentSamplingHandler  # noqa: E402
+from rtorrent_mcp.config.settings import get_settings, settings
+from rtorrent_mcp.sampling import RTorrentSamplingHandler
 
-from .transport import run_server_async  # noqa: E402
+from .transport import run_server_async
 
 # Configure structured logging
 logger = logging.getLogger(__name__)
