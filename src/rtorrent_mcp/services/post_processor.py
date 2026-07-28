@@ -45,10 +45,7 @@ class PostProcessor:
         self.running = False
         self._media_integrator: MediaIntegrator | None = (
             MediaIntegrator(config)
-            if _HAS_MEDIA_INTEGRATOR and (
-                config.get("plex_url")
-                or config.get("jellyfin_url")
-            )
+            if _HAS_MEDIA_INTEGRATOR and (config.get("plex_url") or config.get("jellyfin_url"))
             else None
         )
 

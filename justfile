@@ -1,4 +1,5 @@
-﻿set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
+import 'scripts/just/fleet.just'
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
@@ -52,9 +53,6 @@ format:
 
 check: lint test
 
-mcpb-pack:
-    uv run mcpb pack . dist/rtorrent-mcp.mcpb
-
 mcpb-build:
     uv run mcpb build
 
@@ -63,4 +61,3 @@ run-stdio:
 
 run-http:
     uv run python -m rtorrent_mcp.server --transport http
-

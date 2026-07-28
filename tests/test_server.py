@@ -69,13 +69,11 @@ async def test_server_run(mcp_server):
 def test_main_function(mock_os_environ, monkeypatch):
     """Test the main function with HTTP transport (uses ``run_server_async``, not ``.run``)."""
     test_args = ["--config", "test.env", "--transport", "http"]
-    monkeypatch.setattr("sys.argv", ["server.py"] + test_args)
+    monkeypatch.setattr("sys.argv", ["server.py", *test_args])
 
     mock_server = MagicMock()
     with patch("rtorrent_mcp.server.RTorrentMCPServer", return_value=mock_server):
-        with patch(
-            "rtorrent_mcp.server.run_server_async", new_callable=AsyncMock
-        ) as mock_run_async:
+        with patch("rtorrent_mcp.server.run_server_async", new_callable=AsyncMock) as mock_run_async:
             from rtorrent_mcp.server import RTorrentMCPServer, main
 
             main()
@@ -89,7 +87,7 @@ def test_server_error_handling(capsys, mock_os_environ, monkeypatch):
     """Test error handling in the main function."""
     # Mock command line arguments
     test_args = ["--config", "nonexistent.env"]
-    monkeypatch.setattr("sys.argv", ["server.py"] + test_args)
+    monkeypatch.setattr("sys.argv", ["server.py", *test_args])
 
     # Mock the server to raise an exception
     with patch("rtorrent_mcp.server.RTorrentMCPServer") as mock_server_class:

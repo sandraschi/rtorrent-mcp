@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_BASE } from "@/lib/api";
 
 export type McpBackendStatus = "checking" | "reachable" | "unreachable";
 
@@ -10,7 +11,7 @@ export function useMcpBackendStatus(): McpBackendStatus {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/health", { method: "GET" })
+    fetch(API_BASE + "/api/health", { method: "GET" })
       .then((r) => {
         if (!cancelled) setStatus(r.ok ? "reachable" : "unreachable");
       })

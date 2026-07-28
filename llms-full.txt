@@ -1,0 +1,135 @@
+# rtorrent-mcp (qbt-mcp) — Full Reference
+
+FastMCP 3.1 server for anime BitTorrent automation with Austrian legal context. Talks to rTorrent over XML-RPC/SCGI.
+
+## Quick Facts
+
+| Attribute | Value |
+|-----------|-------|
+| Python package | `rtorrent_mcp` |
+| Version | 3.0.0 |
+| FastMCP | 3.4.2+ |
+| Python | >= 3.12 |
+| Backend port | 10910 |
+| Frontend port | 10911 |
+| rTorrent XML-RPC | 12224 (Docker: crazymax/rtorrent-rutorrent) |
+| Test | pytest + Playwright e2e (11 tests) |
+| Desktop | Tauri 2.0 NSIS installer |
+| Sampling | Ollama default, defer to host via env var |
+| License | MIT |
+
+## Ports
+
+| Service | Port |
+|---------|------|
+| rTorrent XML-RPC (nginx) | 12224 |
+| ruTorrent WebUI | 12222 |
+| rtorrent-mcp backend (uvicorn) | 10910 |
+| rtorrent-mcp frontend (Vite) | 10911 |
+
+## Tools (7)
+
+### torrent_management (13 actions)
+add, list, pause, resume, delete, status, info, notify_media, check_completed, process, start_processing, stop_processing, normalize
+
+### search_management (13 actions)
+anime, manga, japanese_tv, movies, tv_shows, tv_smart, ebooks_annas, ebooks_pb, comics, annas_detail, imdb, imdb_search, tvdb
+
+### system_management (5 actions)
+help, status, health, info, analyze
+
+### workflow_management (8 actions)
+franchise, batch_series, status, cancel, list, estimate, queue, schedule
+
+### nlp_management (3 actions)
+command, parse, help
+
+### legal_management (4 actions)
+risk, check, advice, status
+
+### agentic_rtorrent_workflow
+LLM-orchestrated multi-step torrent workflow (requires Ollama or host sampling)
+
+## Config (.env)
+
+```
+RTORRENT_HOST=localhost
+RTORRENT_PORT=12224
+OMDB_API_KEY=               # required for IMDb metadata
+API_KEY=                    # optional REST API auth
+RTORRENT_SAMPLING_BASE_URL=http://127.0.0.1:11434/v1
+RTORRENT_SAMPLING_MODEL=llama3.2
+```
+
+See `.env.example` for full list.
+
+## Architecture
+
+```
+FastMCP stdio / HTTP server
+  ├── 6 portmanteau tools (torrent, search, nlp, legal, system, workflow)
+  ├── 1 agentic workflow tool (LLM sampling)
+  ├── 7 prompt templates
+  ├── 11 resources (legal, nlp, search, TV, anime, rtorrent config)
+  ├── 1 skill (rtorrent-mcp via SkillsDirectoryProvider)
+  ├── REST API (/api/health, /api/info, /api/rtorrent/*)
+  └── Starlette webapp + CORS
+
+rTorrent XML-RPC client ←→ crazymax/rtorrent-rutorrent (Docker)
+
+Search providers: nyaa.si (anime), Pirate Bay (TV), YTS (movies), Anna's Archive (ebooks)
+Metadata: IMDb, TVDB
+Media notify: Plex, Jellyfin
+```
+
+## REST API
+
+All endpoints on port 10910:
+
+- `GET /api/health` — server health
+- `GET /api/info` — server info
+- `POST /api/rtorrent/*` — rTorrent proxy
+- `GET /api/v1/diagnostics` — diagnostics (tools, system)
+
+## Tauri Desktop
+
+NSIS installer with embedded PyInstaller backend. Build:
+```powershell
+cd native
+.\build.ps1
+```
+Produces `native/target/release/bundle/nsis/qBittorrent MCP_*_x64-setup.exe`.
+
+## Development
+
+```bash
+# Install
+uv sync
+
+# Run backend
+uv run python -m rtorrent_mcp --port 10910
+
+# Run frontend (separate terminal)
+cd web_sota && npm run dev
+
+# Tests
+uv run pytest
+cd web_sota && npx playwright test
+
+# Lint
+ruff check src/
+ruff format src/
+
+# Desktop build
+cd native && pwsh -File build.ps1
+
+# MCPB pack
+mcpb pack . dist/rtorrent-mcp.mcpb
+```
+
+## Known Gaps
+
+- Workflow `franchise`/`batch_series` are stubs (not executing)
+- Settings page in webapp is cosmetic (not wired to backend)
+- Test coverage below 80% target
+- ~52 legacy individual tool decorators still active alongside portmanteau tools

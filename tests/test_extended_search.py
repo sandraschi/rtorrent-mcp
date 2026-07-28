@@ -233,9 +233,7 @@ class TestNyaaExtendedSearch:
         mock_session_instance.get = MagicMock(return_value=mock_response)
         mock_session.return_value = mock_session_instance
 
-        results = await search_nyaa_extended(
-            "test manga", content_type="manga", subcategory="translated"
-        )
+        results = await search_nyaa_extended("test manga", content_type="manga", subcategory="translated")
 
         assert len(results) > 0
         assert results[0]["content_type"] == "manga"
@@ -279,9 +277,7 @@ class TestNyaaExtendedSearch:
         mock_session_instance.get = MagicMock(return_value=mock_response)
         mock_session.return_value = mock_session_instance
 
-        results = await search_nyaa_extended(
-            "test tv", content_type="japanese_tv", subcategory="translated"
-        )
+        results = await search_nyaa_extended("test tv", content_type="japanese_tv", subcategory="translated")
 
         assert len(results) > 0
         assert results[0]["content_type"] == "japanese_tv"

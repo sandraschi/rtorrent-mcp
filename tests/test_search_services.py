@@ -266,9 +266,7 @@ class TestPirateBaySearchService:
         mock_session_instance.get = MagicMock(return_value=mock_response)
         mock_session.return_value = mock_session_instance
 
-        results = await search_piratebay_tv(
-            "South Park S28E03", resolution="1080p", group="MeGusta"
-        )
+        results = await search_piratebay_tv("South Park S28E03", resolution="1080p", group="MeGusta")
         assert len(results) > 0
 
     @pytest.mark.asyncio

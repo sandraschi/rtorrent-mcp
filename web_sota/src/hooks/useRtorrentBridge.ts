@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+import { API_BASE } from "@/lib/api";
 
-export type HealthPayload = { ok?: boolean; service?: string; version?: string };
+export type HealthPayload = {
+  ok?: boolean;
+  service?: string;
+  version?: string;
+};
 
 export type RtorrentStatusPayload = {
   connected?: boolean;
@@ -34,9 +39,11 @@ export function useRtorrentBridge(pollMs = 8000) {
     setError(null);
     try {
       const [h, s, t] = await Promise.all([
-        fetch("/api/health").then((r) => (r.ok ? r.json() : Promise.reject(new Error(`health ${r.status}`)))),
-        fetch("/api/rtorrent/status").then((r) => r.json()),
-        fetch("/api/rtorrent/torrents").then((r) => r.json()),
+        fetch(API_BASE + "/api/health").then((r) =>
+          r.ok ? r.json() : Promise.reject(new Error(`health ${r.status}`)),
+        ),
+        fetch(API_BASE + "/api/rtorrent/status").then((r) => r.json()),
+        fetch(API_BASE + "/api/rtorrent/torrents").then((r) => r.json()),
       ]);
       setHealth(h);
       setRtStatus(s);

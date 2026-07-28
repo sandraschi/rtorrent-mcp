@@ -16,9 +16,7 @@ class TestTVShowManager:
 
         # Test NLP processor
         processor = TVShowNLPProcessor()
-        parsed = processor.parse_tv_query(
-            "get new Only Murders in the Building episodes from piratebay"
-        )
+        parsed = processor.parse_tv_query("get new Only Murders in the Building episodes from piratebay")
 
         assert parsed["show_name"] is not None
         assert "murders" in parsed["show_name"].lower()
@@ -90,9 +88,7 @@ class TestTVNLPProcessor:
 
         assert parsed["show_name"] is not None
         assert len(parsed["quality_preferences"]) > 0
-        assert any(
-            "1080p" in q.lower() or "megusta" in q.lower() for q in parsed["quality_preferences"]
-        )
+        assert any("1080p" in q.lower() or "megusta" in q.lower() for q in parsed["quality_preferences"])
 
     def test_parse_tv_query_quoted_show_name(self):
         """Test parsing query with quoted show name"""

@@ -44,5 +44,5 @@ class TestMediaIntegrator:
         assert "plex" in services
         assert "jellyfin" in services
         # Plex should attempt the call (not skipped)
-        plex_result = [x for x in r if x["service"] == "plex"][0]
+        plex_result = next(x for x in r if x["service"] == "plex")
         assert plex_result["status"] != "skipped"

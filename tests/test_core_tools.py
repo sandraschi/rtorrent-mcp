@@ -62,9 +62,7 @@ class TestSystemStatusTool:
 
         # Mock psutil
         mock_psutil.cpu_percent.return_value = 50.0
-        mock_psutil.virtual_memory.return_value = MagicMock(
-            total=8589934592, available=4294967296, percent=50.0
-        )
+        mock_psutil.virtual_memory.return_value = MagicMock(total=8589934592, available=4294967296, percent=50.0)
         mock_psutil.disk_usage.return_value = MagicMock(
             total=107374182400, used=53687091200, free=53687091200, percent=50.0
         )

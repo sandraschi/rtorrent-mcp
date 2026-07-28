@@ -128,9 +128,7 @@ class TestMCPIntegration:
         # Simulate an error
         with patch("rtorrent_mcp.services.core_tools.logger") as mock_logger:
             # Force an error in help function
-            with patch(
-                "rtorrent_mcp.services.core_tools.json.dumps", side_effect=Exception("Test error")
-            ):
+            with patch("rtorrent_mcp.services.core_tools.json.dumps", side_effect=Exception("Test error")):
                 result = await help_tool.run({})
 
                 # ToolResult has a content attribute with TextContent

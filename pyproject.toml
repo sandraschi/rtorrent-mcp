@@ -9,10 +9,10 @@ description = "rTorrent MCP Server - Austrian anime automation with FastMCP 3.1.
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Sandra's Austrian Anime Automation", email = "sandra@vienna.at"}
+    {name = "Sandra's Austrian Anime Automation", email = "sandraschipal@gmail.com"}
 ]
 maintainers = [
-    {name = "Sandra", email = "sandra@vienna.at"}
+    {name = "Sandra", email = "sandraschipal@gmail.com"}
 ]
 # Python import: rtorrent_mcp. Historic prototype used qBittorrent (package name qbtmcp).
 keywords = [
@@ -38,7 +38,7 @@ classifiers = [
     "Typing :: Typed"
 ]
 dependencies = [
-    "fastmcp>=3.2,<4",
+    "fastmcp>=3.4.4,<4",
     "httpx>=0.27.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
@@ -59,7 +59,7 @@ dependencies = [
     "mypy>=1.0.0",
     "mkdocs>=1.4.3",
     "mkdocs-material>=9.1.18",
-    "ruff>=0.14.2",
+    "ruff>=0.16.0,<0.17",
     "prefab-ui>=0.14.0",
 ]
 requires-python = ">=3.12"
@@ -72,7 +72,7 @@ dev = [
     "pytest-asyncio>=0.24.0",
     
     # Linting & Type Checking
-    "ruff>=0.1.6",
+    "ruff>=0.16.0,<0.17",
     "pyright>=1.1.390",
     "mypy>=1.8.0",
     

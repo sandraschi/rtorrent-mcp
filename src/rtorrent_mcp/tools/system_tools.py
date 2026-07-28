@@ -465,8 +465,7 @@ def register_system_tools(mcp: FastMCP, settings) -> None:
                     response = requests.post(
                         "http://localhost:12224/RPC2",
                         data=(
-                            '<?xml version="1.0"?>'
-                            "<methodCall><methodName>system.listMethods</methodName></methodCall>"
+                            '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>'
                         ),
                         headers={"Content-Type": "text/xml"},
                         timeout=5,

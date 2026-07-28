@@ -273,7 +273,7 @@ async def search_nyaa_anime(
                         # Sort preferred results by quality score (highest first)
                         preferred_results.sort(key=lambda x: (x["quality_score"], x["seeders"]), reverse=True)
                         logger.info(
-                             f"Found {len(preferred_results)} {group} results (prio over {len(other_results)} others)"
+                            f"Found {len(preferred_results)} {group} results (prio over {len(other_results)} others)"
                         )
                         # Return top preferred results only
                         return preferred_results[:5]

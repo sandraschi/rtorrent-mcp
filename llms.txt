@@ -1,0 +1,24 @@
+# rtorrent-mcp
+
+BitTorrent client management MCP server — rTorrent XML-RPC, torrent search (nyaa, piratebay, annas-archive), media integration (Plex/Jellyfin), legal compliance.
+
+## Tools
+
+- `torrent_management` (13 ops): add, list, pause, resume, delete, status, check completed, media notify
+- `search_management` (13 ops): anime, manga, movies, TV shows, ebooks, comics, IMDb, TVDB
+- `system_management` (5 ops): health, status, info, analyze, help
+- `workflow_management` (8 ops): franchise download, batch series, queue, schedule
+- `nlp_management` (3 ops): natural language command parsing
+- `legal_management` (4 ops): Austrian copyright compliance check
+- `agentic_rtorrent_workflow`: LLM-orchestrated multi-step (requires Ollama)
+
+## Ports
+
+- Backend: 10910 (MCP HTTP `/mcp` + REST `/api/*`)
+- Frontend: 10911 (Vite dev)
+
+## Links
+
+- Full reference: `llms-full.txt`
+- Config: `.env.example`
+- AGENTS.md: project guide for coding agents

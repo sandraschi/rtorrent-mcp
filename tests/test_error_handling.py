@@ -77,9 +77,7 @@ class TestPirateBaySearchErrorHandling:
         mock_session_instance = MagicMock()
         mock_session_instance.__aenter__ = AsyncMock(return_value=mock_session_instance)
         mock_session_instance.__aexit__ = AsyncMock(return_value=None)
-        mock_session_instance.get = AsyncMock(
-            side_effect=aiohttp.ClientConnectorError("Connection failed")
-        )
+        mock_session_instance.get = AsyncMock(side_effect=aiohttp.ClientConnectorError("Connection failed"))
         mock_session.return_value = mock_session_instance
 
         results = await search_piratebay_tv("test", resolution="1080p")

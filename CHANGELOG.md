@@ -1,3 +1,13 @@
+
+## [Unreleased] — 2026-06-14
+
+### Added
+- Tauri 2.0 native wrapper with `bundle.resources` + `std::process::Command`
+- PyInstaller frozen backend embedded in NSIS installer
+- CUA-NSIS smoke test (`scripts/cua-smoke.py`, `scripts/cua-nsis-config.json`)
+- `just cua-nsis-test` recipe
+- Tauri CORS: `tauri://localhost` origins for WebView API access
+- `GET /api/v1/diagnostics` endpoint for CUA verification
 # Changelog
 
 All notable changes to **rTorrent MCP Server** will be documented in this file.
@@ -387,3 +397,4 @@ We use [Semantic Versioning](https://semver.org/):
 ---
 
 *This changelog is automatically updated via CI/CD pipeline.*
+
