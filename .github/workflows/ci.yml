@@ -22,28 +22,26 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-      
+
       - name: Install dependencies
-        run: |
-          pip install -e ".[dev]"
-      
+        run: uv sync --extra dev
+
       - name: Run Ruff linter
-        run: ruff check src/
-      
+        run: uv run ruff check src/ tests/
+
       - name: Run Ruff formatter check
-        run: ruff format --check src/
-      
+        run: uv run ruff format --check src/ tests/
+
       - name: Run Pyright type checker
-        run: pyright src/
-      
+        run: uv run pyright src/
+
       - name: Run MyPy type checker
-        run: mypy src/rtorrent_mcp --ignore-missing-imports
+        run: uv run mypy src/rtorrent_mcp --ignore-missing-imports
 
   # ============================================================================
   # FRONTEND (web_sota)
@@ -65,9 +63,9 @@ jobs:
         working-directory: web_sota
         run: npm ci
 
-      - name: Type check
+      - name: Type check (build mode)
         working-directory: web_sota
-        run: npx tsc --noEmit
+        run: npx tsc -b
 
       - name: Biome lint
         working-directory: web_sota
@@ -85,21 +83,20 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-      
+
       - name: Install dependencies
-        run: pip install bandit safety
-      
+        run: uv sync --extra dev
+
       - name: Run Bandit security scan
-        run: bandit -r src/ -ll
-      
+        run: uv run bandit -r src/ -ll
+
       - name: Check dependencies for vulnerabilities
-        run: pip install -e . && safety check
+        run: uv run safety check
         continue-on-error: true  # Don't fail on known issues
 
   # ============================================================================
@@ -113,19 +110,18 @@ jobs:
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-      
+
       - name: Install dependencies
-        run: pip install -e ".[dev,test]"
-      
+        run: uv sync --extra dev --extra test
+
       - name: Run tests with coverage
-        run: pytest --cov=src/rtorrent_mcp --cov-report=xml --cov-report=html
-      
+        run: uv run pytest --cov=src/rtorrent_mcp --cov-report=xml --cov-report=html
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -141,21 +137,21 @@ jobs:
     needs: [lint, test]
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: Install build tools
-        run: pip install build twine
-      
+        run: uv sync --extra dev
+
       - name: Build package
-        run: python -m build
-      
+        run: uv run python -m build
+
       - name: Check package
-        run: twine check dist/*
-      
+        run: uv run twine check dist/*
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -171,22 +167,22 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: Install package
-        run: pip install -e .
-      
+        run: uv sync
+
       - name: Validate FastMCP version
         run: |
-          python -c "import fastmcp; print(f'FastMCP version: {fastmcp.__version__}')"
-      
+          uv run python -c "import fastmcp; print(f'FastMCP version: {fastmcp.__version__}')"
+
       - name: Validate portmanteau tools
         run: |
-          python -c "
+          uv run python -c "
           from rtorrent_mcp.tools.portmanteau import (
               register_torrent_management_tool,
               register_search_management_tool,
@@ -197,17 +193,17 @@ jobs:
           )
           print('[OK] All 6 portmanteau tools validated')
           "
-      
+
       - name: Validate prompts
         run: |
-          python -c "
+          uv run python -c "
           from rtorrent_mcp.prompts import register_prompts
           print('[OK] Prompt templates validated')
           "
-      
+
       - name: Validate server initialization
         run: |
-          python -c "
+          uv run python -c "
           from rtorrent_mcp.server import RTorrentMCPServer
           print('[OK] Server class validated')
           "
@@ -230,6 +226,6 @@ jobs:
         with:
           name: dist
           path: dist/
-      
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
