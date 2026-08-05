@@ -39,11 +39,11 @@ export function useRtorrentBridge(pollMs = 8000) {
     setError(null);
     try {
       const [h, s, t] = await Promise.all([
-        fetch(API_BASE + "/api/health").then((r) =>
+        fetch(`${API_BASE}/api/health`).then((r) =>
           r.ok ? r.json() : Promise.reject(new Error(`health ${r.status}`)),
         ),
-        fetch(API_BASE + "/api/rtorrent/status").then((r) => r.json()),
-        fetch(API_BASE + "/api/rtorrent/torrents").then((r) => r.json()),
+        fetch(`${API_BASE}/api/rtorrent/status`).then((r) => r.json()),
+        fetch(`${API_BASE}/api/rtorrent/torrents`).then((r) => r.json()),
       ]);
       setHealth(h);
       setRtStatus(s);

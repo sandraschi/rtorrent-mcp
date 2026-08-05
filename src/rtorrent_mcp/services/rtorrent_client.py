@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 rtorrent_client.py - rTorrent XMLRPC client for RTorrent MCP Server
 Austrian anime categorization and torrent management
@@ -19,7 +20,8 @@ class RTorrentClient:
     def __init__(self, host: str = DEFAULT_RTORRENT_HOST, port: int = DEFAULT_RTORRENT_PORT):
         self.host = host
         self.port = port
-        self.server = None
+        # XML-RPC ServerProxy dispatches methods dynamically; typed as Any
+        self.server: Any = None
         self.connected = False
 
     async def connect(self) -> bool:

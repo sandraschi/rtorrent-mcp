@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 tv_nlp_tools.py - Natural Language Processing for TV show queries
 Handles natural language commands like "get new Only Murders in the Building episodes from piratebay"
@@ -63,6 +64,23 @@ class TVShowNLPProcessor:
                 result["show_name"] = self._clean_show_name(match.group(1))
                 break
 
+        # Fallback: "episodes of <show>" / "episodes from <show>"
+        if result["show_name"] is None:
+            match = re.search(r"episodes?\s+(?:of|from)\s+(.+)$", query_lower)
+            if match:
+                result["confidence"] += 0.3
+                result["show_name"] = self._clean_show_name(match.group(1))
+
+        # Fallback: "download/find/get <show> from <source>"
+        if result["show_name"] is None:
+            match = re.search(
+                r"(?:get|find|download|search\s+for)\s+(?:new\s+|latest\s+)?(.+?)\s+from\s+\S+$",
+                query_lower,
+            )
+            if match:
+                result["confidence"] += 0.3
+                result["show_name"] = self._clean_show_name(match.group(1))
+
         # Check for "new" keyword
         if "new" in query_lower:
             result["new_only"] = True
@@ -98,11 +116,12 @@ class TVShowNLPProcessor:
 
     def _clean_show_name(self, name: str) -> str:
         """Clean and normalize show name."""
-        words = name.strip().split()
+        words = name.strip().replace("-", " ").replace("_", " ").split()
         cleaned_words = []
         for word in words:
             word = word.strip(".,!?;:'\"()[]{}")
-            cleaned_words.append(word)
+            if word:
+                cleaned_words.append(word)
         return " ".join(cleaned_words)
 
     def extract_episode_tracking_info(self, query: str) -> dict[str, Any]:

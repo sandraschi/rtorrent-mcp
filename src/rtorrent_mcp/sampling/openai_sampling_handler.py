@@ -357,7 +357,7 @@ class RTorrentSamplingHandler:
         content_text = msg.get("content") or ""
 
         if tool_calls:
-            blocks: list[TextContent | ToolUseContent] = []
+            blocks: list[Any] = []
             if isinstance(content_text, str) and content_text.strip():
                 blocks.append(TextContent(type="text", text=content_text))
             for tc in tool_calls:

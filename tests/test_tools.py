@@ -1,6 +1,7 @@
 """
-Tests for MCP tool registration and basic functionality
-Tests that tools are properly registered and can be called
+Tests for MCP tool registration and basic functionality.
+
+Tests that the consolidated portmanteau tools are properly registered and callable.
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -8,194 +9,118 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 
-class TestTorrentTools:
-    """Test torrent management tools"""
+def _make_mcp():
+    from fastmcp import FastMCP
+
+    from rtorrent_mcp.config.settings import Settings
+    from rtorrent_mcp.tools import register_all_tools
+
+    mcp = FastMCP("test-server")
+    settings = Settings()
+    register_all_tools(mcp, settings)
+    return mcp
+
+
+async def _call_tool(mcp, name, **kwargs):
+    """Resolve a registered tool and invoke its underlying function."""
+    tool = await mcp.get_tool(name)
+    assert tool is not None, f"{name} not registered"
+    return await tool.fn(**kwargs)
+
+
+class TestPortmanteauRegistration:
+    """Test that the 6 portmanteau tools + agentic workflow register."""
+
+    @pytest.mark.parametrize(
+        "tool_name",
+        [
+            "torrent_management",
+            "search_management",
+            "nlp_management",
+            "legal_management",
+            "system_management",
+            "workflow_management",
+            "agentic_rtorrent_workflow",
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_portmanteau_registered(self, tool_name):
+        """Each consolidated tool is registered on the server."""
+        mcp = _make_mcp()
+        tool = await mcp.get_tool(tool_name)
+        assert tool is not None, f"{tool_name} not registered"
+        assert tool.name == tool_name
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.torrent_tools.get_rtorrent_client")
-    async def test_add_torrent_tool(self, mock_get_client):
-        """Test add_torrent tool"""
-        from fastmcp import FastMCP
+    async def test_all_tools_registered(self):
+        """All 6 portmanteaus exist on the server."""
+        mcp = _make_mcp()
+        for name in (
+            "torrent_management",
+            "search_management",
+            "nlp_management",
+            "legal_management",
+            "system_management",
+            "workflow_management",
+        ):
+            tool = await mcp.get_tool(name)
+            assert tool is not None, f"{name} not registered"
 
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.torrent_tools import register_torrent_tools
 
-        mcp = FastMCP("test-server")
-        settings = Settings()
+class TestTorrentManagementTool:
+    """Test torrent_management portmanteau behavior."""
 
-        # Mock rTorrent client
+    @pytest.mark.asyncio
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    async def test_add_action_calls_client(self, mock_get_client):
+        """The add action calls the rTorrent client."""
         mock_client = MagicMock()
         mock_client.add_torrent = AsyncMock(return_value={"status": "success", "hash": "testhash"})
         mock_get_client.return_value = mock_client
 
-        # Register tools
-        register_torrent_tools(mcp, settings)
+        result = await _call_tool(
+            _make_mcp(),
+            "torrent_management",
+            action="add",
+            magnet_link="magnet:?xt=urn:btih:abcdef0123456789abcdef0123456789abcdef01&dn=test",
+        )
 
-        # Verify tool registration succeeded
-        assert mcp is not None
+        assert result.get("success") is True
+        mock_client.add_torrent.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.torrent_tools.get_rtorrent_client")
-    async def test_list_torrents_tool(self, mock_get_client):
-        """Test list_torrents tool"""
-        from fastmcp import FastMCP
-
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.torrent_tools import register_torrent_tools
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-
-        # Mock rTorrent client
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    async def test_list_action_returns_torrents(self, mock_get_client):
+        """The list action returns torrents from the client."""
         mock_client = MagicMock()
         mock_client.get_torrents = AsyncMock(return_value=[{"hash": "hash1", "name": "Test"}])
         mock_get_client.return_value = mock_client
 
-        # Register tools
-        register_torrent_tools(mcp, settings)
+        result = await _call_tool(_make_mcp(), "torrent_management", action="list")
 
-        # Verify tool registration succeeded
-        assert mcp is not None
-
-    @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.torrent_tools.get_rtorrent_client")
-    async def test_get_status_tool(self, mock_get_client):
-        """Test get_status tool"""
-        from fastmcp import FastMCP
-
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.torrent_tools import register_torrent_tools
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-
-        # Mock rTorrent client
-        mock_client = MagicMock()
-        mock_client.connected = True
-        mock_client.host = "localhost"
-        mock_client.port = 5000
-        mock_get_client.return_value = mock_client
-
-        # Register tools
-        register_torrent_tools(mcp, settings)
-
-        # Verify tool registration succeeded
-        assert mcp is not None
-
-
-class TestSearchToolsRegistration:
-    """Test search tools registration"""
-
-    def test_search_tools_registration(self):
-        """Test that search tools are registered"""
-        from fastmcp import FastMCP
-
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.search_tools import register_search_tools
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-
-        # Register tools - should not raise error
-        register_search_tools(mcp, settings)
-
-        # Verify registration succeeded
-        assert mcp is not None
+        assert result.get("success") is True
+        assert len(result.get("data", {}).get("torrents", [])) == 1
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.services.nyaa_search.search_nyaa_anime")
-    async def test_search_anime_tool_calls_service(self, mock_search):
-        """Test that search_anime tool calls the service"""
-        from fastmcp import FastMCP
-
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.search_tools import register_search_tools
-
-        mock_search.return_value = [{"title": "Test", "magnet": "magnet:test"}]
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-        register_search_tools(mcp, settings)
-
-        # Verify tool registration succeeded
-        assert mcp is not None
+    async def test_invalid_action_returns_error(self):
+        """Unknown actions fail gracefully with a structured error."""
+        result = await _call_tool(_make_mcp(), "torrent_management", action="does_not_exist")
+        assert result.get("success") is False
+        assert "error" in result
 
 
-class TestPostProcessingTools:
-    """Test post-processing tools registration"""
+class TestSystemManagementTool:
+    """Test system_management portmanteau behavior."""
 
-    def test_post_processing_tools_registration(self):
-        """Test that post-processing tools are registered"""
-        from fastmcp import FastMCP
+    @pytest.mark.asyncio
+    async def test_help_action(self):
+        """The help action returns the tool catalog."""
+        result = await _call_tool(_make_mcp(), "system_management", action="help")
+        assert result.get("success") is True
+        assert "torrent_management" in str(result)
 
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.post_processing_tools import register_post_processing_tools
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-
-        # Register tools - should not raise error
-        register_post_processing_tools(mcp, settings)
-
-        # Verify registration succeeded
-        assert mcp is not None
-
-
-class TestLegalTools:
-    """Test legal compliance tools"""
-
-    def test_legal_tools_registration(self):
-        """Test that legal tools are registered"""
-        from fastmcp import FastMCP
-
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.legal_tools import register_legal_tools
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-
-        # Register tools - should not raise error
-        register_legal_tools(mcp, settings)
-
-        # Verify registration succeeded
-        assert mcp is not None
-
-
-class TestNLPTools:
-    """Test natural language processing tools"""
-
-    def test_nlp_tools_registration(self):
-        """Test that NLP tools are registered"""
-        from fastmcp import FastMCP
-
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.nlp_tools import register_nlp_tools
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-
-        # Register tools - should not raise error
-        register_nlp_tools(mcp, settings)
-
-        # Verify registration succeeded
-        assert mcp is not None
-
-
-class TestSystemTools:
-    """Test system tools"""
-
-    def test_system_tools_registration(self):
-        """Test that system tools are registered"""
-        from fastmcp import FastMCP
-
-        from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.system_tools import register_system_tools
-
-        mcp = FastMCP("test-server")
-        settings = Settings()
-
-        # Register tools - should not raise error
-        register_system_tools(mcp, settings)
-
-        # Verify registration succeeded
-        assert mcp is not None
+    @pytest.mark.asyncio
+    async def test_health_action(self):
+        """The health action returns structured health data."""
+        result = await _call_tool(_make_mcp(), "system_management", action="health")
+        assert result.get("success") is True

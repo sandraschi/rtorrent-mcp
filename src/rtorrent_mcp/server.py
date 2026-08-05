@@ -175,11 +175,22 @@ Tool output may include Austria-oriented risk context; users must verify local l
 
         register_web_api(self, app_version=__version__)
         self.logger.info("HTTP REST API registered: /api/health, /api/info, /api/rtorrent/*")
+        self._cors_middleware = self._build_cors_middleware()
 
-        if hasattr(self, "_app") and self._app is not None:
-            from starlette.middleware.cors import CORSMiddleware
+        self.logger.info("[OK] Server setup complete")
 
-            self._app.add_middleware(
+    @staticmethod
+    def _build_cors_middleware() -> list:
+        """Fleet CORS standard: tauri origins + unconditional Tailscale/LAN regex.
+
+        Applied via ``http_app(middleware=...)`` — FastMCP only wires middleware
+        passed at app-build time (``self._app`` does not exist during ``setup()``).
+        """
+        from starlette.middleware import Middleware
+        from starlette.middleware.cors import CORSMiddleware
+
+        return [
+            Middleware(
                 CORSMiddleware,
                 allow_origins=[
                     "tauri://localhost",
@@ -191,8 +202,7 @@ Tool output may include Austria-oriented risk context; users must verify local l
                 allow_methods=["*"],
                 allow_headers=["*"],
             )
-
-        self.logger.info("[OK] Server setup complete")
+        ]
 
 
 def main(config_path: str | None = None):
@@ -245,7 +255,7 @@ Examples:
 
     # Build a namespace for the transport so it does not re-parse argv (avoids
     # "unrecognized arguments: --config .env --transport stdio" when run from Cursor).
-    class TransportArgs:
+    class TransportArgs(argparse.Namespace):
         pass
 
     transport_args = TransportArgs()
@@ -293,7 +303,7 @@ class _UvicornASGIApp:
                 path = os.environ.get("MCP_PATH", "/mcp")
                 if not path.startswith("/"):
                     path = "/" + path
-                self._inner = srv.http_app(path=path)
+                self._inner = srv.http_app(path=path, middleware=srv._cors_middleware)
             except Exception:
                 logger.exception("Failed to build ASGI app")
                 from starlette.responses import Response

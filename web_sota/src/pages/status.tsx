@@ -1,6 +1,6 @@
+import { HardDrive, Link2, Server } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRtorrentBridge } from "@/hooks/useRtorrentBridge";
-import { HardDrive, Link2, Server } from "lucide-react";
 
 function fmtBytes(n: number) {
   if (!Number.isFinite(n) || n < 0) return "—";

@@ -154,3 +154,9 @@ config/
 target/
 
 _dashboard/
+
+# Assfix audit artifacts
+reports/
+_llm_test_scripts/
+dev_test.py
+remove_description_params.py

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "text",
+            "text": "## Session Context (rTorrent MCP)\n\nYou can manage rTorrent torrents and search anime/TV sources (nyaa.si, Pirate Bay, YTS, Anna's Archive) with Austrian legal checks.\n\n**Before starting work:**\n1. Check connection + health: system_management(action=\"health\")\n2. Review current torrents: torrent_management(action=\"list\")\n\n**At end of work:**\n- Verify legal status for any non-Anime content: legal_management(action=\"risk\")\n- Resume/pause processing loops: torrent_management(action=\"start_processing\")"
+          }
+        ]
+      }
+    ]
+  }
+}

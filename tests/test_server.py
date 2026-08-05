@@ -28,7 +28,7 @@ def test_server_initialization(mock_rtorrent_client):
         server = RTorrentMCPServer()
 
     assert server._settings.APP_NAME == "RTorrent MCP"
-    assert server._settings.APP_VERSION == "1.0.0"
+    assert server._settings.APP_VERSION == "3.0.0"
     assert "RTorrent automation" in server._settings.APP_DESCRIPTION
 
     assert server._settings.RTORRENT_HOST == "test-rtorrent"

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ShellHonestyBanner } from "./shell-honesty-banner";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
+
 // import { Toaster } from '@/components/ui/toaster';
 
 interface AppLayoutProps {

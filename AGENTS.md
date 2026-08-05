@@ -91,5 +91,5 @@ RTORRENT_SAMPLING_MODEL=llama3.2
 - **Sampling**: Defaults to Ollama on localhost (`llama3.2`). Set
   `RTORRENT_SAMPLING_USE_CLIENT_LLM=1` to prefer the MCP host's LLM.
 - **Ollama endpoint**: Must include `/v1` suffix (default is correct).
-- **Known gaps**: Workflow `franchise`/`batch_series` are stubs (not executing);
-  settings page is cosmetic (not wired to backend); test coverage below 80% target.
+- **REST bridge**: `/api/*` on 10910 — health, capabilities, skills, llm/discover, ai/chat, rtorrent/*, fleet/apps, v1/diagnostics (CUA).
+- **Coverage**: `--cov-fail-under=40` (2026-08-05 assfix; was 80% unreachable — 8% before dead-code removal, 46% after; raise the bar in follow-ups).

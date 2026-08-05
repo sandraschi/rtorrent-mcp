@@ -1,9 +1,11 @@
 """
-Integration tests for RTorrent MCP server
+Integration tests for RTorrent MCP server.
+
+Tests the legacy service-level tool registrations (services/core_tools,
+services/rtorrent_client) against the FastMCP 3.4 API surface.
 """
 
-import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastmcp import FastMCP
@@ -14,7 +16,7 @@ def mock_settings():
     """Mock settings for tests"""
     with patch("rtorrent_mcp.config.settings.settings") as mock_settings:
         mock_settings.APP_NAME = "RTorrent MCP"
-        mock_settings.APP_VERSION = "1.0.0"
+        mock_settings.APP_VERSION = "3.0.0"
         mock_settings.ALLOWED_CATEGORIES = ["Anime"]
         mock_settings.ALLOWED_RESOLUTIONS = ["720p", "1080p"]
         yield mock_settings
@@ -44,14 +46,14 @@ class TestMCPIntegration:
         register_rtorrent_tools(mcp_server)
 
         # Check that tools are registered
-        tools = await mcp_server.get_tools()
+        tools = await mcp_server.list_tools()
         tool_names = [tool.name for tool in tools]
 
         assert "help" in tool_names
         assert "get_system_status" in tool_names
         assert "analyze_repo" in tool_names
-        assert "add_torrent" in tool_names
-        assert "list_torrents" in tool_names
+        assert "add_torrent_rt" in tool_names
+        assert "list_rt_torrents" in tool_names
 
     @pytest.mark.asyncio
     async def test_help_tool_output(self, mcp_server):
@@ -60,23 +62,14 @@ class TestMCPIntegration:
 
         register_core_tools(mcp_server)
 
-        # Mock the help function
         help_tool = await mcp_server.get_tool("help")
-        result = await help_tool.run({})
+        result = help_tool.fn()
 
-        # ToolResult has a content attribute with TextContent
-        assert hasattr(result, "content")
-        content = result.content
-        # Content is a list of TextContent objects
-        assert isinstance(content, list)
-        assert len(content) > 0
-        text_content = content[0].text
-        assert isinstance(text_content, str)
-        # Parse the JSON content
-        parsed_content = json.loads(text_content)
-        assert "tools" in parsed_content
-        assert "resources" in parsed_content
-        assert "configuration" in parsed_content
+        # The help tool returns a dict with tools/resources/configuration keys
+        assert isinstance(result, dict)
+        assert "tools" in result
+        assert "resources" in result
+        assert "configuration" in result
 
     @pytest.mark.asyncio
     async def test_rtorrent_tools_with_mock(self, mcp_server):
@@ -88,20 +81,17 @@ class TestMCPIntegration:
         # Mock the client
         with patch("rtorrent_mcp.services.rtorrent_client.get_rtorrent_client") as mock_get_client:
             mock_client = MagicMock()
-            mock_client.get_torrents.return_value = [{"hash": "test", "name": "Test Torrent"}]
+            mock_client.get_torrents = AsyncMock(return_value=[{"hash": "test", "name": "Test Torrent"}])
             mock_get_client.return_value = mock_client
 
             # Test list torrents
-            list_tool = await mcp_server.get_tool("list_torrents")
-            result = await list_tool.run({})
+            list_tool = await mcp_server.get_tool("list_rt_torrents")
+            result = await list_tool.fn()
 
-            # ToolResult has a content attribute
-            assert hasattr(result, "content")
-            content = result.content
-            assert isinstance(content, dict)
-            assert "torrents" in content
-            assert len(content["torrents"]) == 1
-            assert content["torrents"][0]["name"] == "Test Torrent"
+            assert isinstance(result, dict)
+            assert "torrents" in result
+            assert len(result["torrents"]) == 1
+            assert result["torrents"][0]["name"] == "Test Torrent"
 
     @pytest.mark.asyncio
     async def test_resource_registration(self, mcp_server):
@@ -110,8 +100,8 @@ class TestMCPIntegration:
 
         register_rtorrent_tools(mcp_server)
 
-        resources = await mcp_server.get_resources()
-        resource_uris = [resource.uri for resource in resources]
+        resources = await mcp_server.list_resources()
+        resource_uris = [str(resource.uri) for resource in resources]
 
         assert "rtorrent://config" in resource_uris
 
@@ -122,26 +112,14 @@ class TestMCPIntegration:
 
         register_core_tools(mcp_server)
 
-        # Test help tool error handling
-        help_tool = await mcp_server.get_tool("help")
+        # get_system_status returns a structured error dict when psutil fails
+        with patch("psutil.Process", side_effect=Exception("System error")):
+            status_tool = await mcp_server.get_tool("get_system_status")
+            result = status_tool.fn()
 
-        # Simulate an error
-        with patch("rtorrent_mcp.services.core_tools.logger") as mock_logger:
-            # Force an error in help function
-            with patch("rtorrent_mcp.services.core_tools.json.dumps", side_effect=Exception("Test error")):
-                result = await help_tool.run({})
-
-                # ToolResult has a content attribute with TextContent
-                assert hasattr(result, "content")
-                content = result.content
-                # Content is a list of TextContent objects
-                assert isinstance(content, list)
-                assert len(content) > 0
-                # The help tool should return help content, not error content
-                # since the error is caught and handled gracefully
-                text_content = content[0].text
-                assert isinstance(text_content, str)
-                mock_logger.error.assert_called()
+            assert isinstance(result, dict)
+            assert result["server_status"] == "error"
+            assert "errors" in result
 
 
 @pytest.mark.asyncio
@@ -157,16 +135,13 @@ class TestAsyncIntegration:
         # Mock the async client
         with patch("rtorrent_mcp.services.rtorrent_client.get_rtorrent_client") as mock_get_client:
             mock_client = MagicMock()
-            mock_client.get_torrents = MagicMock(return_value=[{"hash": "test", "name": "Test"}])
+            mock_client.get_torrents = AsyncMock(return_value=[{"hash": "test", "name": "Test"}])
             mock_get_client.return_value = mock_client
 
             # Test async list torrents
-            list_tool = await mcp_server.get_tool("list_torrents")
-            result = await list_tool.run({})
+            list_tool = await mcp_server.get_tool("list_rt_torrents")
+            result = await list_tool.fn()
 
-            # ToolResult has a content attribute
-            assert hasattr(result, "content")
-            content = result.content
-            assert isinstance(content, dict)
-            assert "torrents" in content
-            assert len(content["torrents"]) == 1
+            assert isinstance(result, dict)
+            assert "torrents" in result
+            assert len(result["torrents"]) == 1

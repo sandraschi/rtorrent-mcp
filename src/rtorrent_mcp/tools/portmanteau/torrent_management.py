@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 Torrent Management Portmanteau Tool
 
@@ -372,7 +373,7 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "filename is required for 'normalize' action",
                     }
-                processor = _get_post_processor(settings)
+                processor = await _get_post_processor(settings)
                 normalized = processor.normalize_filename(filename, category)
                 return {
                     "success": True,

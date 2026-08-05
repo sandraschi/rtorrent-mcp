@@ -53,21 +53,28 @@ class TestSystemStatusTool:
         assert mcp is not None
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.services.core_tools.psutil")
-    async def test_get_system_status_with_mock(self, mock_psutil):
+    @patch("psutil.Process")
+    async def test_get_system_status_with_mock(self, mock_process):
         """Test system status with mocked psutil"""
         from fastmcp import FastMCP
 
         from rtorrent_mcp.services.core_tools import register_core_tools
 
-        # Mock psutil
-        mock_psutil.cpu_percent.return_value = 50.0
-        mock_psutil.virtual_memory.return_value = MagicMock(total=8589934592, available=4294967296, percent=50.0)
-        mock_psutil.disk_usage.return_value = MagicMock(
-            total=107374182400, used=53687091200, free=53687091200, percent=50.0
+        # Mock psutil.Process
+        mock_process.return_value = MagicMock(
+            memory_info=MagicMock(return_value=MagicMock(rss=536870912)),
+            create_time=MagicMock(return_value=1700000000.0),
         )
 
         mcp = FastMCP("test-server")
+        register_core_tools(mcp)
+
+        tool = await mcp.get_tool("get_system_status")
+        assert tool is not None
+        result = tool.fn()
+
+        assert result["server_status"] == "running"
+        assert "system_metrics" in result
         register_core_tools(mcp)
 
         assert mcp is not None
@@ -125,20 +132,25 @@ class TestCoreToolsErrorHandling:
         assert mcp is not None
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.services.core_tools.psutil")
-    async def test_system_status_error_handling(self, mock_psutil):
+    @patch("psutil.Process")
+    async def test_system_status_error_handling(self, mock_process):
         """Test system status error handling"""
         from fastmcp import FastMCP
 
         from rtorrent_mcp.services.core_tools import register_core_tools
 
         # Mock psutil to raise error
-        mock_psutil.cpu_percent.side_effect = Exception("System error")
+        mock_process.side_effect = Exception("System error")
 
         mcp = FastMCP("test-server")
         register_core_tools(mcp)
 
-        assert mcp is not None
+        tool = await mcp.get_tool("get_system_status")
+        assert tool is not None
+        result = tool.fn()
+
+        assert result["server_status"] == "error"
+        assert "errors" in result
 
 
 class TestCoreToolsIntegration:

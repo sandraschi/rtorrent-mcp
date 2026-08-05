@@ -1,0 +1,6 @@
+{
+  "name": "rtorrent-mcp",
+  "version": "3.0.0",
+  "description": "rTorrent MCP server - torrent management, multi-source search, and Austrian legal compliance",
+  "hooks": "../hooks/hooks.json"
+}

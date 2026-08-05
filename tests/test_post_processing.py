@@ -109,7 +109,7 @@ class TestIngestionFolderRouting:
 
         processor = PostProcessor(config)
 
-        folder = processor.get_ingestion_folder("anime", "Test Anime")
+        folder = processor.get_ingestion_folder("anime")
         assert folder == Path("/test/ingestion/anime")
 
     def test_get_ingestion_folder_tv(self):
@@ -124,11 +124,11 @@ class TestIngestionFolderRouting:
 
         processor = PostProcessor(config)
 
-        folder = processor.get_ingestion_folder("tv", "Test TV Show")
+        folder = processor.get_ingestion_folder("tv")
         assert folder == Path("/test/ingestion/tv")
 
         # Also test tv-shows variant
-        folder = processor.get_ingestion_folder("tv-shows", "Test TV Show")
+        folder = processor.get_ingestion_folder("tv-shows")
         assert folder == Path("/test/ingestion/tv")
 
     def test_get_ingestion_folder_movies(self):
@@ -143,7 +143,7 @@ class TestIngestionFolderRouting:
 
         processor = PostProcessor(config)
 
-        folder = processor.get_ingestion_folder("movies", "Test Movie")
+        folder = processor.get_ingestion_folder("movies")
         assert folder == Path("/test/ingestion/movies")
 
     def test_get_ingestion_folder_no_config(self):
@@ -157,7 +157,7 @@ class TestIngestionFolderRouting:
 
         processor = PostProcessor(config)
 
-        folder = processor.get_ingestion_folder("anime", "Test")
+        folder = processor.get_ingestion_folder("anime")
         assert folder is None
 
 

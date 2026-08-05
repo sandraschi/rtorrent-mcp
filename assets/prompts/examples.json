@@ -1,0 +1,907 @@
+[
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "add",
+      "magnet_link": "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Example",
+      "category": "anime"
+    },
+    "description": "Add an anime torrent from a magnet link"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "add",
+      "magnet_link": "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Example",
+      "category": "tv"
+    },
+    "description": "Add a TV torrent with tv category routing"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "add",
+      "magnet_link": "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Example",
+      "category": "movies"
+    },
+    "description": "Add a movie torrent with movies category routing"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "add",
+      "magnet_link": "not-a-magnet"
+    },
+    "description": "Invalid magnet rejected with structured error"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "list"
+    },
+    "description": "List all torrents with state, size, progress"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "list"
+    },
+    "description": "Check download progress of active torrents"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "list"
+    },
+    "description": "Show seeding ratio overview"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "pause",
+      "torrent_hash": "abc123"
+    },
+    "description": "Pause a specific torrent by hash"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "pause",
+      "torrent_hash": "abc123"
+    },
+    "description": "Pause before a network maintenance window"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "resume",
+      "torrent_hash": "abc123"
+    },
+    "description": "Resume a paused torrent"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "delete",
+      "torrent_hash": "abc123",
+      "delete_files": false
+    },
+    "description": "Delete torrent without touching files"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "delete",
+      "torrent_hash": "abc123",
+      "delete_files": true
+    },
+    "description": "Delete torrent and its downloaded data"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "status"
+    },
+    "description": "Check rTorrent XML-RPC connectivity"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "status"
+    },
+    "description": "Verify host and port configuration"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "info",
+      "torrent_hash": "abc123"
+    },
+    "description": "Get detailed info about one torrent before acting on it"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "info",
+      "torrent_hash": "abc123"
+    },
+    "description": "Confirm identity of a torrent before deletion"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "notify_media"
+    },
+    "description": "Trigger Plex/Jellyfin library scan after processing"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "notify_media",
+      "torrent_hash": "abc123"
+    },
+    "description": "Notify media services for one processed torrent"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "check_completed"
+    },
+    "description": "Find completed downloads ready for post-processing"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "check_completed"
+    },
+    "description": "Poll for finished torrents in the background loop style"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "process",
+      "torrent_hash": "abc123"
+    },
+    "description": "Process one completed torrent: normalize + move"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "process",
+      "torrent_hash": "abc123"
+    },
+    "description": "Move finished download into its ingestion folder"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "start_processing"
+    },
+    "description": "Start the automatic post-processing poll loop"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "stop_processing"
+    },
+    "description": "Stop the automatic post-processing poll loop"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "normalize",
+      "filename": "[ASW] Show - 01 [720p].mkv",
+      "category": "anime"
+    },
+    "description": "Preview filename normalization without touching files"
+  },
+  {
+    "tool": "torrent_management",
+    "params": {
+      "action": "normalize",
+      "filename": "Show_Name_E01.mkv",
+      "category": "tv"
+    },
+    "description": "Preview TV filename normalization"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "anime",
+      "query": "detective conan",
+      "resolution": "720p",
+      "group": "ASW"
+    },
+    "description": "Search nyaa.si for ASW anime in 720p"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "anime",
+      "query": "spy x family",
+      "resolution": "1080p",
+      "group": "Erai-raws"
+    },
+    "description": "Search for Erai-raws 1080p releases"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "anime",
+      "query": "one piece",
+      "group": "SubsPlease",
+      "sort_by": "seeds"
+    },
+    "description": "Search by release group sorted by seeds"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "anime",
+      "query": "frieren",
+      "subcategory": "translated"
+    },
+    "description": "Search translated anime subs"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "anime",
+      "query": "chainsaw man",
+      "subcategory": "raw"
+    },
+    "description": "Search raw (untranslated) releases"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "anime",
+      "query": "gundam",
+      "resolution": "1080p",
+      "max_results": 10
+    },
+    "description": "Bounded search with result cap"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "anime",
+      "query": "mushoku tensei",
+      "sort_by": "size"
+    },
+    "description": "Search sorted by torrent size"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "manga",
+      "query": "one piece"
+    },
+    "description": "Search manga on nyaa.si"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "manga",
+      "query": "berserk",
+      "resolution": "720p"
+    },
+    "description": "Search manga with resolution filter"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "japanese_tv",
+      "query": "nhk dramas"
+    },
+    "description": "Search Japanese TV on nyaa.si"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "japanese_tv",
+      "query": "terrace house"
+    },
+    "description": "Search Japanese reality TV"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "movies",
+      "query": "interstellar",
+      "quality": "1080p",
+      "sort_by": "rating"
+    },
+    "description": "Search YTS movies by rating"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "movies",
+      "query": "dune",
+      "quality": "1080p",
+      "sort_by": "seeds",
+      "limit": 5
+    },
+    "description": "Search YTS movies by seeds"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "movies",
+      "query": "spirited away",
+      "quality": "720p"
+    },
+    "description": "Search YTS movies in 720p"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "movies",
+      "query": "inception",
+      "limit": 3
+    },
+    "description": "Small bounded movie search"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_shows",
+      "query": "slow horses",
+      "resolution": "1080p"
+    },
+    "description": "Search Pirate Bay TV shows"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_shows",
+      "query": "severance",
+      "limit": 10
+    },
+    "description": "Search TV with result limit"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_shows",
+      "query": "the boys"
+    },
+    "description": "Generic TV keyword search"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_smart",
+      "query": "get new Only Murders in the Building episodes from piratebay"
+    },
+    "description": "Smart parse: new episodes request"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_smart",
+      "query": "find latest Slow Horses episodes"
+    },
+    "description": "Smart parse: latest episodes"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_smart",
+      "query": "download House of the Dragon from MeGusta"
+    },
+    "description": "Smart parse: download from specific group"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_smart",
+      "query": "search for new episodes of The Crown"
+    },
+    "description": "Smart parse: search phrasing"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tv_smart",
+      "query": "get new Severance episodes from piratebay"
+    },
+    "description": "Smart parse: new episodes from piratebay"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "ebooks_annas",
+      "query": "machine learning",
+      "content_type": "books"
+    },
+    "description": "Search Anna's Archive for books"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "ebooks_annas",
+      "query": "hitchhiker guide",
+      "max_results": 10
+    },
+    "description": "Bounded Anna's Archive search"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "ebooks_annas",
+      "query": "cooking recipes"
+    },
+    "description": "Search ebooks by topic"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "ebooks_pb",
+      "query": "programming"
+    },
+    "description": "Search ebooks on Pirate Bay"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "ebooks_pb",
+      "query": "fantasy novels",
+      "max_results": 10
+    },
+    "description": "Search fiction ebooks on Pirate Bay"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "comics",
+      "query": "batman"
+    },
+    "description": "Search comics on Pirate Bay"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "comics",
+      "query": "saga",
+      "max_results": 5
+    },
+    "description": "Small comics search"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "annas_detail",
+      "book_url": "https://annas-archive.org/md5/abc"
+    },
+    "description": "Fetch Anna's Archive detail page"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "annas_detail",
+      "book_url": "https://annas-archive.org/md5/def"
+    },
+    "description": "Inspect formats and sizes for a book"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "imdb",
+      "title": "Interstellar"
+    },
+    "description": "IMDb metadata by title"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "imdb",
+      "imdb_id": "tt0816692",
+      "api_key": "k"
+    },
+    "description": "IMDb metadata by ID"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "imdb_search",
+      "title": "dune"
+    },
+    "description": "Search IMDb for matching titles"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "imdb_search",
+      "title": "spirited away"
+    },
+    "description": "IMDb title disambiguation"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tvdb",
+      "title": "Slow Horses",
+      "year": 2022
+    },
+    "description": "TVDB metadata by title and year"
+  },
+  {
+    "tool": "search_management",
+    "params": {
+      "action": "tvdb",
+      "tvdb_id": 382173
+    },
+    "description": "TVDB metadata by ID"
+  },
+  {
+    "tool": "nlp_management",
+    "params": {
+      "action": "command",
+      "text": "get me this weeks asw anime 720p"
+    },
+    "description": "Natural language anime command"
+  },
+  {
+    "tool": "nlp_management",
+    "params": {
+      "action": "command",
+      "text": "download erai raws one piece 1080p"
+    },
+    "description": "Natural language download command"
+  },
+  {
+    "tool": "nlp_management",
+    "params": {
+      "action": "command",
+      "text": "lade detective conan asw 720p",
+      "language": "de"
+    },
+    "description": "German natural language command"
+  },
+  {
+    "tool": "nlp_management",
+    "params": {
+      "action": "parse",
+      "text": "get me this weeks asw anime 720p"
+    },
+    "description": "Parse command without executing"
+  },
+  {
+    "tool": "nlp_management",
+    "params": {
+      "action": "parse",
+      "text": "lade one piece asw 720p"
+    },
+    "description": "Parse German command"
+  },
+  {
+    "tool": "nlp_management",
+    "params": {
+      "action": "parse",
+      "text": "asw detective conan 720p"
+    },
+    "description": "Parse shorthand group command"
+  },
+  {
+    "tool": "nlp_management",
+    "params": {
+      "action": "help"
+    },
+    "description": "Show supported command patterns"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "risk",
+      "content_type": "movies",
+      "country": "austria",
+      "activity": "personal_download"
+    },
+    "description": "Legal risk for personal movie download in Austria"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "risk",
+      "content_type": "anime",
+      "activity": "personal_download"
+    },
+    "description": "Legal risk for anime download"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "risk",
+      "content_type": "tv",
+      "activity": "seeding"
+    },
+    "description": "Legal context for seeding TV content"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "risk",
+      "content_type": "books",
+      "activity": "personal_download"
+    },
+    "description": "Legal risk for ebook download"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "check",
+      "content_type": "movies"
+    },
+    "description": "Compact legal verdict for movies"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "check",
+      "content_type": "anime"
+    },
+    "description": "Compact legal verdict for anime"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "advice",
+      "torrent_info": {
+        "title": "Some Series",
+        "action": "personal_download"
+      }
+    },
+    "description": "Free-form legal guidance for a scenario"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "advice",
+      "torrent_info": {
+        "title": "Movie X",
+        "activity": "seeding"
+      }
+    },
+    "description": "Legal guidance for seeding scenario"
+  },
+  {
+    "tool": "legal_management",
+    "params": {
+      "action": "status"
+    },
+    "description": "Show legal configuration and guardrails"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "help"
+    },
+    "description": "Get the runtime tool catalog"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "help",
+      "topic": "torrent_management"
+    },
+    "description": "Get help for a specific tool"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "status"
+    },
+    "description": "Quick server status"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "status",
+      "level": "detailed"
+    },
+    "description": "Detailed server status"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "health"
+    },
+    "description": "Full health: rTorrent, sampling, post-processor"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "health"
+    },
+    "description": "Pre-work connectivity verification"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "health",
+      "level": "detailed"
+    },
+    "description": "Health check with metrics detail"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "info"
+    },
+    "description": "Server info and configuration summary"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "info"
+    },
+    "description": "Show configured categories and resolutions"
+  },
+  {
+    "tool": "system_management",
+    "params": {
+      "action": "analyze"
+    },
+    "description": "Analyze repository structure and paths"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "estimate",
+      "anime_family": "one piece",
+      "resolution": "1080p",
+      "group": "Erai-raws"
+    },
+    "description": "Estimate franchise size before downloading"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "estimate",
+      "anime_family": "gintama",
+      "resolution": "720p"
+    },
+    "description": "Estimate episode count for a long series"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "estimate",
+      "anime_family": "detective conan",
+      "include_movies": false
+    },
+    "description": "Estimate series-only scope"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "franchise",
+      "anime_family": "one piece",
+      "resolution": "1080p",
+      "group": "Erai-raws",
+      "dry_run": true
+    },
+    "description": "Dry-run franchise download plan"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "franchise",
+      "anime_family": "one piece",
+      "resolution": "1080p",
+      "group": "Erai-raws",
+      "dry_run": false,
+      "rate_limit": 5
+    },
+    "description": "Execute franchise download with rate limit"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "franchise",
+      "anime_family": "detective conan",
+      "episode_start": 1100,
+      "episode_end": 1112
+    },
+    "description": "Partial franchise for episode range"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "franchise",
+      "anime_family": "gintama",
+      "include_ovas": true,
+      "include_specials": true
+    },
+    "description": "Franchise including OVAs and specials"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "batch_series",
+      "anime_family": "detective conan"
+    },
+    "description": "Batch download series entries"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "status",
+      "workflow_id": "wf-1"
+    },
+    "description": "Check workflow progress"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "status",
+      "workflow_id": "wf-1"
+    },
+    "description": "Check queue progress by id"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "cancel",
+      "workflow_id": "wf-1"
+    },
+    "description": "Cancel a running workflow"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "list"
+    },
+    "description": "List all workflows"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "queue",
+      "anime_family": "one piece"
+    },
+    "description": "Queue a family for later processing"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "schedule",
+      "anime_family": "one piece",
+      "schedule_time": "02:30",
+      "rate_limit": 3
+    },
+    "description": "Schedule a download overnight"
+  },
+  {
+    "tool": "workflow_management",
+    "params": {
+      "action": "schedule",
+      "anime_family": "detective conan",
+      "schedule_time": "20:00"
+    },
+    "description": "Schedule evening download"
+  },
+  {
+    "tool": "agentic_rtorrent_workflow",
+    "params": {
+      "goal": "Download the latest season of Detective Conan in 1080p from ASW and start processing when complete"
+    },
+    "description": "LLM-orchestrated multi-step download"
+  },
+  {
+    "tool": "agentic_rtorrent_workflow",
+    "params": {
+      "goal": "Find and add the best seeded anime releases for the current season"
+    },
+    "description": "Agentic seasonal anime acquisition"
+  },
+  {
+    "tool": "agentic_rtorrent_workflow",
+    "params": {
+      "goal": "Check for completed downloads and process them into the library"
+    },
+    "description": "Agentic post-processing run"
+  }
+]

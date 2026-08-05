@@ -1,0 +1,28 @@
+{
+  "manifest_version": "0.2",
+  "name": "rtorrent-mcp",
+  "version": "3.0.0",
+  "description": "FastMCP 3.4 server for rTorrent automation: torrent management, multi-source search (nyaa.si, YTS, Pirate Bay, Anna's Archive, IMDb/TVDB), post-processing, franchise workflows, and Austrian legal context.",
+  "author": { "name": "Sandra's Austrian Anime Automation" },
+  "server": {
+    "type": "python",
+    "entry_point": "src/rtorrent_mcp/server.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["-m", "rtorrent_mcp.server"],
+      "env": {
+        "PYTHONPATH": "${PWD}",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  },
+  "tools": [
+    { "name": "torrent_management", "description": "Add/list/pause/resume/delete torrents + post-processing (13 actions)" },
+    { "name": "search_management", "description": "Multi-source search: anime, manga, TV, movies, ebooks, metadata (13 actions)" },
+    { "name": "nlp_management", "description": "Natural-language anime commands (en/de/ja), parse + execute (3 actions)" },
+    { "name": "legal_management", "description": "Austrian copyright risk context and advice (4 actions)" },
+    { "name": "system_management", "description": "Help, status, health, info, analyze (5 actions)" },
+    { "name": "workflow_management", "description": "Franchise/batch/scheduled download workflows (8 actions)" },
+    { "name": "agentic_rtorrent_workflow", "description": "LLM-orchestrated multi-step torrent workflows via sampling" }
+  ]
+}

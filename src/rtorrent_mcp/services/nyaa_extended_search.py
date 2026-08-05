@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 nyaa_extended_search.py - Extended nyaa.si search for manga, Japanese TV, etc.
 Expands nyaa.si search beyond anime to include manga (raw/translated) and Japanese television
@@ -90,7 +91,7 @@ async def search_nyaa_extended(
             if not table:
                 logger.warning("No table found on nyaa.si page")
                 # Check for "no results" message
-                no_results = soup.find(string=lambda text: text and "no results" in text.lower())
+                no_results = soup.find(string=lambda text: bool(text) and "no results" in text.lower())
                 if no_results:
                     logger.info(f"No results found for query: {query}")
                     return []

@@ -440,7 +440,7 @@ class TestMetadataServices:
         mock_session_instance.get = MagicMock(return_value=mock_response)
         mock_session.return_value = mock_session_instance
 
-        result = await get_imdb_metadata("Test Movie", year=2023)
+        result = await get_imdb_metadata("Test Movie", year=2023, api_key="test-key")
 
         assert result["title"] == "Test Movie"
         assert result["year"] == "2023"
@@ -473,7 +473,7 @@ class TestMetadataServices:
         mock_session_instance.get = MagicMock(return_value=mock_response)
         mock_session.return_value = mock_session_instance
 
-        result = await get_imdb_metadata("", imdb_id="tt1234567")
+        result = await get_imdb_metadata("", imdb_id="tt1234567", api_key="test-key")
 
         assert result["imdb_id"] == "tt1234567"
         assert result["title"] == "Test Movie"
@@ -516,7 +516,7 @@ class TestMetadataServices:
         mock_session_instance.get = MagicMock(return_value=mock_response)
         mock_session.return_value = mock_session_instance
 
-        results = await search_imdb("test movie")
+        results = await search_imdb("test movie", api_key="test-key")
 
         assert len(results) == 2
         assert results[0]["title"] == "Test Movie"
@@ -537,24 +537,23 @@ class TestMetadataServices:
 class TestSearchTools:
     """Test MCP search tools registration and basic functionality"""
 
-    def test_tool_registration(self):
-        """Test that all search tools are properly registered"""
+    @pytest.mark.asyncio
+    async def test_tool_registration(self):
+        """Test that the search_management portmanteau is registered"""
         from fastmcp import FastMCP
 
         from rtorrent_mcp.config.settings import Settings
-        from rtorrent_mcp.tools.search_tools import register_search_tools
+        from rtorrent_mcp.tools.portmanteau.search_management import register_search_management_tool
 
         mcp = FastMCP("test-server")
         settings = Settings()
 
         # Register tools
-        register_search_tools(mcp, settings)
+        register_search_management_tool(mcp, settings)
 
-        # Check that tools are registered by checking the internal tool registry
-        # FastMCP stores tools internally, we can verify registration succeeded
-        # by checking that the function doesn't raise an error
-        assert mcp is not None
-        # Tools are registered via decorators, so if no error occurred, registration succeeded
+        tool = await mcp.get_tool("search_management")
+        assert tool is not None
+        assert tool.name == "search_management"
 
 
 if __name__ == "__main__":

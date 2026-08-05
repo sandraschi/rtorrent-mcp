@@ -1,12 +1,40 @@
 "use client";
 
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { ExternalLink, HelpCircle, LayoutGrid, Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 import { APPS_CATALOG } from "@/common/apps-catalog";
 import { useMcpBackendStatus } from "@/hooks/useMcpBackendStatus";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { ExternalLink, HelpCircle, LayoutGrid } from "lucide-react";
+
+// EXPERIMENTAL light mode (invert hack). Not fleet standard - see index.css.
+// Toggling `.dark` off the root flips the invert filter; persisted so the
+// choice survives reloads. Delete this + the CSS block to revert.
+const THEME_KEY = "qbt-light-mode";
+
+function useExperimentalTheme() {
+  const [light, setLight] = useState(() => {
+    try {
+      return localStorage.getItem(THEME_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", !light);
+    try {
+      localStorage.setItem(THEME_KEY, light ? "1" : "0");
+    } catch {
+      // ignore storage errors
+    }
+  }, [light]);
+
+  return { light, toggle: () => setLight((v) => !v) };
+}
 
 export function Topbar() {
   const mcp = useMcpBackendStatus();
+  const { light, toggle } = useExperimentalTheme();
 
   const mcpLabel =
     mcp === "checking"
@@ -32,6 +60,21 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Day mode toggle */}
+        <button
+          type="button"
+          onClick={toggle}
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-800 bg-slate-900/50 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          title={
+            light
+              ? "Switch to dark (experimental light mode)"
+              : "Switch to light (experimental, ugly)"
+          }
+          aria-label="Toggle light mode (experimental)"
+        >
+          {light ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        </button>
+
         <div
           className={`mr-4 flex items-center gap-2 rounded-full px-3 py-1 text-xs border ${mcpClass}`}
           title="Backend on 10910: /api/health + /mcp (start web_sota/start.ps1)"
@@ -54,7 +97,10 @@ export function Topbar() {
         {/* Global Apps Navigation */}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-900/50 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-700">
+            <button
+              type="button"
+              className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-900/50 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-700"
+            >
               <LayoutGrid className="h-4 w-4" />
               Apps
             </button>
@@ -88,7 +134,10 @@ export function Topbar() {
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
 
-        <button className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-800 bg-slate-900/50 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+        <button
+          type="button"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-800 bg-slate-900/50 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+        >
           <HelpCircle className="h-4 w-4" />
         </button>
       </div>

@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 legal_compliance.py - Legal compliance checking for RTorrent MCP
 Austrian legal framework with international warnings

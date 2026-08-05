@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 core_tools.py - Core MCP tools for RTorrent MCP Server
 Help, status, and analyzer tools with extensive error handling

@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 NLP Management Portmanteau Tool
 

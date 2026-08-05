@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 natural_language.py - Natural language processing for Sandra's anime commands
 Austrian context with German language support
@@ -159,6 +160,8 @@ def extract_anime_name(command: str) -> str:
 
 def extract_resolution(command: str) -> str:
     """Extract video resolution from command"""
+    if not command:
+        return ""
     resolutions = ["480p", "720p", "1080p", "4k", "2160p"]
     command_lower = command.lower()
 

@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 Legal Management Portmanteau Tool
 

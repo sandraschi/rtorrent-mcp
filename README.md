@@ -536,6 +536,19 @@ For detailed API documentation, run the server and visit:
 http://localhost:10910/api/health
 ```
 
+REST endpoints on port 10910 (same process as MCP `/mcp`):
+
+- `GET /api/health` — liveness + version
+- `GET /api/capabilities` — tools/resources/skills surface (dynamic discovery)
+- `GET /api/skills` / `GET /api/skills/{name}` — bundled SKILL.md listing/content
+- `GET /api/llm/discover` — probe Ollama :11434 / LM Studio :1234 / vLLM :8000
+- `POST /api/ai/chat` — chat completion via the configured sampling endpoint
+- `GET /api/rtorrent/status` / `GET /api/rtorrent/torrents` / `POST /api/rtorrent/magnet`
+- `GET /api/fleet/apps` — probe the fleet webapp reservoir for live peers
+- `GET /api/v1/diagnostics` / `GET /api/v1/system/info` — CUA smoke diagnostics
+
+Set `API_KEY` in `.env` to require `Authorization: Bearer <key>` on `/api/*`.
+
 ### Product Requirements Document
 
 See [PRD.md](docs/PRD.md) for product background, requirements, and technical notes.

@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 annas_archive_search.py - Anna's Archive ebook and paper search functionality
 Anna's Archive is the gold standard for ebooks - 60M books, 50M papers, can have 100TB torrents!
@@ -90,7 +91,7 @@ async def search_annas_archive(query: str, content_type: str = "books", max_resu
                     for link in all_links[:max_results]:
                         try:
                             title = link.text.strip()
-                            href = link.get("href", "")
+                            href = str(link.get("href", "") or "")
                             full_url = f"{ANNAS_ARCHIVE_BASE}{href}" if href.startswith("/") else href
 
                             if title:
@@ -112,7 +113,9 @@ async def search_annas_archive(query: str, content_type: str = "books", max_resu
                     logger.warning("No results found on Anna's Archive page")
                     # Check for "no results" message
                     no_results = soup.find(
-                        string=lambda text: text and ("no results" in text.lower() or "no matches" in text.lower())
+                        string=lambda text: (
+                            bool(text) and ("no results" in text.lower() or "no matches" in text.lower())
+                        )
                     )
                     if no_results:
                         return []
@@ -138,7 +141,7 @@ async def search_annas_archive(query: str, content_type: str = "books", max_resu
                     # Get detail URL
                     detail_url = None
                     if title_elem:
-                        href = title_elem.get("href", "")
+                        href = str(title_elem.get("href", "") or "")
                         detail_url = f"{ANNAS_ARCHIVE_BASE}{href}" if href.startswith("/") else href
 
                     # Extract metadata if available

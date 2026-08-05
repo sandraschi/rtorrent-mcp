@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 nyaa_search.py - nyaa.si anime search functionality for RTorrent MCP
 Austrian anime automation with ASW release group prioritization

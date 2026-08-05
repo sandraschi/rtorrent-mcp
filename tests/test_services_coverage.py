@@ -524,7 +524,7 @@ class TestPostProcessorCoverage:
             "poll_interval": 60,
         }
         processor = PostProcessor(config)
-        result = processor.get_ingestion_folder("anime", "test")
+        result = processor.get_ingestion_folder("anime")
         assert result is None
 
         # Test with unknown category
@@ -533,5 +533,5 @@ class TestPostProcessorCoverage:
             "poll_interval": 60,
         }
         processor = PostProcessor(config)
-        result = processor.get_ingestion_folder("unknown", "test")
+        result = processor.get_ingestion_folder("unknown")
         assert result is None

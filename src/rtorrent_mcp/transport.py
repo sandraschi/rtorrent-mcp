@@ -225,7 +225,19 @@ async def run_server_async(mcp_app, args: argparse.Namespace | None = None, serv
             path = config["path"]
             endpoint = f"http://{host}:{port}{path}"
             logger.info(f"Running in HTTP Streamable mode: {endpoint}")
-            await mcp_app.run_http_async(host=host, port=port, path=path)
+            # Fleet CORS standard: run uvicorn on mcp.http_app() with the
+            # middleware attached at app-build time. run_http_async() drops
+            # custom middleware.
+            import uvicorn
+            from fastmcp.server.http import StarletteWithLifespan
+
+            app: StarletteWithLifespan = mcp_app.http_app(
+                path=path,
+                middleware=getattr(mcp_app, "_cors_middleware", None),
+            )
+            config_uvicorn = uvicorn.Config(app, host=host, port=port, log_level="info")
+            server = uvicorn.Server(config_uvicorn)
+            await server.serve()
 
         elif transport == "sse":
             host = config["host"]

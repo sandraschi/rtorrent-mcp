@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 tv_integration_tools.py - Comprehensive TV show integration tools
 Combines The Pirate Bay search, NLP processing, and torrent client integration
@@ -148,7 +149,7 @@ def register_tv_integration_tools(mcp):
 
         if action == "add" and episode:
             if episode not in downloaded_episodes:
-                downloaded_episodes.append(episode)
+                downloaded_episodes.add(episode)
                 status = f"Added {episode} to downloaded episodes"
             else:
                 status = f"{episode} already in downloaded episodes"

@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 REST JSON endpoints for the web_sota SPA.
 
@@ -9,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import re
+from pathlib import Path
 from typing import Any
 
 from starlette.requests import Request
@@ -128,7 +130,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
                 {"success": False, "error": "Invalid JSON body", "error_code": "INVALID_JSON"},
                 status_code=400,
             )
-        magnet = body.get("magnet") or body.get("magnet_link")
+        magnet = str(body.get("magnet") or body.get("magnet_link"))
         if not magnet or not isinstance(magnet, str):
             return JSONResponse(
                 {"success": False, "error": "Missing magnet or magnet_link string", "error_code": "MISSING_MAGNET"},
@@ -151,3 +153,204 @@ def register_web_api(server: Any, *, app_version: str) -> None:
                 {"success": False, "error": "Failed to add torrent", "error_code": "RTORRENT_ERROR"},
                 status_code=503,
             )
+
+    @server.custom_route("/api/capabilities", methods=["GET"])
+    async def api_capabilities(request: Request) -> Response:
+        """Capability surface: tools, resources, skills (dynamic discovery)."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            tools = await server.list_tools()
+            tool_names = sorted(tool.name for tool in tools)
+            resources = await server.list_resources()
+            resource_uris = sorted(str(r.uri) for r in resources)
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "server": "rtorrent-mcp",
+                    "version": app_version,
+                    "tools": tool_names,
+                    "tool_count": len(tool_names),
+                    "resources": resource_uris,
+                    "skills": ["rtorrent-mcp"],
+                    "sampling": bool(settings.sampling_base_url),
+                }
+            )
+        except Exception:
+            logger.exception("api capabilities")
+            return JSONResponse({"ok": False, "error": "Failed to enumerate capabilities"}, status_code=500)
+
+    @server.custom_route("/api/skills", methods=["GET"])
+    async def api_skills(request: Request) -> Response:
+        """List bundled skills (used by the webapp Skills page + chat preprompt)."""
+        if not _check_auth(request):
+            return _auth_error()
+        skills_root = Path(__file__).resolve().parent.parent / "skills"
+        skills = []
+        if skills_root.is_dir():
+            for skill_dir in sorted(skills_root.iterdir()):
+                if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
+                    skills.append({"name": skill_dir.name, "path": f"/api/skills/{skill_dir.name}"})
+        return JSONResponse({"success": True, "skills": skills})
+
+    @server.custom_route("/api/skills/{skill_name}", methods=["GET"])
+    async def api_skill_content(request: Request) -> Response:
+        """Return the raw SKILL.md content for a skill."""
+        if not _check_auth(request):
+            return _auth_error()
+        skill_name = request.path_params.get("skill_name", "")
+        skill_file = Path(__file__).resolve().parent.parent / "skills" / skill_name / "SKILL.md"
+        if not skill_file.exists():
+            return JSONResponse({"success": False, "error": f"Skill '{skill_name}' not found"}, status_code=404)
+        return Response(content=skill_file.read_text(encoding="utf-8"), media_type="text/markdown")
+
+    @server.custom_route("/api/llm/discover", methods=["GET"])
+    async def api_llm_discover(request: Request) -> Response:
+        """Probe local LLM providers (Ollama / LM Studio / vLLM)."""
+        if not _check_auth(request):
+            return _auth_error()
+        import asyncio
+
+        import httpx
+
+        async def probe(name: str, port: int, path: str, key: str) -> dict:
+            base = f"http://127.0.0.1:{port}"
+            try:
+                async with httpx.AsyncClient(timeout=2.0) as client:
+                    r = await client.get(f"{base}{path}")
+                    if r.status_code != 200:
+                        return {"name": name, "port": port, "detected": False, "models": []}
+                    data = r.json()
+                    if key == "name":
+                        models = [m.get("name") for m in data.get("models", []) if m.get("name")]
+                    else:
+                        models = [m.get("id") for m in data.get("data", []) if m.get("id")]
+                    return {"name": name, "port": port, "detected": True, "models": models}
+            except Exception:
+                return {"name": name, "port": port, "detected": False, "models": []}
+
+        results = await asyncio.gather(
+            probe("ollama", 11434, "/api/tags", "name"),
+            probe("lm_studio", 1234, "/v1/models", "id"),
+            probe("vllm", 8000, "/v1/models", "id"),
+        )
+        providers = [r for r in results]
+        default = next((r["name"] for r in providers if r["detected"]), None)
+        return JSONResponse({"success": True, "providers": providers, "default": default})
+
+    @server.custom_route("/api/ai/chat", methods=["POST"])
+    async def api_ai_chat(request: Request) -> Response:
+        """Chat completion via the configured OpenAI-compatible sampling endpoint."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            body: dict[str, Any] = await request.json()
+        except Exception:
+            return JSONResponse({"success": False, "error": "Invalid JSON body"}, status_code=400)
+        message = str(body.get("message") or "").strip()
+        if not message:
+            return JSONResponse({"success": False, "error": "Missing message"}, status_code=400)
+
+        system_prompt = str(body.get("system_prompt") or "")
+        context = body.get("context") or {}
+        history = context.get("history") or []
+        messages: list[dict[str, Any]] = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        for entry in history[-20:]:
+            role = entry.get("role")
+            content = entry.get("content")
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": str(content)})
+        messages.append({"role": "user", "content": message})
+
+        base_url = settings.sampling_base_url
+        if not base_url:
+            return JSONResponse(
+                {"success": False, "error": "No LLM provider configured (RTORRENT_SAMPLING_BASE_URL)"},
+                status_code=503,
+            )
+        url = f"{base_url}/chat/completions"
+        headers = {"Content-Type": "application/json"}
+        api_key = settings.sampling_api_key
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+        payload = {"model": settings.sampling_model, "messages": messages, "temperature": 0.7}
+
+        import httpx
+
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                r = await client.post(url, json=payload, headers=headers)
+                if r.status_code != 200:
+                    return JSONResponse(
+                        {"success": False, "error": f"LLM provider returned HTTP {r.status_code}"},
+                        status_code=502,
+                    )
+                data = r.json()
+            reply = (data.get("choices") or [{}])[0].get("message", {}).get("content") or ""
+            return JSONResponse({"success": True, "reply": reply})
+        except Exception as e:
+            logger.exception("chat completion")
+            return JSONResponse(
+                {"success": False, "error": f"LLM provider unreachable: {e!s}"},
+                status_code=502,
+            )
+
+    @server.custom_route("/api/fleet/apps", methods=["GET"])
+    async def api_fleet_apps(request: Request) -> Response:
+        """Probe the fleet webapp reservoir for live peers (Apps Hub discovery)."""
+        if not _check_auth(request):
+            return _auth_error()
+        import asyncio
+
+        OWN = {10910, 10911}
+
+        async def check_port(port: int) -> int | None:
+            try:
+                reader, _ = await asyncio.open_connection("127.0.0.1", port, timeout=0.4)
+                reader.read(1) if reader else None
+                return port
+            except Exception:
+                return None
+
+        ports = [p for p in range(10700, 11161) if p not in OWN]
+        live = [p for p in await asyncio.gather(*(check_port(p) for p in ports)) if p is not None]
+        apps = [{"port": port, "url": f"http://127.0.0.1:{port}", "ok": True} for port in sorted(live)]
+        return JSONResponse({"success": True, "apps": apps, "count": len(apps)})
+
+    @server.custom_route("/api/v1/diagnostics", methods=["GET"])
+    async def api_v1_diagnostics(request: Request) -> Response:
+        """CUA-NSIS diagnostics: tools, system info, errors."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            import platform
+
+            import psutil
+
+            tools = await server.list_tools()
+            return JSONResponse(
+                {
+                    "status": "ok",
+                    "server": "rtorrent-mcp",
+                    "version": app_version,
+                    "tool_count": len(tools),
+                    "tools": [{"name": t.name} for t in tools],
+                    "system": {
+                        "platform": platform.system(),
+                        "python": platform.python_version(),
+                        "cpu_percent": psutil.cpu_percent(interval=0.1),
+                        "memory_percent": psutil.virtual_memory().percent,
+                    },
+                    "errors": [],
+                }
+            )
+        except Exception:
+            logger.exception("diagnostics")
+            return JSONResponse({"status": "error", "errors": ["diagnostics failed"]}, status_code=500)
+
+    @server.custom_route("/api/v1/system/info", methods=["GET"])
+    async def api_v1_system_info(request: Request) -> Response:
+        """Alias for CUA feature smoke (cua-nsis-config feature_smoke_path)."""
+        return await api_v1_diagnostics(request)

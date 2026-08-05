@@ -1,8 +1,8 @@
+import { Activity, Link2, ListTree, Server } from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRtorrentBridge } from "@/hooks/useRtorrentBridge";
 import { API_BASE } from "@/lib/api";
-import { Activity, Link2, ListTree, Server } from "lucide-react";
-import { type FormEvent, useState } from "react";
 
 function fmtBytes(n: number) {
   if (!Number.isFinite(n) || n < 0) return "—";
@@ -49,7 +49,7 @@ export function Dashboard() {
     }
     setMagnetBusy(true);
     try {
-      const r = await fetch(API_BASE + "/api/rtorrent/magnet", {
+      const r = await fetch(`${API_BASE}/api/rtorrent/magnet`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ magnet: m, category: "anime" }),
@@ -70,7 +70,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="dashboard">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-white">
@@ -100,7 +100,10 @@ export function Dashboard() {
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-slate-800 bg-slate-950/50">
+        <Card
+          className="border-slate-800 bg-slate-950/50"
+          data-testid="kpi-api"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-200">
               API
@@ -115,7 +118,10 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-950/50">
+        <Card
+          className="border-slate-800 bg-slate-950/50"
+          data-testid="kpi-rtorrent"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-200">
               rTorrent RPC
@@ -135,7 +141,10 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-950/50">
+        <Card
+          className="border-slate-800 bg-slate-950/50"
+          data-testid="kpi-torrents"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-200">
               Torrents
@@ -150,7 +159,10 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-800 bg-slate-950/50">
+        <Card
+          className="border-slate-800 bg-slate-950/50"
+          data-testid="kpi-mcp"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-200">
               MCP

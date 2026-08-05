@@ -2,12 +2,13 @@
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "maintainers": ["sandraschi"],
   "name": "rtorrent-mcp",
-  "description": "FastMCP 2.13 server for anime torrenting automation with Austrian legal compliance using rTorrent. 6 consolidated tools for torrent, search, legal, system, and workflow management. Beta status.",
+  "version": "3.0.0",
+  "description": "FastMCP 3.4 MCP server for rTorrent automation with Austrian legal compliance. 6 consolidated portmanteau tools (torrent, search, nlp, legal, system, workflow) plus agentic workflow, skills, prompts, and sampling.",
   "type": "mcp_server",
-  "status": "beta",
-  "framework": "FastMCP 2.13",
-  "tools": 6,
-  "transport": ["stdio"],
+  "status": "stable",
+  "framework": "FastMCP 3.4.4",
+  "tools": 7,
+  "transport": ["stdio", "http"],
   "keywords": [
     "rtorrent",
     "torrent",
@@ -34,7 +35,10 @@
     "legal_compliance": {
       "enabled": true,
       "region": "Austria"
+    },
+    "sampling": {
+      "enabled": true,
+      "provider": "OpenAI-compatible (default Ollama)"
     }
   }
 }
-

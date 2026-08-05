@@ -89,7 +89,12 @@ All endpoints on port 10910:
 - `GET /api/health` — server health
 - `GET /api/info` — server info
 - `POST /api/rtorrent/*` — rTorrent proxy
-- `GET /api/v1/diagnostics` — diagnostics (tools, system)
+- `GET /api/capabilities - tool/resource/skill surface (dynamic discovery)
+- GET /api/skills / GET /api/skills/{name} - bundled SKILL.md listing/content
+- GET /api/llm/discover - probe Ollama :11434 / LM Studio :1234 / vLLM :8000
+- POST /api/ai/chat - chat completion via the configured sampling endpoint
+- GET /api/fleet/apps - probe the fleet webapp reservoir for live peers
+- GET /api/v1/diagnostics - diagnostics (tools, system)
 
 ## Tauri Desktop
 

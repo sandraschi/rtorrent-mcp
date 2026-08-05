@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 FastMCP 3.1 agentic workflow: sampling with tools (SEP-1577-style).
 

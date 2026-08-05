@@ -10,15 +10,10 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from .media_integrator import MediaIntegrator
 from .rtorrent_client import RTorrentClient, get_rtorrent_client
 
-try:
-    from .media_integrator import MediaIntegrator
-
-    _HAS_MEDIA_INTEGRATOR = True
-except ImportError:
-    MediaIntegrator = None  # type: ignore
-    _HAS_MEDIA_INTEGRATOR = False
+_HAS_MEDIA_INTEGRATOR = True
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +68,18 @@ class PostProcessor:
         Returns:
             List of completed torrent dictionaries
         """
-        if not self.client:
-            await self.initialize()
+        try:
+            client = self.client
+            if client is None:
+                await self.initialize()
+                client = self.client
+            if client is None:
+                return []
+            torrents = await client.get_torrents()
+        except Exception as e:
+            logger.warning("check_completed_downloads failed (client unavailable): %s", e)
+            return []
 
-        torrents = await self.client.get_torrents()
         completed = []
 
         for torrent in torrents:
@@ -181,12 +184,16 @@ class PostProcessor:
         Returns:
             List of file paths
         """
-        if not self.client:
+        client = self.client
+        if client is None:
             await self.initialize()
+            client = self.client
+        if client is None:
+            return []
 
         try:
             loop = asyncio.get_running_loop()
-            base_path = await loop.run_in_executor(None, self.client.server.d.get_base_path, torrent_hash)
+            base_path = await loop.run_in_executor(None, client.server.d.get_base_path, torrent_hash)
 
             if not base_path:
                 return []
@@ -350,13 +357,17 @@ class PostProcessor:
 
     async def _delete_torrent(self, torrent_hash: str) -> dict[str, Any]:
         """Delete torrent from rTorrent (files already moved to ingestion)."""
-        if not self.client:
+        client = self.client
+        if client is None:
             await self.initialize()
+            client = self.client
+        if client is None:
+            return {"status": "error", "hash": torrent_hash, "message": "rTorrent client unavailable"}
 
         try:
             loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, self.client.server.d.close, torrent_hash)
-            await loop.run_in_executor(None, self.client.server.d.erase, torrent_hash)
+            await loop.run_in_executor(None, client.server.d.close, torrent_hash)
+            await loop.run_in_executor(None, client.server.d.erase, torrent_hash)
 
             return {"status": "success", "hash": torrent_hash}
         except Exception as e:

@@ -2,9 +2,15 @@
 # Package import: rtorrent_mcp · repo: rtorrent-mcp (historic prototype: qbtmcp)
 name: SOTA CI/CD Pipeline
 
+env:
+  PYTHON_VERSION: "3.12"
+
 on:
   push:
+    branches: [main]
     tags: ["v*"]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -38,6 +44,38 @@ jobs:
       
       - name: Run MyPy type checker
         run: mypy src/rtorrent_mcp --ignore-missing-imports
+
+  # ============================================================================
+  # FRONTEND (web_sota)
+  # ============================================================================
+  frontend:
+    name:  Frontend (tsc + biome)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: 'npm'
+          cache-dependency-path: web_sota/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web_sota
+        run: npm ci
+
+      - name: Type check
+        working-directory: web_sota
+        run: npx tsc --noEmit
+
+      - name: Biome lint
+        working-directory: web_sota
+        run: npx biome ci .
+
+      - name: Build
+        working-directory: web_sota
+        run: npm run build
 
   # ============================================================================
   # SECURITY SCAN
@@ -128,7 +166,7 @@ jobs:
   # FASTMCP VALIDATION
   # ============================================================================
   fastmcp-validate:
-    name:  FastMCP 2.13 Validation
+    name:  FastMCP Validation
     runs-on: windows-latest
     needs: [lint]
     steps:

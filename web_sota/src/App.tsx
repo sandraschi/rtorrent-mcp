@@ -1,18 +1,19 @@
-import { AppLayout } from "@/components/layout/app-layout";
-import Logging from "@/pages/Logging";
-import { Apps } from "@/pages/apps";
-import { Chat } from "@/pages/chat";
-import { Dashboard } from "@/pages/dashboard";
-import { Help } from "@/pages/help";
-import { Settings } from "@/pages/settings";
-import { Status } from "@/pages/status";
-import { Tools } from "@/pages/tools";
 import {
   Navigate,
   Route,
   BrowserRouter as Router,
   Routes,
 } from "react-router-dom";
+import { AppLayout } from "@/components/layout/app-layout";
+import { Apps } from "@/pages/apps";
+import { Chat } from "@/pages/chat";
+import { Dashboard } from "@/pages/dashboard";
+import { Help } from "@/pages/help";
+import Logging from "@/pages/Logging";
+import { Settings } from "@/pages/settings";
+import { Skills } from "@/pages/skills";
+import { Status } from "@/pages/status";
+import { Tools } from "@/pages/tools";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/status" element={<Status />} />
           <Route path="/apps" element={<Apps />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/skills" element={<Skills />} />
           <Route path="/help" element={<Help />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/logs" element={<Logging />} />

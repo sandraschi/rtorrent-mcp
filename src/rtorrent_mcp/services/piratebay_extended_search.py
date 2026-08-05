@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 piratebay_extended_search.py - Extended Pirate Bay search for comics and ebooks
 Pirate Bay is good for TV series, comics (western), and ebooks (weak selection)
@@ -69,7 +70,7 @@ async def search_piratebay_category(
             if not table:
                 logger.warning("No results table found on Pirate Bay page")
                 # Check for "no results" message
-                no_results = soup.find(string=lambda text: text and "no results" in text.lower())
+                no_results = soup.find(string=lambda text: bool(text) and "no results" in text.lower())
                 if no_results:
                     return []
                 return []
@@ -91,7 +92,7 @@ async def search_piratebay_category(
                     if not title_link:
                         continue
 
-                    title = title_link.get("title", "")
+                    title = str(title_link.get("title", "") or "")
                     if not title or title.startswith("Details for "):
                         title = title_link.text.strip()
                     if not title:

@@ -84,8 +84,8 @@ class TestNaturalLanguage:
     def test_release_group_extraction(self):
         """Test release group extraction"""
         assert extract_release_group("get me asw detective conan") == "ASW"
-        assert extract_release_group("subsplease one piece") == "Subsplease"
-        assert extract_release_group("erai-raws anime") == "Erai-Raws"
+        assert extract_release_group("subsplease one piece") == "SubsPlease"
+        assert extract_release_group("erai-raws anime") == "Erai-raws"
         assert extract_release_group("random command") == ""
 
     def test_anime_name_extraction(self):

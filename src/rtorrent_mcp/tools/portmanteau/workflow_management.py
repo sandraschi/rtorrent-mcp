@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 Workflow Management Portmanteau Tool
 

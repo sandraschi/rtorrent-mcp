@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 piratebay_search.py - The Pirate Bay TV series search functionality for RTorrent MCP
 UK/US TV series automation with MeGusta release group prioritization
@@ -111,7 +112,7 @@ async def search_piratebay_tv(
                                         continue
 
                                     # Get title - prefer title attribute, fallback to text
-                                    title = title_link.get("title", "")
+                                    title = str(title_link.get("title", "") or "")
                                     if not title or title.startswith("Details for "):
                                         # If title starts with "Details for ", get actual title from link text
                                         title = title_link.text.strip()
@@ -228,7 +229,7 @@ async def search_piratebay_tv(
                                         continue
 
                                     # Get title - prefer title attribute, fallback to text
-                                    title = title_link.get("title", "")
+                                    title = str(title_link.get("title", "") or "")
                                     if not title or title.startswith("Details for "):
                                         # If title starts with "Details for ", get actual title from link text
                                         title = title_link.text.strip()

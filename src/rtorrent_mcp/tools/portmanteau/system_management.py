@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 System Management Portmanteau Tool
 

@@ -1,3 +1,4 @@
+# pyright: reportUnusedFunction=false
 """
 FastMCP Prompt Templates for rTorrent MCP Server
 

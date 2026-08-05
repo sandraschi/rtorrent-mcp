@@ -41,7 +41,7 @@ async def get_imdb_metadata(
             # Title-based search
             params = {"t": title}
             if year:
-                params["y"] = year
+                params["y"] = str(year)
             params["apikey"] = api_key or ""
 
         if not api_key:
@@ -112,7 +112,7 @@ async def search_imdb(title: str, year: int | None = None, api_key: str | None =
 
         params = {"s": title, "apikey": api_key}
         if year:
-            params["y"] = year
+            params["y"] = str(year)
 
         url = OMDB_API_BASE
 
@@ -207,7 +207,7 @@ async def get_tvdb_metadata(
                 search_url = f"{TVDB_API_BASE}/v4/search"
                 search_params = {"query": title}
                 if year:
-                    search_params["year"] = year
+                    search_params["year"] = str(year)
 
                 async with session.get(search_url, params=search_params, headers=headers) as search_response:
                     if search_response.status != 200:

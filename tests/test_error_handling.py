@@ -77,7 +77,7 @@ class TestPirateBaySearchErrorHandling:
         mock_session_instance = MagicMock()
         mock_session_instance.__aenter__ = AsyncMock(return_value=mock_session_instance)
         mock_session_instance.__aexit__ = AsyncMock(return_value=None)
-        mock_session_instance.get = AsyncMock(side_effect=aiohttp.ClientConnectorError("Connection failed"))
+        mock_session_instance.get = AsyncMock(side_effect=aiohttp.ClientError("Connection failed"))
         mock_session.return_value = mock_session_instance
 
         results = await search_piratebay_tv("test", resolution="1080p")
@@ -151,7 +151,7 @@ class TestPostProcessorErrorHandling:
         processor = PostProcessor(config)
 
         # Should handle invalid path gracefully
-        folder = processor.get_ingestion_folder("anime", "test")
+        folder = processor.get_ingestion_folder("anime")
         assert folder is not None or folder is None  # Either is acceptable
 
 
