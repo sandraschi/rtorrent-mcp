@@ -103,7 +103,7 @@ NSIS installer with embedded PyInstaller backend. Build:
 cd native
 .\build.ps1
 ```
-Produces `native/target/release/bundle/nsis/qBittorrent MCP_*_x64-setup.exe`.
+Produces `native/target/release/bundle/nsis/rTorrent MCP_*_x64-setup.exe`.
 
 ## Development
 

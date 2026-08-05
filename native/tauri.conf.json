@@ -1,8 +1,8 @@
 {
     "$schema": "https://schema.tauri.app/config/2",
-    "productName": "qBittorrent MCP",
+    "productName": "rTorrent MCP",
     "version": "3.0.0",
-    "identifier": "com.sandraschi.qbt-mcp",
+    "identifier": "com.sandraschi.rtorrent-mcp",
     "build": {
         "frontendDist": "../web_sota/dist"
     },
@@ -10,7 +10,7 @@
         "windows": [
             {
                 "label": "main",
-                "title": "qBittorrent MCP",
+                "title": "rTorrent MCP",
                 "width": 1280,
                 "height": 860,
                 "minWidth": 700,
@@ -27,7 +27,7 @@
         "targets": ["nsis"],
         "icon": ["icons/icon.png", "icons/icon.ico"],
 "resources": [
-            "resources/qbt-mcp-backend.exe",
+            "resources/rtorrent-mcp-backend.exe",
             "resources/.env.example"],
         "windows": {
             "webviewInstallMode": {

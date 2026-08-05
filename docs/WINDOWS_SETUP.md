@@ -544,7 +544,7 @@ python -c "
 import asyncio
 import sys
 sys.path.append('src')
-from rtorrent_mcp.services.qbittorrent_client import RTorrentClient
+from rtorrent_mcp.services.rtorrent_client import RTorrentClient
 
 async def test():
     client = RTorrentClient()

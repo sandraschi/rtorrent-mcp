@@ -12,7 +12,7 @@ export function Help() {
           Repository <strong className="text-slate-200">rtorrent-mcp</strong>{" "}
           (Python import{" "}
           <code className="text-xs text-slate-300">rtorrent_mcp</code>). The old
-          name <code className="text-xs text-slate-500">qbtmcp</code> /
+          name <code className="text-xs text-slate-500">rtorrent-mcp</code> -
           qBittorrent prototype is{" "}
           <strong className="text-amber-200/90">historic only</strong>.
         </p>

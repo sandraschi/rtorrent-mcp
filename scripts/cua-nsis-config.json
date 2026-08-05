@@ -1,14 +1,14 @@
 {
-    "product_name": "qBittorrent MCP",
-    "install_dir": "%LOCALAPPDATA%\\qBittorrent MCP",
-    "operator_exe": "qbt-mcp-native.exe",
-    "backend_process_names": ["qbt-mcp-native", "qbt-mcp-backend"],
+    "product_name": "rTorrent MCP",
+    "install_dir": "%LOCALAPPDATA%\\rTorrent MCP",
+    "operator_exe": "rtorrent-mcp-native.exe",
+    "backend_process_names": ["rtorrent-mcp-native", "rtorrent-mcp-backend"],
     "backend_port": 10910,
-    "health_path": "/api/v1/health",
+    "health_path": "/api/health",
     "diagnostics_path": "/api/v1/diagnostics",
     "feature_smoke_path": "/api/v1/system/info",
-    "window_title_re": "Qbt MCP",
-    "nsis_glob": "native/target/release/bundle/nsis/qBittorrent MCP_*_x64-setup.exe",
+    "window_title_re": "rTorrent MCP",
+    "nsis_glob": "native/target/release/bundle/nsis/rTorrent MCP_*_x64-setup.exe",
     "bridge_ok_text": "REST bridge reachable",
-    "uninstall_registry_filter": "*qBittorrent MCP*"
+    "uninstall_registry_filter": "*rTorrent MCP*"
 }

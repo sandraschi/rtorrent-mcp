@@ -12,12 +12,12 @@ use tauri::{AppHandle, Emitter, Manager};
 pub struct BackendProcess(pub Mutex<Option<Child>>);
 
 // -- PER-REPO: Customize these constants --
-const BACKEND_NAME: &str = "qbt-mcp-backend.exe";
+const BACKEND_NAME: &str = "rtorrent-mcp-backend.exe";
 const BACKEND_PORT: u16 = 10910;
-const BACKEND_TAG: &str = "qbt-mcp-backend-x86_64-pc-windows-msvc.exe";
+const BACKEND_TAG: &str = "rtorrent-mcp-backend-x86_64-pc-windows-msvc.exe";
 const ENV_PORT: &str = "PORT";
 const ENV_HOST: &str = "HOST";
-const ENV_TAURI: &str = "QBT_MCP_TAURI";
+const ENV_TAURI: &str = "RTORRENT_MCP_TAURI";
 
 fn dev_backend_path() -> Option<PathBuf> {
     if !cfg!(debug_assertions) {

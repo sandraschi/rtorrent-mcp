@@ -691,7 +691,7 @@ python -m rtorrent_mcp.server --transport stdio
 # In another terminal, test connection
 python -c "
 import asyncio
-from src.rtorrent_mcp.services.qbittorrent_client import RTorrentClient
+from rtorrent_mcp.services.rtorrent_client import RTorrentClient
 
 async def test():
     client = RTorrentClient()

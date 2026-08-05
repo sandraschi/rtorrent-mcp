@@ -1,7 +1,7 @@
 # AGENTS.md — rtorrent-mcp (qbt-mcp)
 
 > Per-repo overrides for the fleet-wide [AGENTS.md](../../mcp-central-docs/standards/AGENTS.md).
-> Repo dir name is legacy `qbt-mcp`; Python package is `rtorrent_mcp`, PyPI name is `rtorrent-mcp`.
+> Repo dir: `rtorrent-mcp`; Python package `rtorrent_mcp`; PyPI name `rtorrent-mcp` (historic qBittorrent prototype name `qbtmcp` is retired).
 
 ## Ports
 
@@ -86,7 +86,7 @@ RTORRENT_SAMPLING_MODEL=llama3.2
 
 ## Notes
 
-- **Dir name**: This repo is cloned as `qbt-mcp` (historic qBittorrent prototype).
+- **History**: Started as a qBittorrent prototype (`qbtmcp`); pivoted to rTorrent (see CHANGELOG).
   For new clones: `git clone https://github.com/sandraschi/rtorrent-mcp.git`.
 - **Sampling**: Defaults to Ollama on localhost (`llama3.2`). Set
   `RTORRENT_SAMPLING_USE_CLIENT_LLM=1` to prefer the MCP host's LLM.

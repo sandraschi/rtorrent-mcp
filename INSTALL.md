@@ -10,8 +10,8 @@ winget install Casey.Just    # Windows
 # sudo apt install just       # Debian/Ubuntu
 # cargo install just          # Linux (Rust)
 
-git clone https://github.com/sandraschi/qbt-mcp
-cd qbt-mcp
+git clone https://github.com/sandraschi/rtorrent-mcp
+cd rtorrent-mcp
 just
 ```
 
@@ -34,8 +34,8 @@ If you prefer not to use `just`:
 1. Install [Python 3.13+](https://python.org) and [uv](https://docs.astral.sh/uv/)
 2. Clone and enter the repo:
    ```powershell
-   git clone https://github.com/sandraschi/qbt-mcp
-   cd qbt-mcp
+   git clone https://github.com/sandraschi/rtorrent-mcp
+   cd rtorrent-mcp
    ```
 3. Install dependencies:
    ```powershell
@@ -44,10 +44,10 @@ If you prefer not to use `just`:
 4. Start the server:
    ```powershell
    # stdio mode (for MCP clients like Claude Desktop)
-   uv run python -m qbt_mcp.server
+   uv run python -m rtorrent_mcp.server
 
    # HTTP mode (for web dashboard)
-   uv run uvicorn qbt_mcp.server:app --port 10912
+   uv run uvicorn rtorrent_mcp.server:app --port 10910
    ```
 5. Open `http://localhost:10912` or the frontend URL.
 
@@ -60,7 +60,7 @@ If you prefer not to use `just`:
 | `just` not found | Install via `winget install Casey.Just`, `scoop install just`, or `brew install just` |
 | Port conflict | Run `just kill-all` to clear fleet ports (10700–11000) |
 | Dependencies out of sync | `uv sync --all-extras` |
-| Something else | [Open a GitHub issue](https://github.com/sandraschi/qbt-mcp/issues) |
+| Something else | [Open a GitHub issue](https://github.com/sandraschi/rtorrent-mcp/issues) |
 
 ---
 

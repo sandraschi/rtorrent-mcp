@@ -1,11 +1,11 @@
-﻿# Per-repo fleet start config for qbt-mcp
+# Per-repo fleet start config for rtorrent-mcp
 # Edit ports/backend target here - start.ps1 is fleet-standard.
 @{
-    Name         = 'qbt-mcp'
+    Name         = 'rtorrent-mcp'
     BackendPort  = 10910
     FrontendPort = 10911
-    HealthPath   = '/health'
-    WebRoot      = 'D:\Dev\repos\qbt-mcp\web_sota'
+    HealthPath   = '/api/health'
+    WebRoot      = 'D:\Dev\repos\rtorrent-mcp\web_sota'
     Backend = @{
         Kind          = 'uvicorn'
         UvicornTarget = 'rtorrent_mcp.server:app'

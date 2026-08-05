@@ -9,7 +9,7 @@ import { useMcpBackendStatus } from "@/hooks/useMcpBackendStatus";
 // EXPERIMENTAL light mode (invert hack). Not fleet standard - see index.css.
 // Toggling `.dark` off the root flips the invert filter; persisted so the
 // choice survives reloads. Delete this + the CSS block to revert.
-const THEME_KEY = "qbt-light-mode";
+const THEME_KEY = "rtorrent-mcp-light-mode";
 
 function useExperimentalTheme() {
   const [light, setLight] = useState(() => {

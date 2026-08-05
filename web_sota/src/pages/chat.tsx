@@ -15,7 +15,7 @@ interface Message {
   timestamp: string;
 }
 
-const STORAGE_KEY = "qbt-mcp-chat-history";
+const STORAGE_KEY = "rtorrent-mcp-chat-history";
 
 const PERSONALITIES: Record<string, string> = {
   "Download Manager":
@@ -76,7 +76,7 @@ export function Chat() {
       {
         role: "assistant",
         content:
-          "I'm your torrent management assistant. I can help with downloads, queuing, seeding, and qBittorrent configuration. How can I help?",
+          "I'm your torrent management assistant. I can help with downloads, queuing, seeding, and rTorrent configuration. How can I help?",
         timestamp: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -194,7 +194,7 @@ export function Chat() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `qbt-mcp-chat-${new Date().toISOString().split("T")[0]}.txt`;
+    a.download = `rtorrent-mcp-chat-${new Date().toISOString().split("T")[0]}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };

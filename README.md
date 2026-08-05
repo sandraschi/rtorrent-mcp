@@ -43,8 +43,8 @@
 ## Quick Start
 
 ```powershell
-git clone https://github.com/sandraschi/qbt-mcp
-cd qbt-mcp
+git clone https://github.com/sandraschi/rtorrent-mcp
+cd rtorrent-mcp
 just
 ```
 
@@ -348,7 +348,7 @@ await get_status()
 # Check if content is safe for Austria
 is_safe = await check_austrian_legal_status(torrent_info)
 if is_safe:
-    await add_torrent_qbt(torrent_info["magnet"])
+    await add_torrent(torrent_info["magnet"])
 else:
     logger.warning("Content may not be legal in Austria")
 ```

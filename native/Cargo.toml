@@ -1,7 +1,7 @@
 [package]
-name = "qbt-mcp-native"
+name = "rtorrent-mcp-native"
 version = "3.0.0"
-description = "Tauri desktop shell for qbt-mcp operator UI"
+description = "Tauri desktop shell for rtorrent-mcp operator UI"
 edition = "2021"
 
 [build-dependencies]

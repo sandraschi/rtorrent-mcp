@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
-# qBTMCP Repository Backup Script
-# # This script creates automated backups of the qBTMCP repository
+# rTorrent MCP Repository Backup Script
+# # This script creates automated backups of the rTorrent MCP repository
 # following the 3-2-1 backup rule and GFS (Grandfather-Father-Son) strategy
 #
 # Usage:
@@ -22,7 +22,7 @@ param(
 # Show help if requested
 if ($Help) {
     Write-Host @"
-qBTMCP Repository Backup Script
+rTorrent MCP Repository Backup Script
 
 Usage:
     .\scripts\backup-repository.ps1 [options]
@@ -65,7 +65,7 @@ if (-not (Test-Path $BackupPath)) {
 $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $BackupFile = "$BackupPath\rtorrent_mcp_backup_$Timestamp.zip"
 
-Write-Host "Starting qBTMCP repository backup..." -ForegroundColor Green
+Write-Host "Starting rTorrent MCP repository backup..." -ForegroundColor Green
 Write-Host "Repository: $RepoRoot" -ForegroundColor Cyan
 Write-Host "Backup file: $BackupFile" -ForegroundColor Cyan
 Write-Host "Compression level: $CompressionLevel" -ForegroundColor Cyan
@@ -157,7 +157,7 @@ try {
 if ($CreateScheduledTask) {
     Write-Host "Creating scheduled task..." -ForegroundColor Yellow
     
-    $TaskName = "qBTMCP Repository Backup"
+    $TaskName = "rTorrent MCP Repository Backup"
     $ScriptPath = $MyInvocation.MyCommand.Path
     
     # Check if task already exists
@@ -180,7 +180,7 @@ if ($CreateScheduledTask) {
     $Principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
     
     # Register the scheduled task
-    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Settings $Settings -Principal $Principal -Description "Daily backup of qBTMCP repository" | Out-Null
+    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Settings $Settings -Principal $Principal -Description "Daily backup of rTorrent MCP repository" | Out-Null
     
     Write-Host "Scheduled task '$TaskName' created successfully!" -ForegroundColor Green
     Write-Host "Task will run daily at 2:00 AM" -ForegroundColor Cyan

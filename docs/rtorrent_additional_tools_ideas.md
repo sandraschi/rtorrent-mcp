@@ -1,4 +1,4 @@
-# qBTMCP Server - Additional Tool Ideas
+# rTorrent MCP - Additional Tool Ideas
 
 ## **Torrent Management Tools**
 
