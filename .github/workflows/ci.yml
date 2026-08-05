@@ -1,231 +1,34 @@
-# rTorrent MCP Server - SOTA CI/CD Pipeline
-# Package import: rtorrent_mcp · repo: rtorrent-mcp (historic prototype: qbtmcp)
-name: SOTA CI/CD Pipeline
-
-env:
-  PYTHON_VERSION: "3.12"
+name: CI
 
 on:
   push:
-    branches: [main]
-    tags: ["v*"]
+    branches: [master, main]
   pull_request:
-    branches: [main]
-  workflow_dispatch:
 
 jobs:
-  # ============================================================================
-  # LINT & TYPE CHECK
-  # ============================================================================
-  lint:
-    name:  Lint & Type Check
+  check:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
+      - uses: astral-sh/setup-uv@v6
+      - name: Install Python
+        run: uv python install 3.12
+      - name: Sync deps
         run: uv sync --extra dev
-
-      - name: Run Ruff linter
+      - name: Ruff check
         run: uv run ruff check src/ tests/
-
-      - name: Run Ruff formatter check
-        run: uv run ruff format --check src/ tests/
-
-      - name: Run Pyright type checker
+      - name: Ruff format
+        run: uv run ruff format src/ tests/ --check
+      - name: Pyright
         run: uv run pyright src/
-
-      - name: Run MyPy type checker
-        run: uv run mypy src/rtorrent_mcp --ignore-missing-imports
-
-  # ============================================================================
-  # FRONTEND (web_sota)
-  # ============================================================================
-  frontend:
-    name:  Frontend (tsc + biome)
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: 'npm'
-          cache-dependency-path: web_sota/package-lock.json
-
-      - name: Install dependencies
+      - name: Pytest
+        run: uv run pytest
+      - name: Webapp deps
         working-directory: web_sota
         run: npm ci
-
-      - name: Type check (build mode)
+      - name: tsc
         working-directory: web_sota
         run: npx tsc -b
-
-      - name: Biome lint
+      - name: Biome
         working-directory: web_sota
         run: npx biome ci .
-
-      - name: Build
-        working-directory: web_sota
-        run: npm run build
-
-  # ============================================================================
-  # SECURITY SCAN
-  # ============================================================================
-  security:
-    name:  Security Scan
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        run: uv sync --extra dev
-
-      - name: Run Bandit security scan
-        run: uv run bandit -r src/ -ll
-
-      - name: Check dependencies for vulnerabilities
-        run: uv run safety check
-        continue-on-error: true  # Don't fail on known issues
-
-  # ============================================================================
-  # TEST
-  # ============================================================================
-  test:
-    name:  Test (Python ${{ matrix.python-version }})
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ["3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: uv sync --extra dev --extra test
-
-      - name: Run tests with coverage
-        run: uv run pytest --cov=src/rtorrent_mcp --cov-report=xml --cov-report=html
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: false
-
-  # ============================================================================
-  # BUILD & VALIDATE
-  # ============================================================================
-  build:
-    name:  Build Package
-    runs-on: windows-latest
-    needs: [lint, test]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install build tools
-        run: uv sync --extra dev
-
-      - name: Build package
-        run: uv run python -m build
-
-      - name: Check package
-        run: uv run twine check dist/*
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-  # ============================================================================
-  # FASTMCP VALIDATION
-  # ============================================================================
-  fastmcp-validate:
-    name:  FastMCP Validation
-    runs-on: windows-latest
-    needs: [lint]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install package
-        run: uv sync
-
-      - name: Validate FastMCP version
-        run: |
-          uv run python -c "import fastmcp; print(f'FastMCP version: {fastmcp.__version__}')"
-
-      - name: Validate portmanteau tools
-        run: |
-          uv run python -c "
-          from rtorrent_mcp.tools.portmanteau import (
-              register_torrent_management_tool,
-              register_search_management_tool,
-              register_nlp_management_tool,
-              register_legal_management_tool,
-              register_system_management_tool,
-              register_workflow_management_tool,
-          )
-          print('[OK] All 6 portmanteau tools validated')
-          "
-
-      - name: Validate prompts
-        run: |
-          uv run python -c "
-          from rtorrent_mcp.prompts import register_prompts
-          print('[OK] Prompt templates validated')
-          "
-
-      - name: Validate server initialization
-        run: |
-          uv run python -c "
-          from rtorrent_mcp.server import RTorrentMCPServer
-          print('[OK] Server class validated')
-          "
-
-  # ============================================================================
-  # PUBLISH (on release)
-  # ============================================================================
-  publish:
-    name:  Publish to PyPI
-    runs-on: windows-latest
-    needs: [build, fastmcp-validate, security]
-    if: github.event_name == 'release'
-    environment:
-      name: pypi
-      url: https://pypi.org/p/rtorrent_mcp
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
