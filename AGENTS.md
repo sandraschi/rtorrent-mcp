@@ -92,4 +92,4 @@ RTORRENT_SAMPLING_MODEL=llama3.2
   `RTORRENT_SAMPLING_USE_CLIENT_LLM=1` to prefer the MCP host's LLM.
 - **Ollama endpoint**: Must include `/v1` suffix (default is correct).
 - **REST bridge**: `/api/*` on 10910 — health, capabilities, skills, llm/discover, ai/chat, rtorrent/*, fleet/apps, v1/diagnostics (CUA).
-- **Coverage**: `--cov-fail-under=40` (2026-08-05 assfix; was 80% unreachable — 8% before dead-code removal, 46% after; raise the bar in follow-ups).
+- **Coverage**: `--cov-fail-under=55` (2026-08-05: raised from 40 after REST/sampling/portmanteau tests; 226 tests green at ~59%. Target 70+ in future passes).

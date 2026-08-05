@@ -147,7 +147,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
     "--cov-report=xml",
-    "--cov-fail-under=40",
+    "--cov-fail-under=55",
     "-v"
 ]
 markers = [
@@ -183,6 +183,8 @@ ignore = ["S101", "B008", "S106", "S110", "S112", "S101", "B008", "S106", "S110"
 [tool.ruff.lint.per-file-ignores]
 # CLI entry point prints to console by design; server code must use logging.
 "src/rtorrent_mcp/__main__.py" = ["T20"]
+# Standalone test runners print results when executed directly.
+"tests/**/*.py" = ["T20"]
 
 [tool.ruff.format]
 quote-style = "double"
