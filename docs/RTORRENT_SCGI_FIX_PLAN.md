@@ -1,7 +1,8 @@
 # rTorrent SCGI Connection Problem Report & Fix Plan
 
 **Date:** 2025-11-17  
-**Status:** [OK] RESOLVED - Using XMLRPC through nginx (port 8000)
+**Status:** [OK] RESOLVED - Using XMLRPC through nginx (port 8000)  
+**Updated 2026-08-07:** [OK] FULLY RESOLVED — root cause was the container **healthcheck**, not rtorrent. The image's healthcheck did a bodyless `GET /RPC2`; rtorrent's SCGI closes bodyless GETs (`502 upstream prematurely closed connection`), so the container showed "unhealthy" forever while XMLRPC POSTs (the MCP path) always returned HTTP 200. Fix: `docker-compose.yml` healthcheck now POSTs a minimal `system.client_version` XMLRPC call. Container: `rtorrent-mcp` — **healthy**. Notes: rtorrent rc files must stay LF (CRLF → "Junk at end of input"); user rc at `/data/rtorrent/.rtorrent.rc` is loaded via HOME.
 
 ---
 

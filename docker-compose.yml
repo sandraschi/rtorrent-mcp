@@ -32,7 +32,7 @@ services:
     networks:
       - rtorrent-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/RPC2"]
+      test: ["CMD-SHELL", "curl -sf -X POST -H 'Content-Type: text/xml' -d '<methodCall><methodName>system.client_version</methodName></methodCall>' http://localhost:8000/RPC2 > /dev/null"]
       interval: 30s
       timeout: 10s
       retries: 3
