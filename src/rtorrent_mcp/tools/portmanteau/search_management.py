@@ -12,6 +12,7 @@ from typing import Any, Literal
 from fastmcp import FastMCP
 
 from ...services.annas_archive_search import get_annas_archive_detail, search_annas_archive
+from ...services.gutenberg_search import search_gutenberg
 from ...services.metadata_service import get_imdb_metadata, get_tvdb_metadata, search_imdb
 from ...services.nyaa_extended_search import search_nyaa_extended
 from ...services.nyaa_search import search_nyaa_anime
@@ -30,6 +31,7 @@ SEARCH_ACTIONS = {
     "tv_shows": "Search Pirate Bay for Western TV shows (MeGusta prioritized)",
     "tv_smart": "Smart NLP-powered TV search (natural language queries)",
     "ebooks_annas": "Search Anna's Archive for ebooks (60M+ books!)",
+    "ebooks_gutenberg": "Search Project Gutenberg for free public domain books (70,000+ classics!)",
     "ebooks_pb": "Search Pirate Bay for ebooks (weak, use Anna's instead)",
     "comics": "Search Pirate Bay for western comics",
     "annas_detail": "Get detailed torrent info from Anna's Archive page",
@@ -52,6 +54,7 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
             "tv_shows",
             "tv_smart",
             "ebooks_annas",
+            "ebooks_gutenberg",
             "ebooks_pb",
             "comics",
             "annas_detail",
@@ -241,6 +244,17 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                         "error": "query is required for 'ebooks_annas' action",
                     }
                 results = await search_annas_archive(query, content_type, max_results)
+                return {"success": True, "action": action, "data": results, "count": len(results)}
+
+            # Ebooks search - Project Gutenberg (70,000+ public domain classics!)
+            if action == "ebooks_gutenberg":
+                if not query:
+                    return {
+                        "success": False,
+                        "action": action,
+                        "error": "query is required for 'ebooks_gutenberg' action",
+                    }
+                results = await search_gutenberg(query, max_results=max_results)
                 return {"success": True, "action": action, "data": results, "count": len(results)}
 
             # Ebooks search - Pirate Bay (weak)

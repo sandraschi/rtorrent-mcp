@@ -31,6 +31,20 @@ export interface PirateBaySearchResult {
   };
 }
 
+export interface GutenbergSearchResult {
+  id: number;
+  title: string;
+  author: string;
+  authors: string[];
+  languages: string[];
+  subjects: string[];
+  download_count: number;
+  download_url: string;
+  cover_url: string;
+  gutenberg_url: string;
+  copyright: boolean;
+}
+
 export async function searchNyaa(
   query: string,
   resolution = "1080p",
@@ -43,11 +57,20 @@ export async function searchNyaa(
 
 export async function searchPirateBay(
   query: string,
-  resolution = "1080p",
-  group = "MeGusta",
+  category = "tv",
 ): Promise<{ success: boolean; results: PirateBaySearchResult[]; error?: string }> {
-  const params = new URLSearchParams({ query, resolution, group });
+  const params = new URLSearchParams({ query, category });
   const resp = await fetch(`${API_BASE}/api/search/piratebay?${params.toString()}`);
+  return resp.json();
+}
+
+export async function searchGutenberg(
+  query: string,
+  topic?: string,
+): Promise<{ success: boolean; results: GutenbergSearchResult[]; error?: string }> {
+  const params = new URLSearchParams({ query });
+  if (topic) params.append("topic", topic);
+  const resp = await fetch(`${API_BASE}/api/search/gutenberg?${params.toString()}`);
   return resp.json();
 }
 

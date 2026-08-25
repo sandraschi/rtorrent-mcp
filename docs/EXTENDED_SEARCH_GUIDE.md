@@ -172,6 +172,24 @@ detail = await get_annas_detail("https://annas-archive.org/search?q=python")
 > - **Single-Book Strategy**: Single e-books are tiny (typically 2-15 MB for `.epub` or `.pdf`). **Ignore paid Fast options for single books!** Free Slow mirrors or P2P torrent/magnet links parsed via `annas_detail` download almost instantly without requiring any account registration.
 > - **CAPTCHA & JS Challenges**: Use [`obscura-mcp`](file:///d:/Dev/repos/obscura-mcp) (our Rust headless browser engine) if a slow mirror link presents Cloudflare Turnstile or CAPTCHA challenges during automated scraping.
 
+### Project Gutenberg Search (Public Domain E-Books)
+
+Project Gutenberg hosts **70,000+ free public domain e-books** (the goldmine for pre-1900 classics like Jane Austen, Charles Dickens, Mark Twain, and Arthur Conan Doyle). All books are 100% legal, DRM-free, and directly downloadable in `.epub` format:
+
+```python
+# Search Gutenberg by title or author via Gutendex API
+results = await search_gutenberg("Pride and Prejudice")
+
+# Search with topic filter
+results = await search_gutenberg("Frankenstein", topic="Gothic fiction")
+```
+
+**Parameters:**
+- `query` (str): Book title, author, or keyword
+- `topic` (str, optional): Subject filter (e.g. "Fiction", "History")
+
+**Returns:** Array of book objects containing Gutenberg ID, title, author, download count, cover image URL, and direct `.epub` download links.
+
 ### Pirate Bay Ebook Search
 
 For ebooks on Pirate Bay (weaker selection, but available):
@@ -181,7 +199,7 @@ For ebooks on Pirate Bay (weaker selection, but available):
 results = await search_ebooks_pb("Python Cookbook", max_results=20)
 ```
 
-**Note:** For better results, use `search_ebooks_annas` - Anna's Archive is the gold standard!
+**Note:** For public domain classics, use `search_gutenberg`; for copyright e-books and research papers, use `search_ebooks_annas`!
 
 ---
 

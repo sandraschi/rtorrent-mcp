@@ -29,6 +29,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { href: "/", label: "Overview", icon: LayoutDashboard },
     { href: "/nyaa", label: "Nyaa Anime", icon: Film },
     { href: "/bay", label: "Pirate Bay TV", icon: Tv },
+    { href: "/gutenberg", label: "Gutenberg Books", icon: BookOpen },
     { href: "/tools", label: "Tools", icon: Wrench },
     { href: "/status", label: "Status", icon: Activity },
     { href: "/apps", label: "App Hub", icon: Grid },

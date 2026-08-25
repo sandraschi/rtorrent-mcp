@@ -34,9 +34,9 @@ npx playwright test
 torrent_management (13 actions)  — add, list, pause, resume, delete, status, info,
                                    notify_media, check_completed, process,
                                    start_processing, stop_processing, normalize
-search_management  (13 actions)  — anime, manga, japanese_tv, movies, tv_shows,
-                                   tv_smart, ebooks_annas, ebooks_pb, comics,
-                                   annas_detail, imdb, imdb_search, tvdb
+search_management  (14 actions)  — anime, manga, japanese_tv, movies, tv_shows,
+                                   tv_smart, ebooks_annas, ebooks_gutenberg,
+                                   ebooks_pb, comics, annas_detail, imdb, imdb_search, tvdb
 nlp_management      (3 actions)  — command, parse, help
 legal_management    (4 actions)  — risk, check, advice, status
 system_management   (5 actions)  — help, status, health, info, analyze
@@ -61,6 +61,7 @@ agentic_rtorrent_workflow        — LLM-orchestrated multi-step (requires Ollam
 |------|---------|
 | `src/rtorrent_mcp/config/settings.py` | All env var config |
 | `src/rtorrent_mcp/services/filename_normalizer.py` | Media normalizer & Plex path builder |
+| `src/rtorrent_mcp/services/gutenberg_search.py` | Project Gutenberg e-book search via Gutendex API |
 | `src/rtorrent_mcp/services/media_integrator.py` | Plex/Jellyfin notification |
 | `src/rtorrent_mcp/services/post_processor.py` | File move/link + media trigger |
 | `src/rtorrent_mcp/services/rtorrent_client.py` | rTorrent XML-RPC client |
@@ -68,6 +69,7 @@ agentic_rtorrent_workflow        — LLM-orchestrated multi-step (requires Ollam
 | `src/rtorrent_mcp/tools/portmanteau/` | Portmanteau tool implementations |
 | `web_sota/src/pages/nyaa.tsx` | Nyaa Anime Search page |
 | `web_sota/src/pages/piratebay.tsx` | The Pirate Bay TV & Movies page |
+| `web_sota/src/pages/gutenberg.tsx` | Project Gutenberg E-Book Search page |
 | `web_sota/e2e/app.spec.ts` | Playwright e2e tests (11 tests) |
 
 ## Config (.env)

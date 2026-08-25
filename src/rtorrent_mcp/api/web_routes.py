@@ -395,6 +395,25 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             logger.exception("piratebay search endpoint failed")
             return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
+    @server.custom_route("/api/search/gutenberg", methods=["GET"])
+    async def api_search_gutenberg(request: Request) -> Response:
+        """Search Project Gutenberg public domain e-books."""
+        if not _check_auth(request):
+            return _auth_error()
+        query = request.query_params.get("query", "").strip()
+        if not query:
+            return JSONResponse({"success": False, "error": "Query parameter is required"}, status_code=400)
+        topic = request.query_params.get("topic")
+
+        try:
+            from rtorrent_mcp.services.gutenberg_search import search_gutenberg
+
+            results = await search_gutenberg(query, topic=topic)
+            return JSONResponse({"success": True, "query": query, "count": len(results), "results": results})
+        except Exception as e:
+            logger.exception("gutenberg search endpoint failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
     @server.custom_route("/api/normalize/filename", methods=["POST"])
     async def api_normalize_filename(request: Request) -> Response:
         """Normalize a filename or media path into Plex-compliant format."""
