@@ -231,10 +231,19 @@ async def run_server_async(mcp_app, args: argparse.Namespace | None = None, serv
             import uvicorn
             from fastmcp.server.http import StarletteWithLifespan
 
-            app: StarletteWithLifespan = mcp_app.http_app(
+            inner_app: StarletteWithLifespan = mcp_app.http_app(
                 path=path,
                 middleware=getattr(mcp_app, "_cors_middleware", None),
             )
+
+            async def app(scope, receive, send):
+                if scope.get("type") == "http":
+                    raw_path = scope.get("path", "")
+                    if raw_path.rstrip("/") == path.rstrip("/"):
+                        scope = dict(scope)
+                        scope["path"] = path
+                await inner_app(scope, receive, send)
+
             config_uvicorn = uvicorn.Config(app, host=host, port=port, log_level="info")
             server = uvicorn.Server(config_uvicorn)
             await server.serve()

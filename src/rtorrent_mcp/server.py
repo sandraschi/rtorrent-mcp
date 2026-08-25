@@ -296,6 +296,12 @@ class _UvicornASGIApp:
         self._inner = None
 
     async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            raw_path = scope.get("path", "")
+            if raw_path.rstrip("/") == "/mcp":
+                scope = dict(scope)
+                scope["path"] = "/mcp"
+
         if self._inner is None:
             try:
                 srv = RTorrentMCPServer()
