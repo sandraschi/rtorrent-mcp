@@ -53,6 +53,7 @@ agentic_rtorrent_workflow        — LLM-orchestrated multi-step (requires Ollam
   download client directly in each *arr (Settings > Download Clients > rTorrent,
   host: localhost, port: 12224, path: /RPC2).
   See `docs/ARR_RTORRENT_SETUP.md`.
+- **Obscura MCP (`obscura-mcp`)**: Uses the Obscura Rust headless engine to solve Cloudflare/Turnstile/CAPTCHA challenges and JS countdown queues on protected indexers or Anna's Archive slow mirror links.
 
 ## Key Files
 

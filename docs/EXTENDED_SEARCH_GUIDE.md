@@ -170,6 +170,7 @@ detail = await get_annas_detail("https://annas-archive.org/search?q=python")
 > - **Fast Partner Downloads**: Direct high-speed mirrors provided to donors/members. Requires account registration or membership keys.
 > - **Slow Partner Downloads**: Free public mirrors (LibGen, Z-Library, IPFS). No registration or membership required, but includes brief queue waiting times (10-60s countdown) before direct URLs unlock.
 > - **Single-Book Strategy**: Single e-books are tiny (typically 2-15 MB for `.epub` or `.pdf`). **Ignore paid Fast options for single books!** Free Slow mirrors or P2P torrent/magnet links parsed via `annas_detail` download almost instantly without requiring any account registration.
+> - **CAPTCHA & JS Challenges**: Use [`obscura-mcp`](file:///d:/Dev/repos/obscura-mcp) (our Rust headless browser engine) if a slow mirror link presents Cloudflare Turnstile or CAPTCHA challenges during automated scraping.
 
 ### Pirate Bay Ebook Search
 
