@@ -160,3 +160,8 @@ reports/
 _llm_test_scripts/
 dev_test.py
 remove_description_params.py
+
+# Native binaries build cache
+native/resources/
+native/binaries/
+

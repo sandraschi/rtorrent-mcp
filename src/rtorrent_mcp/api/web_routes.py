@@ -3,7 +3,7 @@
 REST JSON endpoints for the web_sota SPA.
 
 Registered on the FastMCP Starlette app via ``custom_route`` (same port as MCP HTTP).
-This is not a second BitTorrent client — it uses the same ``RTorrentClient`` as MCP tools.
+This is not a second BitTorrent client - it uses the same ``RTorrentClient`` as MCP tools.
 """
 
 from __future__ import annotations
@@ -354,3 +354,145 @@ def register_web_api(server: Any, *, app_version: str) -> None:
     async def api_v1_system_info(request: Request) -> Response:
         """Alias for CUA feature smoke (cua-nsis-config feature_smoke_path)."""
         return await api_v1_diagnostics(request)
+
+    @server.custom_route("/api/search/nyaa", methods=["GET"])
+    async def api_search_nyaa(request: Request) -> Response:
+        """Search Nyaa.si anime releases."""
+        if not _check_auth(request):
+            return _auth_error()
+        query = request.query_params.get("query", "").strip()
+        if not query:
+            return JSONResponse({"success": False, "error": "Query parameter is required"}, status_code=400)
+        resolution = request.query_params.get("resolution", "1080p")
+        group = request.query_params.get("group", "ASW")
+
+        try:
+            from rtorrent_mcp.services.nyaa_search import search_nyaa_anime
+
+            results = await search_nyaa_anime(query, resolution=resolution, group=group)
+            return JSONResponse({"success": True, "query": query, "count": len(results), "results": results})
+        except Exception as e:
+            logger.exception("nyaa search endpoint failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    @server.custom_route("/api/search/piratebay", methods=["GET"])
+    async def api_search_piratebay(request: Request) -> Response:
+        """Search The Pirate Bay TV & movie releases."""
+        if not _check_auth(request):
+            return _auth_error()
+        query = request.query_params.get("query", "").strip()
+        if not query:
+            return JSONResponse({"success": False, "error": "Query parameter is required"}, status_code=400)
+        resolution = request.query_params.get("resolution", "1080p")
+        group = request.query_params.get("group", "MeGusta")
+
+        try:
+            from rtorrent_mcp.services.piratebay_search import search_piratebay_tv
+
+            results = await search_piratebay_tv(query, resolution=resolution, group=group)
+            return JSONResponse({"success": True, "query": query, "count": len(results), "results": results})
+        except Exception as e:
+            logger.exception("piratebay search endpoint failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    @server.custom_route("/api/normalize/filename", methods=["POST"])
+    async def api_normalize_filename(request: Request) -> Response:
+        """Normalize a filename or media path into Plex-compliant format."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            body: dict[str, Any] = await request.json()
+        except Exception:
+            return JSONResponse({"success": False, "error": "Invalid JSON body"}, status_code=400)
+        filename = str(body.get("filename") or body.get("name") or "").strip()
+        if not filename:
+            return JSONResponse({"success": False, "error": "Missing filename parameter"}, status_code=400)
+        category = str(body.get("category") or "anime")
+
+        try:
+            from rtorrent_mcp.services.filename_normalizer import FilenameNormalizer
+
+            res = FilenameNormalizer.normalize(filename, category=category)
+            return JSONResponse({"success": True, "normalized": res})
+        except Exception as e:
+            logger.exception("filename normalization failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    @server.custom_route("/api/plex/status", methods=["GET"])
+    async def api_plex_status(request: Request) -> Response:
+        """Check Plex server configuration and connection status."""
+        if not _check_auth(request):
+            return _auth_error()
+        url = settings.PLEX_URL
+        token = settings.PLEX_TOKEN
+        configured = bool(url and token)
+        return JSONResponse(
+            {
+                "success": True,
+                "configured": configured,
+                "plex_url": url or None,
+                "link_mode": getattr(settings, "LINK_MODE", "hardlink"),
+            }
+        )
+
+    @server.custom_route("/api/plex/scan", methods=["POST"])
+    async def api_plex_scan(request: Request) -> Response:
+        """Trigger Plex library refresh for sections or all libraries."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            body: dict[str, Any] = await request.json()
+        except Exception:
+            body = {}
+        section_id = body.get("section_id")
+
+        try:
+            from rtorrent_mcp.services.media_integrator import MediaIntegrator
+
+            cfg = {
+                "plex_url": settings.PLEX_URL,
+                "plex_token": settings.PLEX_TOKEN,
+                "jellyfin_url": settings.JELLYFIN_URL,
+                "jellyfin_api_key": settings.JELLYFIN_API_KEY,
+            }
+            mi = MediaIntegrator(cfg)
+            res = await mi.scan_plex(section_id=str(section_id) if section_id else None)
+            return JSONResponse({"success": True, "result": res})
+        except Exception as e:
+            logger.exception("plex scan endpoint failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    @server.custom_route("/api/plex/ingest", methods=["POST"])
+    async def api_plex_ingest(request: Request) -> Response:
+        """Trigger manual post-processing and Plex ingestion pass."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            from rtorrent_mcp.services.post_processor import PostProcessor
+
+            cfg = {
+                "ingestion_anime_path": getattr(settings, "INGESTION_ANIME_PATH", ""),
+                "ingestion_tv_path": getattr(settings, "INGESTION_TV_PATH", ""),
+                "ingestion_movies_path": getattr(settings, "INGESTION_MOVIES_PATH", ""),
+                "normalize_filenames": True,
+                "link_mode": getattr(settings, "LINK_MODE", "hardlink"),
+                "plex_url": settings.PLEX_URL,
+                "plex_token": settings.PLEX_TOKEN,
+            }
+            pp = PostProcessor(cfg)
+            completed = await pp.check_completed_downloads()
+            processed_results = []
+            for torrent in completed:
+                r = await pp.process_completed_torrent(torrent)
+                processed_results.append(r)
+            return JSONResponse(
+                {
+                    "success": True,
+                    "completed_found": len(completed),
+                    "processed": processed_results,
+                }
+            )
+        except Exception as e:
+            logger.exception("plex ingest endpoint failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+

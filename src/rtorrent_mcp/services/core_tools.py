@@ -227,7 +227,7 @@ def register_core_tools(mcp):
 
             # Get recent log entries (simplified)
             recent_activity = [
-                "Server running (status stub — use system_management for live health)",
+                "Server running (status stub - use system_management for live health)",
             ]
 
             return {

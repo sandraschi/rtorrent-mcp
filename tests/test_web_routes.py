@@ -305,3 +305,70 @@ class TestAuth:
         monkeypatch.setattr(settings, "API_KEY", "sekret")
         r = client.get("/api/info", headers={"Authorization": "Bearer sekret"})
         assert r.status_code == 200
+
+
+class TestSearchAndNormalizeRoutes:
+    def test_normalize_filename_endpoint(self, client):
+        r = client.post(
+            "/api/normalize/filename",
+            json={"filename": "[SubsPlease] Boku no Hero Academia - 139 (1080p).mkv", "category": "anime"},
+        )
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert body["normalized"]["title"] == "Boku no Hero Academia"
+
+    def test_normalize_filename_missing(self, client):
+        r = client.post("/api/normalize/filename", json={})
+        assert r.status_code == 400
+
+    @pytest.mark.asyncio
+    @patch("rtorrent_mcp.services.nyaa_search.search_nyaa_anime")
+    async def test_search_nyaa_endpoint(self, mock_search, client):
+        mock_search.return_value = [{"title": "Hero", "magnet": "magnet:?xt=urn:btih:123"}]
+        r = client.get("/api/search/nyaa?query=Hero")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert body["count"] == 1
+
+    def test_search_nyaa_missing_query(self, client):
+        r = client.get("/api/search/nyaa")
+        assert r.status_code == 400
+
+    @pytest.mark.asyncio
+    @patch("rtorrent_mcp.services.piratebay_search.search_piratebay_tv")
+    async def test_search_piratebay_endpoint(self, mock_search, client):
+        mock_search.return_value = [{"title": "South Park", "magnet": "magnet:?xt=urn:btih:456"}]
+        r = client.get("/api/search/piratebay?query=South+Park")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert body["count"] == 1
+
+
+class TestPlexRoutes:
+    def test_plex_status(self, client):
+        r = client.get("/api/plex/status")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["success"] is True
+        assert "configured" in body
+
+    @pytest.mark.asyncio
+    @patch("rtorrent_mcp.services.media_integrator.MediaIntegrator.scan_plex")
+    async def test_plex_scan(self, mock_scan, client):
+        mock_scan.return_value = {"service": "plex", "status": "ok"}
+        r = client.post("/api/plex/scan", json={"section_id": "1"})
+        assert r.status_code == 200
+        assert r.json()["success"] is True
+
+    @pytest.mark.asyncio
+    @patch("rtorrent_mcp.services.post_processor.PostProcessor.check_completed_downloads")
+    async def test_plex_ingest(self, mock_check, client):
+        mock_check.return_value = []
+        r = client.post("/api/plex/ingest")
+        assert r.status_code == 200
+        assert r.json()["success"] is True
+        assert r.json()["completed_found"] == 0
+

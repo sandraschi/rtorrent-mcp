@@ -35,7 +35,7 @@ async def _get_post_processor(settings) -> PostProcessor:
                 "poll_interval": settings.POST_PROCESSING_POLL_INTERVAL,
                 "delete_torrent_after_complete": settings.DELETE_TORRENT_AFTER_COMPLETE,
                 "normalize_filenames": settings.NORMALIZE_FILENAMES,
-                # media service integration (Plex/Jellyfin — *arr not notified; it manages rTorrent itself)
+                # media service integration (Plex/Jellyfin - *arr not notified; it manages rTorrent itself)
                 "plex_url": getattr(settings, "PLEX_URL", ""),
                 "plex_token": getattr(settings, "PLEX_TOKEN", ""),
                 "jellyfin_url": getattr(settings, "JELLYFIN_URL", ""),

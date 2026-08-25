@@ -45,7 +45,7 @@ def register_agentic_rtorrent_workflow(app) -> None:
         context: Context | None = None,
     ) -> dict:
         """
-        RTORRENT_AGENTIC_WORKFLOW — Multi-step torrent/search automation via sampling with tools.
+        RTORRENT_AGENTIC_WORKFLOW - Multi-step torrent/search automation via sampling with tools.
 
         PORTMANTEAU PATTERN RATIONALE: One entry point for LLM-orchestrated flows (search, add,
         legal check) without hard-coding sequences in the client.

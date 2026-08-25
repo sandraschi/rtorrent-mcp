@@ -10,6 +10,8 @@ import { Chat } from "@/pages/chat";
 import { Dashboard } from "@/pages/dashboard";
 import { Help } from "@/pages/help";
 import Logging from "@/pages/Logging";
+import { NyaaSearchPage } from "@/pages/nyaa";
+import { PirateBaySearchPage } from "@/pages/piratebay";
 import { Settings } from "@/pages/settings";
 import { Skills } from "@/pages/skills";
 import { Status } from "@/pages/status";
@@ -21,6 +23,8 @@ function App() {
       <AppLayout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/nyaa" element={<NyaaSearchPage />} />
+          <Route path="/bay" element={<PirateBaySearchPage />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/status" element={<Status />} />
           <Route path="/apps" element={<Apps />} />

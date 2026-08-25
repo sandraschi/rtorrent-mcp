@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     # API authentication (optional - if set, all /api/* endpoints require this key)
     API_KEY: str = ""
 
-    # Media service integration (Plex/Jellyfin — for direct downloads without *arr)
+    # Media service integration (Plex/Jellyfin - for direct downloads without *arr)
     # For *arr-managed content: configure rTorrent as download client in Radarr/Sonarr directly
     PLEX_URL: str = ""
     PLEX_TOKEN: str = ""

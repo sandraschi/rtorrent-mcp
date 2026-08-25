@@ -20,8 +20,9 @@ Add these to your `.env` file:
 # Post-processing settings
 POST_PROCESSING_ENABLED=false              # Set to true to enable automatic post-processing
 POST_PROCESSING_POLL_INTERVAL=60           # Seconds between polling for completed downloads (default: 60)
-DELETE_TORRENT_AFTER_COMPLETE=true         # Remove torrent after completion (no sharing) (default: true)
-NORMALIZE_FILENAMES=true                   # Normalize filenames before moving (default: true)
+DELETE_TORRENT_AFTER_COMPLETE=false        # Set to true to remove torrent after completion (no sharing)
+NORMALIZE_FILENAMES=true                   # Normalize filenames before moving/linking (default: true)
+LINK_MODE=hardlink                         # Link mode: hardlink (default), symlink, copy, move (preserves seeding)
 
 # Temporary ingestion folders (staging area before Plex organizes)
 # These are simple category-based folders - Plex will organize into specific libraries later

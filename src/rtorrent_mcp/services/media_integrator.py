@@ -1,5 +1,5 @@
 """
-media_integrator.py — Notify Plex/Jellyfin after rTorrent downloads complete.
+media_integrator.py - Notify Plex/Jellyfin after rTorrent downloads complete.
 
 For direct downloads (e.g. anime from nyaa via rtorrent-mcp), there is no *arr
 in the loop. After the PostProcessor moves files to ingestion folders, this
@@ -95,19 +95,21 @@ class MediaIntegrator:
     async def notify_all(self, category: str, file_paths: list[str]) -> list[dict[str, Any]]:
         """Notify all configured media services after a completed download.
 
-        Fires Plex and Jellyfin scans. Does NOT notify *arr apps —
+        Fires Plex and Jellyfin scans. Does NOT notify *arr apps -
         *arr should be configured with rTorrent as a download client directly.
         """
         results: list[dict[str, Any]] = []
         parent = ""
         if file_paths:
             import os as _os
-
-            parent = (
-                _os.path.dirname(_os.path.commonpath(file_paths))
-                if len(file_paths) > 1
-                else _os.path.dirname(file_paths[0])
-            )
+            try:
+                parent = (
+                    _os.path.dirname(_os.path.commonpath(file_paths))
+                    if len(file_paths) > 1
+                    else _os.path.dirname(file_paths[0])
+                )
+            except ValueError:
+                parent = _os.path.dirname(file_paths[0])
         results.append(await self.scan_plex())
         results.append(await self.scan_jellyfin(parent))
         return results

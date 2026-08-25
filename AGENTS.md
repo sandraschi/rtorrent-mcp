@@ -59,11 +59,14 @@ agentic_rtorrent_workflow        — LLM-orchestrated multi-step (requires Ollam
 | File | Purpose |
 |------|---------|
 | `src/rtorrent_mcp/config/settings.py` | All env var config |
+| `src/rtorrent_mcp/services/filename_normalizer.py` | Media normalizer & Plex path builder |
 | `src/rtorrent_mcp/services/media_integrator.py` | Plex/Jellyfin notification |
-| `src/rtorrent_mcp/services/post_processor.py` | File move + media trigger |
+| `src/rtorrent_mcp/services/post_processor.py` | File move/link + media trigger |
 | `src/rtorrent_mcp/services/rtorrent_client.py` | rTorrent XML-RPC client |
 | `src/rtorrent_mcp/server.py` | FastMCP server entrypoint |
 | `src/rtorrent_mcp/tools/portmanteau/` | Portmanteau tool implementations |
+| `web_sota/src/pages/nyaa.tsx` | Nyaa Anime Search page |
+| `web_sota/src/pages/piratebay.tsx` | The Pirate Bay TV & Movies page |
 | `web_sota/e2e/app.spec.ts` | Playwright e2e tests (11 tests) |
 
 ## Config (.env)
@@ -76,6 +79,8 @@ PLEX_URL=http://localhost:32400
 PLEX_TOKEN=
 JELLYFIN_URL=http://localhost:8096
 JELLYFIN_API_KEY=
+
+LINK_MODE=hardlink             # hardlink, symlink, copy, move (preserves rTorrent seeding)
 
 OMDB_API_KEY=               # required for IMDb metadata
 API_KEY=                    # optional REST API auth
@@ -91,5 +96,5 @@ RTORRENT_SAMPLING_MODEL=llama3.2
 - **Sampling**: Defaults to Ollama on localhost (`llama3.2`). Set
   `RTORRENT_SAMPLING_USE_CLIENT_LLM=1` to prefer the MCP host's LLM.
 - **Ollama endpoint**: Must include `/v1` suffix (default is correct).
-- **REST bridge**: `/api/*` on 10910 — health, capabilities, skills, llm/discover, ai/chat, rtorrent/*, fleet/apps, v1/diagnostics (CUA).
-- **Coverage**: `--cov-fail-under=55` (2026-08-05: raised from 40 after REST/sampling/portmanteau tests; 226 tests green at ~59%. Target 70+ in future passes).
+- **REST bridge**: `/api/*` on 10910 — health, capabilities, skills, llm/discover, ai/chat, rtorrent/*, search/nyaa, search/piratebay, normalize/filename, plex/status, plex/scan, plex/ingest, fleet/apps, v1/diagnostics (CUA).
+- **Coverage**: `--cov-fail-under=55` (2026-08-25: 238 tests green at 59.44%).

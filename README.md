@@ -15,35 +15,6 @@
 **What this is:** A **BitTorrent** control plane: add/list/pause torrents, search indexers (Nyaa, etc.), workflows, and post-processing against your **rTorrent** instance. It is **not** a generic systems MCP, and it is **not** a qBittorrent Web API client.
 
 **Web UI (`web_sota/`):** A **small** Vite + React dashboard + **REST bridge** (`/api/*`) on the same uvicorn process as MCP (status, torrent list, magnet add). It is a **deliberately minimal** alternative to the ruTorrent WebUI bundled with Dockersee **[Quick Start](#quick-start)** (subsection *ruTorrent vs this projects webapp*) and [`web_sota/README.md`](web_sota/README.md). **Agents** still use **MCP tools** for full workflows.
-
-> ** Naming:** GitHub repo **`rtorrent-mcp`**; Python package **`rtorrent_mcp`**. The old **qBittorrent**
-> prototype used the historic name **`qbtmcp`**  that client is **not** supported; control is **rTorrent**
-> via XML-RPC. See **[docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)** and
-> **[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md)**.
-
-**Logs & tool text:** Prefer ASCII markers (`[OK]`, `[FAIL]`, `[WARN]`) instead of Unicode emoji so MCP clients, Windows consoles, and JSON stay predictable.
-
-## Features 
-
-- **rTorrent docs:** **[docs/RTORRENT_REFERENCE.md](docs/RTORRENT_REFERENCE.md)** (architecture + env) and **[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md)** (Docker, plugins, long setup)
-- **FastMCP 3.1.0**: Portmanteau tools, MCPB packaging, prompts, skills provider, sampling, agentic workflow tool, CI/CD
-- **6 Consolidated Tools**: torrent, search, nlp, legal, system, workflow management
-- **rTorrent integration**: Torrent operations via XML-RPC to your instance (add/list/pause/resume/delete, etc.)
-- **Multi-Source Search**: nyaa.si (anime), Pirate Bay (TV), YTS (movies), Anna's Archive (ebooks)
-- **Post-Processing**: Automatic completion detection, filename normalization, Plex integration
-- **Metadata Services**: IMDb and TVDB metadata retrieval for movies and TV shows
-- **Austrian Legal Compliance**: Built-in legal risk assessment for Austrian users
-- **Natural language**: Parse anime-related commands in English/German
-- **Quality scoring**: Simple heuristics for release ordering (e.g. group/metadata cues)
-- **Tool schemas**: Docstrings and structured parameters for MCP clients
-- **System tools**: Health/status helpers and optional workspace/repo inspection where implemented
-- **Configuration**: Environment variables and `.env` support
-- **Tests**: Unit and integration tests under `tests/`
-
-## Quick Start
-
-```powershell
-git clone https://github.com/sandraschi/rtorrent-mcp
 cd rtorrent-mcp
 just
 ```

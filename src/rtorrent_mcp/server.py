@@ -157,7 +157,7 @@ Tool output may include Austria-oriented risk context; users must verify local l
             ", ".join(self._settings.ALLOWED_CATEGORIES) + " @ " + "/".join(self._settings.ALLOWED_RESOLUTIONS),
         )
 
-        self.logger.info("Mode: FastMCP 3.1 — 6 portmanteau tools + agentic_rtorrent_workflow")
+        self.logger.info("Mode: FastMCP 3.1 - 6 portmanteau tools + agentic_rtorrent_workflow")
 
         # Register all portmanteau tools + agentic workflow
         from rtorrent_mcp.tools import register_all_tools
@@ -183,7 +183,7 @@ Tool output may include Austria-oriented risk context; users must verify local l
     def _build_cors_middleware() -> list:
         """Fleet CORS standard: tauri origins + unconditional Tailscale/LAN regex.
 
-        Applied via ``http_app(middleware=...)`` — FastMCP only wires middleware
+        Applied via ``http_app(middleware=...)`` - FastMCP only wires middleware
         passed at app-build time (``self._app`` does not exist during ``setup()``).
         """
         from starlette.middleware import Middleware
@@ -211,7 +211,7 @@ def main(config_path: str | None = None):
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="rTorrent MCP Server — FastMCP 3.1 (rTorrent + search + workflows)",
+        description="rTorrent MCP Server - FastMCP 3.1 (rTorrent + search + workflows)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 v{__version__} (FastMCP {__fastmcp_version__}):

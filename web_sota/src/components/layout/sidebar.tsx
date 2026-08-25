@@ -4,12 +4,14 @@ import {
   Bot,
   ChevronLeft,
   ChevronRight,
+  Film,
   Grid,
   HelpCircle,
   LayoutDashboard,
   ScrollText,
   Server,
   Settings,
+  Tv,
   Wrench,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -25,6 +27,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const navItems = [
     { href: "/", label: "Overview", icon: LayoutDashboard },
+    { href: "/nyaa", label: "Nyaa Anime", icon: Film },
+    { href: "/bay", label: "Pirate Bay TV", icon: Tv },
     { href: "/tools", label: "Tools", icon: Wrench },
     { href: "/status", label: "Status", icon: Activity },
     { href: "/apps", label: "App Hub", icon: Grid },

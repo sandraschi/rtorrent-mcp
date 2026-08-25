@@ -10,6 +10,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from .filename_normalizer import FilenameNormalizer
 from .media_integrator import MediaIntegrator
 from .rtorrent_client import RTorrentClient, get_rtorrent_client
 
@@ -99,53 +100,9 @@ class PostProcessor:
         return completed
 
     def normalize_filename(self, filename: str, category: str = "anime") -> str:
-        """Normalize filename by removing release group tags and cleaning format
-
-        Args:
-            filename: Original filename
-            category: Torrent category (anime/TV/movies)
-
-        Returns:
-            Normalized filename
-        """
-        # Remove common release group tags
-        patterns_to_remove = [
-            r"\[ASW\]",
-            r"\[SubsPlease\]",
-            r"\[Erai-raws\]",
-            r"\[MeGusta\]",
-            r"\[RARBG\]",
-            r"\[EZTV\]",
-            r"-\s*ASW",
-            r"-\s*SubsPlease",
-            r"-\s*MeGusta",
-            r"-\s*RARBG",
-            r"-\s*EZTV",
-        ]
-
-        normalized = filename
-        for pattern in patterns_to_remove:
-            normalized = re.sub(pattern, "", normalized, flags=re.IGNORECASE)
-
-        # Clean up multiple spaces and dots
-        normalized = re.sub(r"\s+", " ", normalized)
-        normalized = re.sub(r"\.+", ".", normalized)
-        normalized = re.sub(r"\s*-\s*", " - ", normalized)
-
-        # Remove hash codes like [C5819381]
-        normalized = re.sub(r"\[[A-F0-9]{8,}\]", "", normalized)
-
-        # Clean up leading/trailing spaces and dots
-        normalized = normalized.strip(" .-")
-
-        # Ensure file extension is preserved
-        if not normalized.endswith((".mkv", ".mp4", ".avi", ".m4v")):
-            # If we removed too much, try to preserve original extension
-            original_ext = Path(filename).suffix
-            if original_ext and not normalized.endswith(original_ext):
-                normalized += original_ext
-
-        return normalized
+        """Normalize filename using FilenameNormalizer service."""
+        result = FilenameNormalizer.normalize(filename, category)
+        return result["normalized_filename"]
 
     def get_ingestion_folder(self, category: str) -> Path | None:
         """Determine appropriate ingestion folder based on category
@@ -288,6 +245,7 @@ class PostProcessor:
 
         moved_files = []
         errors = []
+        link_mode = str(self.config.get("link_mode", "hardlink")).lower()
 
         # Process each file
         for file_path in files:
@@ -302,7 +260,6 @@ class PostProcessor:
 
                 # Handle duplicate files
                 if dest_path.exists():
-                    # Add timestamp or number suffix
                     stem = dest_path.stem
                     suffix = dest_path.suffix
                     counter = 1
@@ -310,13 +267,33 @@ class PostProcessor:
                         dest_path = ingestion_folder / f"{stem}_{counter}{suffix}"
                         counter += 1
 
-                # Move file
-                shutil.move(str(file_path), str(dest_path))
+                # Ingestion transfer based on link_mode
+                if link_mode == "hardlink":
+                    try:
+                        import os
+                        os.link(str(file_path), str(dest_path))
+                        logger.info(f"Hardlinked {file_path.name} → {dest_path}")
+                    except Exception as le:
+                        logger.warning(f"Hardlink failed ({le}), falling back to copy: {file_path.name}")
+                        shutil.copy2(str(file_path), str(dest_path))
+                elif link_mode == "symlink":
+                    try:
+                        dest_path.symlink_to(file_path)
+                        logger.info(f"Symlinked {file_path.name} → {dest_path}")
+                    except Exception as se:
+                        logger.warning(f"Symlink failed ({se}), falling back to copy: {file_path.name}")
+                        shutil.copy2(str(file_path), str(dest_path))
+                elif link_mode == "copy":
+                    shutil.copy2(str(file_path), str(dest_path))
+                    logger.info(f"Copied {file_path.name} → {dest_path}")
+                else:  # move
+                    shutil.move(str(file_path), str(dest_path))
+                    logger.info(f"Moved {file_path.name} → {dest_path}")
+
                 moved_files.append(str(dest_path))
-                logger.info(f"Moved {file_path.name} → {dest_path}")
 
             except Exception as e:
-                error_msg = f"Error moving {file_path}: {e}"
+                error_msg = f"Error ingesting {file_path} via {link_mode}: {e}"
                 logger.error(error_msg)
                 errors.append(error_msg)
 

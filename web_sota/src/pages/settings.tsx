@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, getPlexStatus, scanPlex, triggerPlexIngest } from "@/lib/api";
 
 interface ProviderInfo {
   name: string;
@@ -193,6 +193,18 @@ export function Settings() {
 
         <Card className="border-slate-800 bg-slate-950/50">
           <CardHeader>
+            <CardTitle className="text-white">Plex Ingestion & Media Integration</CardTitle>
+            <CardDescription className="text-slate-400">
+              Configure Plex/Jellyfin library refresh and file link modes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PlexSettings />
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-800 bg-slate-950/50">
+          <CardHeader>
             <CardTitle className="text-white">LLM Provider</CardTitle>
             <CardDescription className="text-slate-400">
               Local model endpoint configuration
@@ -203,6 +215,93 @@ export function Settings() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function PlexSettings() {
+  const [status, setStatus] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    getPlexStatus().then(setStatus).catch(() => setStatus(null));
+  }, []);
+
+  async function handleScan() {
+    setLoading(true);
+    setActionMsg(null);
+    try {
+      const res = await scanPlex();
+      if (res.success) {
+        setActionMsg("Plex library refresh scan triggered successfully.");
+      } else {
+        setActionMsg(`Plex scan error: ${res.error || "Failed"}`);
+      }
+    } catch (e) {
+      setActionMsg(`Scan exception: ${e instanceof Error ? e.message : "Error"}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleIngest() {
+    setLoading(true);
+    setActionMsg(null);
+    try {
+      const res = await triggerPlexIngest();
+      if (res.success) {
+        setActionMsg(`Ingestion pass complete. Processed ${res.completed_found ?? 0} downloads.`);
+      } else {
+        setActionMsg(`Ingest error: ${res.error || "Failed"}`);
+      }
+    } catch (e) {
+      setActionMsg(`Ingest exception: ${e instanceof Error ? e.message : "Error"}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 text-sm">
+        <div className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900 p-3">
+          <span className="text-slate-400">Plex URL Configured:</span>
+          <span className={`font-mono text-xs font-semibold ${status?.configured ? "text-green-400" : "text-amber-400"}`}>
+            {status?.configured ? (status?.plex_url || "Configured") : "Not configured (.env PLEX_URL)"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900 p-3">
+          <span className="text-slate-400">Link Mode (Seeding Preservation):</span>
+          <span className="font-mono text-xs font-semibold text-blue-300">
+            {status?.link_mode || "hardlink (Default)"}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <Button
+          onClick={handleScan}
+          disabled={loading || !status?.configured}
+          variant="outline"
+          className="border-slate-800 bg-slate-900 text-slate-100 hover:bg-slate-800"
+        >
+          {loading ? "Triggering..." : "Scan Plex Libraries Now"}
+        </Button>
+        <Button
+          onClick={handleIngest}
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-500 text-white"
+        >
+          {loading ? "Processing..." : "Run Post-Processing Ingest Pass"}
+        </Button>
+      </div>
+
+      {actionMsg && (
+        <p className="text-xs font-mono text-slate-300 bg-slate-900 p-2.5 rounded border border-slate-800">
+          {actionMsg}
+        </p>
+      )}
     </div>
   );
 }

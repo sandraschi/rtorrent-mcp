@@ -250,7 +250,7 @@ def _rtorrent_degraded_message(has_tools: bool) -> str:
         )
     )
     return (
-        "[rtorrent-mcp sampling — HTTP LLM not used]\n\n"
+        "[rtorrent-mcp sampling - HTTP LLM not used]\n\n"
         f"{tool_note}\n\n"
         "Next: use portmanteau tools (torrent_management, search_management, ...) or "
         "agentic_rtorrent_workflow when an LLM endpoint is reachable."

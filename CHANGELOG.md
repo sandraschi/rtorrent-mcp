@@ -1,4 +1,24 @@
 
+## [3.1.0] - 2026-08-25
+
+### Added
+- **Dedicated Indexer Search Pages**:
+  - **Nyaa Anime Search** (`/nyaa`): Nyaa.si anime indexer with group selection (ASW, SubsPlease, Erai-raws), resolution filters, quality score badges, and direct rTorrent dispatch.
+  - **The Pirate Bay Search** (`/bay`): TV & Movies indexer with parsed episode badges (`S01E05`), group selection (MeGusta, RARBG, EZTV), and quick dispatch.
+- **Filename Normalizer & Path Builder**:
+  - `src/rtorrent_mcp/services/filename_normalizer.py`: Scene tag & CRC hash cleaner, SXXEXX season/episode parser, and Plex-compliant path builder (`Movies/Movie (Year)/...` & `TV Shows/Show/Season XX/...`).
+  - Interactive Filename Normalizer tester card in web application Tools page.
+- **Seeding Preservation & Link Modes**:
+  - Added `link_mode` (`hardlink`, `symlink`, `copy`, `move`) in `post_processor.py` so active BitTorrent seeding is preserved when organizing completed files into Plex libraries.
+- **REST Bridge Endpoints**:
+  - Added `/api/search/nyaa`, `/api/search/piratebay`, `/api/normalize/filename`, `/api/plex/status`, `/api/plex/scan`, and `/api/plex/ingest`.
+- **Plex Ingestion Controls**:
+  - Added Plex status indicator and manual scan/ingest trigger controls in web application Settings page.
+
+### Fixed
+- **Cross-drive Path Error**: Wrapped `os.path.commonpath` calculation in `media_integrator.py` to safely handle Windows cross-drive file paths.
+- **Test Suite Expansion**: Added unit tests in `tests/test_filename_normalizer.py` and endpoint tests in `tests/test_web_routes.py` (238 tests passing at 59.44% coverage).
+
 ## [Unreleased] - 2026-08-05
 
 ### Fixed (assfix 2026-08-05)
