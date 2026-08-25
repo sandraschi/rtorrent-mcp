@@ -156,6 +156,25 @@ export function Help() {
       <Card className="border-slate-800 bg-slate-950/50">
         <CardHeader>
           <div className="flex items-center gap-2">
+            <Book className="h-5 w-5 text-amber-500" />
+            <CardTitle className="text-white">
+              Anna&apos;s Archive: Bulk Torrents &amp; Quality Notes (*Caveat Downloador*)
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-slate-400 space-y-3">
+          <p>
+            <strong className="text-slate-200">Bulk Torrents vs Single Items</strong>: Anna&apos;s Archive hosts both individual book mirrors and massive bulk torrent dumps (ranging from ~5TB collections to multi-terabyte / 100TB+ full catalog archives). AI corporations famously used these bulk dumps to train LLMs (triggering copyright litigation). For day-to-day reading, use <code className="text-xs">ebooks_annas</code> to fetch individual books rather than dataset archives.
+          </p>
+          <p>
+            <strong className="text-slate-200">Duplicates &amp; Format Variances</strong>: Anna&apos;s Archive aggregates LibGen, Z-Library, Sci-Hub, and Internet Archive. Expect duplicate entries for popular titles with varying scan quality—ranging from pristine vector digital <code className="text-xs">.epub</code> / <code className="text-xs">.pdf</code> files to raw bitmap scans packed in <code className="text-xs">.cbz</code>. Check file format and size in <code className="text-xs">annas_detail</code> before downloading!
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="border-slate-800 bg-slate-950/50">
+        <CardHeader>
+          <div className="flex items-center gap-2">
             <Info className="h-5 w-5 text-slate-500" />
             <CardTitle className="text-white">This web UI</CardTitle>
           </div>

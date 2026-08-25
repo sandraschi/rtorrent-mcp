@@ -142,13 +142,28 @@ After searching, get full torrent details including magnet links:
 # Get detailed torrent information
 detail = await get_annas_detail("https://annas-archive.org/search?q=python")
 
-# Returns full magnet links and torrent files (can be 100TB+!)
+# Returns magnet links and download mirrors
 ```
 
 **Parameters:**
 - `book_url` (str): Full URL to Anna's Archive book/paper detail page
 
 **Returns:** Dictionary with detailed torrent info including magnet links
+
+### Anna's Archive: Datasets, Quality & Bulk Torrents (*Caveat Downloador*)
+
+> [!NOTE]
+> **Bulk Torrents & AI Training Datasets**:
+> Anna's Archive hosts both single-book mirrors and massive **bulk torrent batches** (ranging from moderate ~5TB thematic collections to multi-terabyte / 100TB+ full catalog dumps). Historically, AI corporations aggressively fetched these bulk torrent dumps for LLM training data (which subsequently sparked high-profile copyright litigation).
+>
+> For regular users, downloading specific individual e-books via `search_ebooks_annas` and `annas_detail` is recommended over fetching multi-terabyte dataset archives.
+
+> [!WARNING]
+> **Duplicates & Quality Variance**:
+> Anna's Archive aggregates across LibGen, Z-Library, Sci-Hub, and Internet Archive. Consequently:
+> - **Duplicates**: Multiple entries exist for popular titles across different editions and scans.
+> - **Format Variance**: File formats vary dramatically—ranging from **pristine digital `.epub` and vector `.pdf`** files to **raw bitmap image scans packed inside `.cbz` or raster `.pdf`** containers.
+> - **Recommendation**: Inspect the format extension (`.epub`, `.pdf`, `.cbz`), file size, and page count in `annas_detail` before sending to rTorrent!
 
 ### Pirate Bay Ebook Search
 
