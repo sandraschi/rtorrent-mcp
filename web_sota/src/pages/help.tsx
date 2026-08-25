@@ -169,6 +169,9 @@ export function Help() {
           <p>
             <strong className="text-slate-200">Duplicates &amp; Format Variances</strong>: Anna&apos;s Archive aggregates LibGen, Z-Library, Sci-Hub, and Internet Archive. Expect duplicate entries for popular titles with varying scan quality—ranging from pristine vector digital <code className="text-xs">.epub</code> / <code className="text-xs">.pdf</code> files to raw bitmap scans packed in <code className="text-xs">.cbz</code>. Check file format and size in <code className="text-xs">annas_detail</code> before downloading!
           </p>
+          <p>
+            <strong className="text-slate-200">Fast vs. Slow Mirrors &amp; Single Books</strong>: Fast partner downloads require donor membership/account registration. Free Slow partner mirrors (LibGen, Z-Lib, IPFS) require no account signup, but have brief queue timers (10–60s). For single e-books (a few megabytes), <em>ignore paid Fast options</em>—free Slow mirrors or P2P magnets download almost instantly without needing an account.
+          </p>
         </CardContent>
       </Card>
 
