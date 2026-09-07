@@ -100,7 +100,9 @@ def get_annas_cookie_header() -> str | None:
     return f"{name}={raw}"
 
 
-async def _search_annas_on(base: str, query: str, content_type: str = "books", max_results: int = 20) -> tuple[list[dict[str, Any]], str | None]:
+async def _search_annas_on(
+    base: str, query: str, content_type: str = "books", max_results: int = 20
+) -> tuple[list[dict[str, Any]], str | None]:
     """Search one Anna's Archive mirror. Returns ``(results, error)`` where
     ``error`` is None on a successful fetch (even if the result list is empty)."""
     try:
@@ -112,7 +114,7 @@ async def _search_annas_on(base: str, query: str, content_type: str = "books", m
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
         }
-        if (cookie := get_annas_cookie_header()):
+        if cookie := get_annas_cookie_header():
             headers["Cookie"] = cookie
 
         # Anna's Archive search URL format
@@ -329,7 +331,7 @@ async def get_annas_archive_detail(book_url: str) -> dict[str, Any]:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
-        if (cookie := get_annas_cookie_header()):
+        if cookie := get_annas_cookie_header():
             headers["Cookie"] = cookie
 
         async with aiohttp.ClientSession() as session, session.get(book_url, headers=headers) as response:
@@ -378,11 +380,10 @@ async def get_annas_archive_detail(book_url: str) -> dict[str, Any]:
             # partner CDN, or a direct file URL). These may be JS-gated; the download
             # endpoint validates the response before writing to the depot.
             direct_downloads: list[dict[str, str]] = []
-            scan = (
-                ["a[href*='slow_download']", "a[href*='/dl/']", "a[href*='/download']"]
-                + [f"a[href$='.{ext}']" for ext in
-                   ("epub", "pdf", "mobi", "azw3", "txt", "fb2", "djv", "cbr", "cbz", "zip")]
-            )
+            scan = ["a[href*='slow_download']", "a[href*='/dl/']", "a[href*='/download']"] + [
+                f"a[href$='.{ext}']"
+                for ext in ("epub", "pdf", "mobi", "azw3", "txt", "fb2", "djv", "cbr", "cbz", "zip")
+            ]
             for selector in scan:
                 for a in soup.select(selector):
                     href = str(a.get("href") or "").strip()

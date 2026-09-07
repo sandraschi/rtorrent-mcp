@@ -175,7 +175,18 @@ def _obscura_render(url: str, timeout: int = 45) -> str:
     binary = _obscura_bin()
     if not binary:
         raise FileNotFoundError("Obscura binary not found")
-    cmd = [binary, "fetch", url, "--dump", "html", "--wait-until", "networkidle0", "--stealth", "--timeout", str(timeout)]
+    cmd = [
+        binary,
+        "fetch",
+        url,
+        "--dump",
+        "html",
+        "--wait-until",
+        "networkidle0",
+        "--stealth",
+        "--timeout",
+        str(timeout),
+    ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 15)
     return result.stdout or ""
 
@@ -398,9 +409,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             c = await get_rtorrent_client()
             result = await c.add_torrent(magnet, category=category)
             ok = result.get("status") == "success"
-            _activity_log.info(
-                "torrent", f"add [{category}] {'OK' if ok else 'FAILED'}: {magnet[:40]}..."
-            )
+            _activity_log.info("torrent", f"add [{category}] {'OK' if ok else 'FAILED'}: {magnet[:40]}...")
             return JSONResponse(result, status_code=200 if ok else 502)
         except Exception:
             logger.exception("add magnet")
@@ -746,9 +755,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
 
         value = str(body.get("session_cookie") or "").strip()
         set_annas_session_cookie(value or None)
-        return JSONResponse(
-            {"success": True, "authenticated": get_annas_session_cookie_value() is not None}
-        )
+        return JSONResponse({"success": True, "authenticated": get_annas_session_cookie_value() is not None})
 
     @server.custom_route("/api/annas/download", methods=["POST"])
     async def api_annas_download(request: Request) -> Response:
@@ -783,7 +790,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
                 "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
             )
         }
-        if (cookie := get_annas_cookie_header()):
+        if cookie := get_annas_cookie_header():
             headers["Cookie"] = cookie
 
         def _dedupe_target(depot: Path, fname: str) -> Path:
@@ -853,7 +860,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
                         if size > max_bytes:
                             target.unlink(missing_ok=True)
                             return JSONResponse(
-                                {"success": False, "error": f"Refusing file larger than {max_bytes // (1024 ** 3)}GB."},
+                                {"success": False, "error": f"Refusing file larger than {max_bytes // (1024**3)}GB."},
                                 status_code=413,
                             )
                         _activity_log.info("depot", f"downloaded {target.name} via obscura ({size} bytes)")
@@ -881,7 +888,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
                                     {
                                         "success": False,
                                         "error": (
-                                            f"Refusing file larger than {max_bytes // (1024 ** 3)}GB "
+                                            f"Refusing file larger than {max_bytes // (1024**3)}GB "
                                             "(bulk dataset guard). Pick a single-book mirror."
                                         ),
                                     },
@@ -890,9 +897,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
                             fh.write(chunk)
 
             _activity_log.info("depot", f"downloaded {fname} ({size} bytes)")
-            return JSONResponse(
-                {"success": True, "filename": fname, "path": str(target), "size_bytes": size}
-            )
+            return JSONResponse({"success": True, "filename": fname, "path": str(target), "size_bytes": size})
         except Exception as e:
             logger.exception("annas download failed")
             return JSONResponse({"success": False, "error": str(e)}, status_code=502)
@@ -1029,4 +1034,3 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
     _activity_log.info("server", "HTTP REST API registered")
-

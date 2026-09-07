@@ -234,6 +234,7 @@ async def _execute_search_pipeline(
             else:
                 entry["title"] = best.get("title")
                 entry["magnet"] = best.get("magnet")
+                assert client is not None  # not dry_run here, so set above
                 try:
                     res = await client.add_torrent(best["magnet"], category)
                     if res.get("status") == "success":

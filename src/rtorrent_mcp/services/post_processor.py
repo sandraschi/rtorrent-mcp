@@ -270,6 +270,7 @@ class PostProcessor:
                 if link_mode == "hardlink":
                     try:
                         import os
+
                         os.link(str(file_path), str(dest_path))
                         logger.info(f"Hardlinked {file_path.name} → {dest_path}")
                     except Exception as le:

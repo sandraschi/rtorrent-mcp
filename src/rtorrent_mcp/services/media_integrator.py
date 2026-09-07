@@ -102,6 +102,7 @@ class MediaIntegrator:
         parent = ""
         if file_paths:
             import os as _os
+
             try:
                 parent = (
                     _os.path.dirname(_os.path.commonpath(file_paths))
