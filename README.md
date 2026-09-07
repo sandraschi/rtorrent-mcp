@@ -43,16 +43,11 @@ alternative to the full ruTorrent WebUI bundled in the same Docker image.
 
 ## Quick Install
 
-```powershell
-git clone https://github.com/sandraschi/rtorrent-mcp
-cd rtorrent-mcp
-just
-```
+1. Get rTorrent running: `docker compose up -d` (see [Onboarding](docs/ONBOARDING.md))
+2. Download the latest `.mcpb` from [Releases](https://github.com/sandraschi/rtorrent-mcp/releases/latest) and drag it onto Claude Desktop
 
-This opens an interactive dashboard of setup commands. Run `just bootstrap`
-to install dependencies, then `just serve` (and optionally `just web` for the
-dashboard). Full instructions, prerequisites, and manual setup:
-[INSTALL.md](INSTALL.md).
+That's it — no Python, git, or terminal required. Other install methods
+(mcpb CLI, manual config, dev mode with `just`): [INSTALL.md](INSTALL.md).
 
 ## Example Prompts
 

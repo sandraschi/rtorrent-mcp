@@ -1,68 +1,61 @@
-# Installation
+# Installing rtorrent-mcp
 
 > **New here?** Read [`docs/ONBOARDING.md`](docs/ONBOARDING.md) first — it covers
 > starting the rTorrent container and (optional) registering an Anna's Archive
 > account so e-book searches and downloads work.
 
-## 🚀 Quick Start (recommended)
+## Prerequisites
+
+Install these if you don't have them already:
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| Claude Desktop | Required host | [download](https://claude.ai/download) |
+| Docker Desktop | Runs rTorrent (recommended) | [download](https://www.docker.com/products/docker-desktop/) |
+| Git | Clone repo (Option C/D only) | `winget install Git.Git` |
+| uv | Run server (Option C/D only) | `winget install astral-sh.uv` |
+| Node.js | mcpb CLI (Option B only) | `winget install OpenJS.NodeJS` |
+| just | Dev recipes (Option D only) | `winget install Casey.Just` |
+
+> Windows: all installs via [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/).
+> macOS: use `brew install` equivalents. Linux: use your distro package manager.
+> After any winget install: close and reopen your terminal — PATH doesn't refresh in-place.
+
+## Step 0 — Get rTorrent running (required, once)
+
+rtorrent-mcp drives rTorrent; it doesn't include one. The bundled Docker
+Compose stack is the fastest way to get one:
 
 ```powershell
-# Install just if you don't have it
-winget install Casey.Just    # Windows
-# scoop install just          # Windows (alternative)
-# brew install just           # macOS
-# sudo apt install just       # Debian/Ubuntu
-# cargo install just          # Linux (Rust)
-
-git clone https://github.com/sandraschi/rtorrent-mcp
-cd rtorrent-mcp
-just
+docker compose up -d
 ```
 
-The interactive recipe dashboard opens in your browser. From there:
+This starts `crazymax/rtorrent-rutorrent` with XML-RPC on `12224` and the
+ruTorrent WebUI on `12222`. Full setup, plugins, and troubleshooting:
+[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md). First-timer checklist
+(including the optional Anna's Archive account): [docs/ONBOARDING.md](docs/ONBOARDING.md).
 
-```powershell
-just bootstrap   # install all dependencies
-just serve       # start the server
-just web         # start the frontend (if applicable)
+## Option A — Drag and Drop (Recommended)
+
+1. Go to [Releases](https://github.com/sandraschi/rtorrent-mcp/releases/latest)
+2. Download `rtorrent-mcp-{version}.mcpb`
+3. Open Claude Desktop → drag the file onto the window
+   *Or*: Settings → MCP Servers → Install from file
+
+No Python, uv, git, or Node required.
+
+## Option B — mcpb CLI
+
+```bash
+# Requires Node.js (see Prerequisites)
+npx @anthropic-ai/mcpb install https://github.com/sandraschi/rtorrent-mcp
 ```
 
-> **Why not `pip install`?** MCP servers bundle webapps, configs, project scaffolding, and tooling that a flat Python package can't deliver. PyPI offers no safety advantage — it doesn't audit packages either. `just` gives you the complete, ready-to-run stack.
+## Option C — Manual Configuration
 
----
-
-## 🐌 Traditional Setup
-
-If you prefer not to use `just`:
-
-1. Install [Python 3.13+](https://python.org) and [uv](https://docs.astral.sh/uv/)
-2. Clone and enter the repo:
-   ```powershell
-   git clone https://github.com/sandraschi/rtorrent-mcp
-   cd rtorrent-mcp
-   ```
-3. Install dependencies:
-   ```powershell
-   uv sync --all-extras
-   ```
-4. Start the server:
-   ```powershell
-   # stdio mode (for MCP clients like Claude Desktop)
-   uv run python -m rtorrent_mcp.server
-
-   # HTTP mode (for web dashboard)
-   uv run uvicorn rtorrent_mcp.server:app --port 10910
-   ```
-5. Open `http://localhost:10912` or the frontend URL.
-
----
-
-## 🔌 Claude Desktop Configuration
-
-Add this to your `claude_desktop_config.json`
-(`%APPDATA%\Claude\claude_desktop_config.json` on Windows,
-`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS,
-`~/.config/Claude/claude_desktop_config.json` on Linux):
+1. Clone: `git clone https://github.com/sandraschi/rtorrent-mcp`
+2. Install deps: `cd rtorrent-mcp && uv sync`
+3. Add to Claude Desktop config:
 
 ```json
 {
@@ -76,10 +69,27 @@ Add this to your `claude_desktop_config.json`
 }
 ```
 
-Replace the path with your actual clone location, then restart Claude Desktop.
-Full variable list: [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+Config file location:
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
 
-## 🤖 LLM for the agentic workflow (optional)
+4. Restart Claude Desktop. Full variable list: [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+
+## Option D — Developer Mode
+
+For contributing or running from source with live reload:
+
+```powershell
+just bootstrap   # install all dependencies
+just serve       # start the backend
+just web         # start the frontend (web_sota/)
+```
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for tests, linting, and the
+build pipeline.
+
+## LLM for the agentic workflow (optional)
 
 `agentic_rtorrent_workflow` needs an LLM to plan multi-step tasks. Two tiers,
 pick one:
@@ -92,16 +102,23 @@ pick one:
 Every other tool works with no LLM configured at all — this only affects the
 one agentic workflow tool.
 
----
+## Verify Installation
 
-## ❓ Troubleshooting
+After installing, open Claude Desktop and type:
+> "Check rTorrent status"
+
+You should see a health/connection summary from `system_management`. If it
+reports rTorrent as unreachable, revisit Step 0 above.
+
+## Troubleshooting
 
 | Issue | Fix |
 |---|---|
-| `just` not found | Install via `winget install Casey.Just`, `scoop install just`, or `brew install just` |
+| `just` not found (Option D) | Install via `winget install Casey.Just`, `scoop install just`, or `brew install just` |
 | Port conflict | Run `just kill-all` to clear fleet ports (10700–11000) |
 | Dependencies out of sync | `uv sync --all-extras` |
-| Something else | [Open a GitHub issue](https://github.com/sandraschi/rtorrent-mcp/issues) |
+| rTorrent unreachable | See [docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md) |
+| Something else | See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) or [open a GitHub issue](https://github.com/sandraschi/rtorrent-mcp/issues) |
 
 ---
 
