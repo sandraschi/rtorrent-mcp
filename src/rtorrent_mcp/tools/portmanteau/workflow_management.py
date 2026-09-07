@@ -14,12 +14,16 @@ Example: "get all One Piece" would search for:
 This could run for days and queue hundreds of torrents.
 """
 
+import asyncio
 import logging
 import secrets
 from datetime import datetime
 from typing import Any, Literal
 
 from fastmcp import FastMCP
+
+from ...services.nyaa_search import search_nyaa_anime
+from ...services.rtorrent_client import get_rtorrent_client
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +169,102 @@ _workflow_queue: list[dict[str, Any]] = []
 
 def _new_workflow_id() -> str:
     return f"wf_{datetime.now().strftime('%Y%m%d%H%M%S')}_{secrets.token_hex(4)}"
+
+
+# Cap on per-workflow detail entries kept in the workflow dict (keeps tool
+# responses bounded for 1000+ episode franchise runs). Summary counters are
+# always complete.
+MAX_WORKFLOW_ENTRIES = 50
+
+
+async def _execute_search_pipeline(
+    workflow: dict[str, Any],
+    queries: list[tuple[str, str]],
+    *,
+    dry_run: bool,
+    resolution: str,
+    group: str,
+    category: str,
+    rate_limit: int,
+) -> dict[str, Any]:
+    """Run a search -> best-result -> add pipeline over every query.
+
+    Updates ``workflow`` progress/summary counters in place, honours
+    cancellation (an external ``status="cancelled"`` write), and returns the
+    same ``workflow`` for chaining. Advertised workflow ops must do real work
+    (no stubs). ``dry_run`` searches and records magnets without adding.
+    """
+    total = len(queries)
+    workflow["total_queries"] = total
+    workflow["progress"] = 0
+    workflow["found"] = 0
+    workflow["added"] = 0
+    workflow["skipped"] = 0
+    workflow["failed"] = 0
+    workflow["entries"] = []
+    workflow["entries_truncated"] = 0
+
+    client = None
+    if not dry_run:
+        client = await get_rtorrent_client()
+
+    for i, (query, kind) in enumerate(queries, start=1):
+        workflow["progress"] = i - 1
+        if workflow.get("status") == "cancelled":
+            break
+
+        entry: dict[str, Any] = {"query": query, "kind": kind}
+        try:
+            results = await search_nyaa_anime(query, resolution=resolution, group=group)
+        except Exception as e:
+            logger.exception("workflow search failed: %s", query)
+            entry["status"] = "search_error"
+            entry["error"] = str(e)
+            workflow["failed"] += 1
+        else:
+            best = next((r for r in results if r.get("magnet")), None)
+            if not best:
+                entry["status"] = "not_found"
+                workflow["skipped"] += 1
+            elif dry_run:
+                entry["status"] = "found"
+                entry["title"] = best.get("title")
+                entry["magnet"] = best.get("magnet")
+                workflow["found"] += 1
+            else:
+                entry["title"] = best.get("title")
+                entry["magnet"] = best.get("magnet")
+                try:
+                    res = await client.add_torrent(best["magnet"], category)
+                    if res.get("status") == "success":
+                        entry["status"] = "added"
+                        workflow["added"] += 1
+                    else:
+                        entry["status"] = "add_failed"
+                        entry["error"] = res.get("message") or res.get("status")
+                        workflow["failed"] += 1
+                except Exception as e:
+                    logger.exception("workflow add failed: %s", query)
+                    entry["status"] = "add_error"
+                    entry["error"] = str(e)
+                    workflow["failed"] += 1
+
+        if len(workflow["entries"]) < MAX_WORKFLOW_ENTRIES:
+            workflow["entries"].append(entry)
+        else:
+            workflow["entries_truncated"] += 1
+        workflow["progress"] = i
+
+        if i < total and rate_limit > 0:
+            await asyncio.sleep(60 / max(rate_limit, 1))
+
+    if workflow.get("status") == "cancelled":
+        pass
+    elif dry_run:
+        workflow["status"] = "dry_run"
+    else:
+        workflow["status"] = "completed" if workflow["failed"] == 0 else "partial"
+    return workflow
 
 
 def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
@@ -429,7 +529,7 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
                     "data": scheduled_workflow,
                 }
 
-            # BATCH_SERIES - Download episode range
+            # BATCH_SERIES - Search + add an episode range
             if action == "batch_series":
                 if episode_start is None or episode_end is None:
                     return {
@@ -437,39 +537,52 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
                         "action": action,
                         "error": "episode_start and episode_end required",
                     }
+                if episode_end < episode_start:
+                    return {
+                        "success": False,
+                        "action": action,
+                        "error": "episode_end must be >= episode_start",
+                    }
 
                 workflow_id = _new_workflow_id()
-                search_queries = []
-                for series in franchise["series"]:
-                    for ep in range(episode_start, episode_end + 1):
-                        search_queries.append(f"{series} {ep:03d}")
+                search_queries = [
+                    (f"{series} {ep:03d}", "series")
+                    for series in franchise["series"]
+                    for ep in range(episode_start, episode_end + 1)
+                ]
 
                 batch_workflow = {
                     "id": workflow_id,
                     "type": "batch_series",
                     "anime_family": anime_key,
                     "episode_range": f"{episode_start}-{episode_end}",
-                    "search_queries": search_queries[:20],  # Preview first 20
                     "total_queries": len(search_queries),
                     "resolution": resolution,
                     "group": group,
-                    "status": "dry_run" if dry_run else "queued",
+                    "rate_limit": rate_limit,
+                    "status": "dry_run" if dry_run else "running",
                     "created_at": datetime.now().isoformat(),
                 }
 
                 if not dry_run:
                     _active_workflows[workflow_id] = batch_workflow
-                    # TODO: implement async batch download execution
-                    batch_workflow["status"] = "queued_not_executing"
-                    batch_workflow["warning"] = "Stub: workflow stored but download execution not yet implemented."
 
+                await _execute_search_pipeline(
+                    batch_workflow,
+                    search_queries,
+                    dry_run=dry_run,
+                    resolution=resolution,
+                    group=group,
+                    category="anime",
+                    rate_limit=rate_limit,
+                )
                 return {"success": True, "action": action, "data": batch_workflow}
 
-            # FRANCHISE - Full franchise download
+            # FRANCHISE - Search + add entire franchise (series + movies + OVAs + specials)
             if action == "franchise":
                 workflow_id = _new_workflow_id()
 
-                search_queries = []
+                search_queries: list[tuple[str, str]] = []
                 if include_series:
                     search_queries.extend([(s, "series") for s in franchise["series"]])
                 if include_movies:
@@ -489,26 +602,27 @@ def register_workflow_management_tool(mcp: FastMCP, settings) -> None:
                         "ovas": include_ovas,
                         "specials": include_specials,
                     },
-                    "search_queries": search_queries,
                     "total_queries": len(search_queries),
                     "resolution": resolution,
                     "group": group,
                     "rate_limit": rate_limit,
-                    "status": "dry_run" if dry_run else "starting",
-                    "progress": 0,
+                    "status": "dry_run" if dry_run else "running",
                     "created_at": datetime.now().isoformat(),
                     "warning": "[WARN] Large franchise downloads can take DAYS!",
                 }
 
                 if not dry_run:
                     _active_workflows[workflow_id] = franchise_workflow
-                    # TODO: implement _execute_franchise_workflow
-                    franchise_workflow["status"] = "queued_not_executing"
-                    franchise_workflow["warning"] = (
-                        "[WARN] Stub: workflow stored but download execution "
-                        "not yet implemented. Large franchise downloads can take DAYS!"
-                    )
 
+                await _execute_search_pipeline(
+                    franchise_workflow,
+                    search_queries,
+                    dry_run=dry_run,
+                    resolution=resolution,
+                    group=group,
+                    category="anime",
+                    rate_limit=rate_limit,
+                )
                 return {"success": True, "action": action, "data": franchise_workflow}
 
             return {

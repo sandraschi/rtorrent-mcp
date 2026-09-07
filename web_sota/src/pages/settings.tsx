@@ -9,7 +9,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { API_BASE, getPlexStatus, scanPlex, triggerPlexIngest } from "@/lib/api";
+import {
+  API_BASE,
+  annasConfig,
+  getPlexStatus,
+  scanPlex,
+  setAnnasConfig,
+  triggerPlexIngest,
+} from "@/lib/api";
 
 interface ProviderInfo {
   name: string;
@@ -193,7 +200,9 @@ export function Settings() {
 
         <Card className="border-slate-800 bg-slate-950/50">
           <CardHeader>
-            <CardTitle className="text-white">Plex Ingestion & Media Integration</CardTitle>
+            <CardTitle className="text-white">
+              Plex Ingestion & Media Integration
+            </CardTitle>
             <CardDescription className="text-slate-400">
               Configure Plex/Jellyfin library refresh and file link modes
             </CardDescription>
@@ -214,6 +223,156 @@ export function Settings() {
             <LLMSettings />
           </CardContent>
         </Card>
+
+        <Card className="border-slate-800 bg-slate-950/50">
+          <CardHeader>
+            <CardTitle className="text-white">
+              Anna&apos;s Archive session
+            </CardTitle>
+            <CardDescription className="text-slate-400">
+              Downloads there now require an account (anti-bot). Register once
+              and paste your session cookie to enable download links.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AnnasSettings />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function AnnasSettings() {
+  const [authenticated, setAuthenticated] = useState(false);
+  const [cookie, setCookie] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    annasConfig()
+      .then((c) => {
+        if (!cancelled) setAuthenticated(Boolean(c.authenticated));
+      })
+      .catch(() => {
+        if (!cancelled) setAuthenticated(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSave() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await setAnnasConfig(cookie);
+      setAuthenticated(Boolean(res.authenticated));
+      setMsg(
+        res.authenticated
+          ? "Session cookie stored. Download links will now appear for Anna's items."
+          : "Cookie cleared. Search still works - downloads will be hidden.",
+      );
+      setCookie("");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Failed to update session");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleClear() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      await setAnnasConfig("");
+      setAuthenticated(false);
+      setCookie("");
+      setMsg("Session cookie cleared.");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Failed to clear session");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900 p-3">
+        <span className="text-sm text-slate-400">Session configured:</span>
+        <span
+          className={`inline-flex items-center gap-1.5 text-xs font-mono font-semibold ${
+            authenticated ? "text-green-400" : "text-amber-400"
+          }`}
+          data-testid="annas-session-status"
+        >
+          <span
+            className={`h-2 w-2 rounded-full ${
+              authenticated ? "bg-green-400" : "bg-amber-400"
+            }`}
+          />
+          {authenticated ? "yes" : "no - set cookie below"}
+        </span>
+      </div>
+
+      <div className="grid gap-2">
+        <Label className="text-slate-300">
+          Anna&apos;s Archive session cookie
+        </Label>
+        <Input
+          type="password"
+          value={cookie}
+          onChange={(e) => setCookie(e.target.value)}
+          placeholder="session=<value>  (from devtools after login)"
+          className="bg-slate-900 border-slate-800 text-slate-100"
+          data-testid="annas-cookie-input"
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          onClick={handleSave}
+          disabled={busy || !cookie.trim()}
+          className="bg-emerald-600 hover:bg-emerald-500 text-white"
+        >
+          {busy ? "Saving..." : "Save session"}
+        </Button>
+        <Button
+          onClick={handleClear}
+          disabled={busy}
+          variant="outline"
+          className="border-slate-800 bg-slate-900 text-slate-100 hover:bg-slate-800"
+        >
+          {busy ? "..." : "Clear"}
+        </Button>
+      </div>
+
+      {msg && (
+        <p className="text-xs text-slate-400 bg-slate-900 p-2.5 rounded border border-slate-800">
+          {msg}
+        </p>
+      )}
+
+      <div className="rounded-md border border-slate-800 bg-slate-900/40 p-3 text-xs text-slate-500">
+        <p className="font-medium text-slate-400">Onboarding</p>
+        <ol className="mt-1 list-decimal list-inside space-y-1">
+          <li>
+            Register once at{" "}
+            <code className="text-emerald-300/90">annas-archive.is</code> (a
+            burner email is a good idea).
+          </li>
+          <li>
+            Log in, open devtools &gt; Application &gt; Cookies, copy the{" "}
+            <code>session</code> value.
+          </li>
+          <li>
+            Paste it here (or set{" "}
+            <code className="text-emerald-300/90">ANNAS_SESSION_COOKIE</code> in{" "}
+            <code className="text-emerald-300/90">.env</code>).
+          </li>
+          <li>Search stays open; only downloads need this.</li>
+        </ol>
       </div>
     </div>
   );
@@ -225,7 +384,9 @@ function PlexSettings() {
   const [actionMsg, setActionMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    getPlexStatus().then(setStatus).catch(() => setStatus(null));
+    getPlexStatus()
+      .then(setStatus)
+      .catch(() => setStatus(null));
   }, []);
 
   async function handleScan() {
@@ -239,7 +400,9 @@ function PlexSettings() {
         setActionMsg(`Plex scan error: ${res.error || "Failed"}`);
       }
     } catch (e) {
-      setActionMsg(`Scan exception: ${e instanceof Error ? e.message : "Error"}`);
+      setActionMsg(
+        `Scan exception: ${e instanceof Error ? e.message : "Error"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -251,12 +414,16 @@ function PlexSettings() {
     try {
       const res = await triggerPlexIngest();
       if (res.success) {
-        setActionMsg(`Ingestion pass complete. Processed ${res.completed_found ?? 0} downloads.`);
+        setActionMsg(
+          `Ingestion pass complete. Processed ${res.completed_found ?? 0} downloads.`,
+        );
       } else {
         setActionMsg(`Ingest error: ${res.error || "Failed"}`);
       }
     } catch (e) {
-      setActionMsg(`Ingest exception: ${e instanceof Error ? e.message : "Error"}`);
+      setActionMsg(
+        `Ingest exception: ${e instanceof Error ? e.message : "Error"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -267,12 +434,18 @@ function PlexSettings() {
       <div className="grid gap-3 text-sm">
         <div className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900 p-3">
           <span className="text-slate-400">Plex URL Configured:</span>
-          <span className={`font-mono text-xs font-semibold ${status?.configured ? "text-green-400" : "text-amber-400"}`}>
-            {status?.configured ? (status?.plex_url || "Configured") : "Not configured (.env PLEX_URL)"}
+          <span
+            className={`font-mono text-xs font-semibold ${status?.configured ? "text-green-400" : "text-amber-400"}`}
+          >
+            {status?.configured
+              ? status?.plex_url || "Configured"
+              : "Not configured (.env PLEX_URL)"}
           </span>
         </div>
         <div className="flex items-center justify-between rounded-md border border-slate-800 bg-slate-900 p-3">
-          <span className="text-slate-400">Link Mode (Seeding Preservation):</span>
+          <span className="text-slate-400">
+            Link Mode (Seeding Preservation):
+          </span>
           <span className="font-mono text-xs font-semibold text-blue-300">
             {status?.link_mode || "hardlink (Default)"}
           </span>

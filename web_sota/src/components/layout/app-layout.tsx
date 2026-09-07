@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ShellHonestyBanner } from "./shell-honesty-banner";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -32,7 +31,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           <Topbar />
           <main className="flex-1 overflow-y-auto p-6 scroll-smooth">
             <div className="mx-auto max-w-7xl animate-in fade-in duration-500 space-y-6">
-              <ShellHonestyBanner />
               {children}
             </div>
           </main>

@@ -1,9 +1,11 @@
 import { Book, Cable, Database, Info, Server } from "lucide-react";
+import { ShellHonestyBanner } from "@/components/layout/shell-honesty-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function Help() {
   return (
     <div className="space-y-6 max-w-4xl">
+      <ShellHonestyBanner />
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-white">
           Help — rTorrent &amp; BitTorrent
@@ -158,19 +160,61 @@ export function Help() {
           <div className="flex items-center gap-2">
             <Book className="h-5 w-5 text-amber-500" />
             <CardTitle className="text-white">
-              Anna&apos;s Archive: Bulk Torrents &amp; Quality Notes (*Caveat Downloador*)
+              Anna&apos;s Archive: Bulk Torrents &amp; Quality Notes (*Caveat
+              Downloador*)
             </CardTitle>
           </div>
         </CardHeader>
         <CardContent className="text-sm text-slate-400 space-y-3">
           <p>
-            <strong className="text-slate-200">Bulk Torrents vs Single Items</strong>: Anna&apos;s Archive hosts both individual book mirrors and massive bulk torrent dumps (ranging from ~5TB collections to multi-terabyte / 100TB+ full catalog archives). AI corporations famously used these bulk dumps to train LLMs (triggering copyright litigation). For day-to-day reading, use <code className="text-xs">ebooks_annas</code> to fetch individual books rather than dataset archives.
+            <strong className="text-slate-200">
+              Bulk Torrents vs Single Items
+            </strong>
+            : Anna&apos;s Archive hosts both individual book mirrors and massive
+            bulk torrent dumps (ranging from ~5TB collections to multi-terabyte
+            / 100TB+ full catalog archives). AI corporations famously used these
+            bulk dumps to train LLMs (triggering copyright litigation). For
+            day-to-day reading, use{" "}
+            <code className="text-xs">ebooks_annas</code> to fetch individual
+            books rather than dataset archives.
           </p>
           <p>
-            <strong className="text-slate-200">Duplicates &amp; Format Variances</strong>: Anna&apos;s Archive aggregates LibGen, Z-Library, Sci-Hub, and Internet Archive. Expect duplicate entries for popular titles with varying scan quality—ranging from pristine vector digital <code className="text-xs">.epub</code> / <code className="text-xs">.pdf</code> files to raw bitmap scans packed in <code className="text-xs">.cbz</code>. Check file format and size in <code className="text-xs">annas_detail</code> before downloading!
+            <strong className="text-slate-200">
+              Duplicates &amp; Format Variances
+            </strong>
+            : Anna&apos;s Archive aggregates LibGen, Z-Library, Sci-Hub, and
+            Internet Archive. Expect duplicate entries for popular titles with
+            varying scan quality—ranging from pristine vector digital{" "}
+            <code className="text-xs">.epub</code> /{" "}
+            <code className="text-xs">.pdf</code> files to raw bitmap scans
+            packed in <code className="text-xs">.cbz</code>. Check file format
+            and size in <code className="text-xs">annas_detail</code> before
+            downloading!
           </p>
           <p>
-            <strong className="text-slate-200">Fast vs. Slow Mirrors &amp; Single Books</strong>: Fast partner downloads require donor membership/account registration. Free Slow partner mirrors (LibGen, Z-Lib, IPFS) require no account signup, but have brief queue timers (10–60s). For single e-books (a few megabytes), <em>ignore paid Fast options</em>—free Slow mirrors or P2P magnets download almost instantly without needing an account.
+            <strong className="text-slate-200">
+              Fast vs. Slow Mirrors &amp; Single Books
+            </strong>
+            : Fast partner downloads require donor membership/account
+            registration. Free Slow partner mirrors (LibGen, Z-Lib, IPFS)
+            require no account signup, but have brief queue timers (10-60s). For
+            single e-books (a few megabytes), <em>ignore paid Fast options</em>-
+            free Slow mirrors or P2P magnets download almost instantly.
+          </p>
+          <p>
+            <strong className="text-slate-200">
+              Registration now required (anti-bot)
+            </strong>
+            : Anna&apos;s Archive now gates even the slow downloads behind an
+            account. Register once at{" "}
+            <code className="text-xs">annas-archive.is</code> (a burner email is
+            fine), then paste your session cookie in{" "}
+            <strong className="text-slate-200">
+              Settings &gt; Anna&apos;s Archive session
+            </strong>{" "}
+            (or set <code className="text-xs">ANNAS_SESSION_COOKIE</code> in{" "}
+            <code className="text-xs">.env</code>). Search stays open; only
+            downloads need this.
           </p>
         </CardContent>
       </Card>

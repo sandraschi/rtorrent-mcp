@@ -5,7 +5,6 @@ Handles completion detection, torrent removal, filename normalization, and Plex 
 
 import asyncio
 import logging
-import re
 import shutil
 from pathlib import Path
 from typing import Any

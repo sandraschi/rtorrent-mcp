@@ -1,7 +1,19 @@
-import { useState, type FormEvent } from "react";
-import { BookOpen, Search, Download, Sparkles, ExternalLink, ShieldCheck, HeartHandshake } from "lucide-react";
+import {
+  BookOpen,
+  Download,
+  ExternalLink,
+  HeartHandshake,
+  Search,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { addMagnet, searchGutenberg, type GutenbergSearchResult } from "@/lib/api";
+import {
+  addMagnet,
+  type GutenbergSearchResult,
+  searchGutenberg,
+} from "@/lib/api";
 
 export function GutenbergSearchPage() {
   const [query, setQuery] = useState("");
@@ -9,7 +21,9 @@ export function GutenbergSearchPage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<GutenbergSearchResult[]>([]);
   const [searched, setSearched] = useState(false);
-  const [dispatchStatus, setDispatchStatus] = useState<Record<string, string>>({});
+  const [dispatchStatus, setDispatchStatus] = useState<Record<string, string>>(
+    {},
+  );
 
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
@@ -18,7 +32,10 @@ export function GutenbergSearchPage() {
     setLoading(true);
     setSearched(true);
     try {
-      const res = await searchGutenberg(query.trim(), topic.trim() || undefined);
+      const res = await searchGutenberg(
+        query.trim(),
+        topic.trim() || undefined,
+      );
       if (res.success) {
         setResults(res.results || []);
       } else {
@@ -39,10 +56,16 @@ export function GutenbergSearchPage() {
       if (res.status === "success" || res.status === "ok") {
         setDispatchStatus((prev) => ({ ...prev, [key]: "success" }));
       } else {
-        setDispatchStatus((prev) => ({ ...prev, [key]: `error: ${res.error || "Failed"}` }));
+        setDispatchStatus((prev) => ({
+          ...prev,
+          [key]: `error: ${res.error || "Failed"}`,
+        }));
       }
     } catch (err: any) {
-      setDispatchStatus((prev) => ({ ...prev, [key]: `error: ${err.message || "Failed"}` }));
+      setDispatchStatus((prev) => ({
+        ...prev,
+        [key]: `error: ${err.message || "Failed"}`,
+      }));
     }
   };
 
@@ -56,7 +79,8 @@ export function GutenbergSearchPage() {
           </h2>
         </div>
         <p className="text-slate-400 mt-1">
-          70,000+ free public domain e-books (ideal for pre-1900 classics like Austen, Dickens, Wilde, and Conan Doyle). 100% legal, DRM-free.
+          70,000+ free public domain e-books (ideal for pre-1900 classics like
+          Austen, Dickens, Wilde, and Conan Doyle). 100% legal, DRM-free.
         </p>
       </div>
 
@@ -64,14 +88,18 @@ export function GutenbergSearchPage() {
       <Card className="border-slate-800 bg-slate-950/50">
         <CardHeader>
           <CardTitle className="text-white text-lg flex items-center gap-2">
-            <Search className="h-5 w-5 text-amber-400" /> Search Gutenberg Public Domain Books
+            <Search className="h-5 w-5 text-amber-400" /> Search Gutenberg
+            Public Domain Books
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
-                <label htmlFor="search-title-author" className="text-xs text-slate-400 block mb-1">
+                <label
+                  htmlFor="search-title-author"
+                  className="text-xs text-slate-400 block mb-1"
+                >
                   Title, Author, or Keyword
                 </label>
                 <input
@@ -85,7 +113,10 @@ export function GutenbergSearchPage() {
               </div>
 
               <div>
-                <label htmlFor="search-topic" className="text-xs text-slate-400 block mb-1">
+                <label
+                  htmlFor="search-topic"
+                  className="text-xs text-slate-400 block mb-1"
+                >
                   Topic / Subject (Optional)
                 </label>
                 <input
@@ -120,11 +151,20 @@ export function GutenbergSearchPage() {
       {/* Quick Search Chips */}
       <div className="flex flex-wrap gap-2 text-xs">
         <span className="text-slate-500 py-1">Popular Classics:</span>
-        {["Pride and Prejudice", "Frankenstein", "Dracula", "Sherlock Holmes", "The Great Gatsby", "Moby Dick"].map((chip) => (
+        {[
+          "Pride and Prejudice",
+          "Frankenstein",
+          "Dracula",
+          "Sherlock Holmes",
+          "The Great Gatsby",
+          "Moby Dick",
+        ].map((chip) => (
           <button
             key={chip}
             type="button"
-            onClick={() => { setQuery(chip); }}
+            onClick={() => {
+              setQuery(chip);
+            }}
             className="bg-slate-900 hover:bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-800 transition-colors"
           >
             {chip}
@@ -137,13 +177,15 @@ export function GutenbergSearchPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-slate-300">
-              Found {results.length} Public Domain Book{results.length === 1 ? "" : "s"}
+              Found {results.length} Public Domain Book
+              {results.length === 1 ? "" : "s"}
             </h3>
           </div>
 
           {results.length === 0 && !loading && (
             <Card className="border-slate-800 bg-slate-950/30 p-8 text-center text-slate-500">
-              No public domain books found matching &quot;{query}&quot;. Try broadening your keywords.
+              No public domain books found matching &quot;{query}&quot;. Try
+              broadening your keywords.
             </Card>
           )}
 
@@ -164,7 +206,9 @@ export function GutenbergSearchPage() {
                           src={book.cover_url}
                           alt={book.title}
                           className="w-16 h-24 object-cover rounded shadow-md border border-slate-800 shrink-0 bg-slate-900"
-                          onError={(e) => { (e.target as HTMLElement).style.display = "none"; }}
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = "none";
+                          }}
                         />
                       )}
                       <div className="space-y-1">
@@ -193,9 +237,9 @@ export function GutenbergSearchPage() {
                   <CardContent className="space-y-3 pt-0">
                     {book.subjects && book.subjects.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        {book.subjects.slice(0, 3).map((sub, i) => (
+                        {book.subjects.slice(0, 3).map((sub) => (
                           <span
-                            key={i}
+                            key={sub}
                             className="text-[10px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded-full border border-slate-800 line-clamp-1"
                           >
                             {sub}
@@ -237,10 +281,14 @@ export function GutenbergSearchPage() {
                     {currentStatus && (
                       <div className="text-xs text-slate-300">
                         {currentStatus === "dispatching" && (
-                          <span className="text-amber-400">Dispatching EPUB to rTorrent...</span>
+                          <span className="text-amber-400">
+                            Dispatching EPUB to rTorrent...
+                          </span>
                         )}
                         {currentStatus === "success" && (
-                          <span className="text-emerald-400">Sent EPUB download to rTorrent queue!</span>
+                          <span className="text-emerald-400">
+                            Sent EPUB download to rTorrent queue!
+                          </span>
                         )}
                         {currentStatus.startsWith("error") && (
                           <span className="text-rose-400">{currentStatus}</span>

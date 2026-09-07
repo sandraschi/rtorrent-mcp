@@ -1,7 +1,14 @@
-import { useState, type FormEvent } from "react";
-import { Download, Film, Search, Sparkles, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  Download,
+  Film,
+  Search,
+  Sparkles,
+} from "lucide-react";
+import { type FormEvent, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { addMagnet, searchNyaa, type NyaaSearchResult } from "@/lib/api";
+import { addMagnet, type NyaaSearchResult, searchNyaa } from "@/lib/api";
 
 export function NyaaSearchPage() {
   const [query, setQuery] = useState("");
@@ -11,7 +18,10 @@ export function NyaaSearchPage() {
   const [results, setResults] = useState<NyaaSearchResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [addingHash, setAddingHash] = useState<string | null>(null);
-  const [addMsg, setAddMsg] = useState<{ title: string; success: boolean } | null>(null);
+  const [addMsg, setAddMsg] = useState<{
+    title: string;
+    success: boolean;
+  } | null>(null);
 
   async function handleSearch(e?: FormEvent) {
     if (e) e.preventDefault();
@@ -65,7 +75,8 @@ export function NyaaSearchPage() {
             Nyaa Anime Search
           </h1>
           <p className="text-sm text-slate-400">
-            Dedicated Nyaa.si anime release indexer with ASW group prioritization.
+            Dedicated Nyaa.si anime release indexer with ASW group
+            prioritization.
           </p>
         </div>
       </div>
@@ -77,7 +88,10 @@ export function NyaaSearchPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3">
+          <form
+            onSubmit={handleSearch}
+            className="flex flex-wrap items-center gap-3"
+          >
             <div className="relative flex-1 min-w-[240px]">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
               <input
@@ -156,7 +170,9 @@ export function NyaaSearchPage() {
         <CardContent>
           {results.length === 0 ? (
             <div className="py-12 text-center text-sm text-slate-500">
-              {loading ? "Fetching releases from Nyaa.si..." : "No search results to display."}
+              {loading
+                ? "Fetching releases from Nyaa.si..."
+                : "No search results to display."}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -172,8 +188,8 @@ export function NyaaSearchPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {results.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-800/40">
+                  {results.map((item) => (
+                    <tr key={item.magnet} className="hover:bg-slate-800/40">
                       <td className="py-3 font-medium text-slate-100 max-w-md truncate">
                         {item.title}
                       </td>
@@ -188,7 +204,9 @@ export function NyaaSearchPage() {
                           {item.quality_score}
                         </span>
                       </td>
-                      <td className="py-3 text-slate-400 text-xs">{item.size}</td>
+                      <td className="py-3 text-slate-400 text-xs">
+                        {item.size}
+                      </td>
                       <td className="py-3 text-xs font-medium text-green-400">
                         {item.seeders}
                       </td>

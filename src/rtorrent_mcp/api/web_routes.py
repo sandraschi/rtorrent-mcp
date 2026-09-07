@@ -8,10 +8,18 @@ This is not a second BitTorrent client - it uses the same ``RTorrentClient`` as 
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 import re
+import shutil
+import subprocess
+import time
+from collections import deque
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
@@ -24,8 +32,194 @@ logger = logging.getLogger(__name__)
 _MAGNET_RE = re.compile(r"^magnet:\?xt=urn:btih:[a-fA-F0-9]{32,}")
 
 
+class ActivityLog:
+    """In-memory activity ring buffer backing the webapp Logs page (/api/logs)."""
+
+    def __init__(self, max_entries: int = 2000) -> None:
+        self.max_entries = max_entries
+        self._entries: deque[dict[str, Any]] = deque(maxlen=max_entries)
+
+    def add(self, level: str, kind: str, detail: str, meta: dict[str, Any] | None = None) -> str:
+        eid = f"{time.time():.6f}.{uuid4().hex[:6]}"
+        self._entries.append(
+            {
+                "id": eid,
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()),
+                "level": level.upper(),
+                "kind": kind,
+                "detail": detail,
+                "meta": meta or {},
+            }
+        )
+        return eid
+
+    def info(self, kind: str, detail: str, **meta: Any) -> str:
+        return self.add("INFO", kind, detail, meta)
+
+    def warn(self, kind: str, detail: str, **meta: Any) -> str:
+        return self.add("WARNING", kind, detail, meta)
+
+    def error(self, kind: str, detail: str, **meta: Any) -> str:
+        return self.add("ERROR", kind, detail, meta)
+
+    def query(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+        level: str | None = None,
+        kind: str | None = None,
+        search: str | None = None,
+        sort: str = "desc",
+        after_id: str | None = None,
+    ) -> dict[str, Any]:
+        entries = list(self._entries)
+        if after_id:
+            try:
+                at = float(after_id.split(".")[0])
+                entries = [e for e in entries if float(e["id"].split(".")[0]) > at]
+            except (ValueError, IndexError):
+                pass
+        if level:
+            lo = {"DEBUG": 0, "INFO": 1, "WARNING": 2, "ERROR": 3}
+            ml = lo.get(level.upper(), 1)
+            entries = [e for e in entries if lo.get(e["level"], 1) >= ml]
+        if kind:
+            entries = [e for e in entries if e["kind"] == kind]
+        if search:
+            q = search.lower()
+            entries = [e for e in entries if q in e["detail"].lower()]
+        entries.sort(key=lambda e: e["id"], reverse=(sort == "desc"))
+        total = len(entries)
+        return {
+            "entries": entries[offset : offset + limit],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "max_entries": self.max_entries,
+            "sort": sort,
+        }
+
+    def stats(self) -> dict[str, Any]:
+        levels: dict[str, int] = {}
+        kinds: dict[str, int] = {}
+        for e in self._entries:
+            levels[e["level"]] = levels.get(e["level"], 0) + 1
+            kinds[e["kind"]] = kinds.get(e["kind"], 0) + 1
+        return {
+            "total": len(self._entries),
+            "max_entries": self.max_entries,
+            "levels": levels,
+            "kinds": kinds,
+        }
+
+    def clear(self) -> None:
+        self._entries.clear()
+
+
+_activity_log = ActivityLog()
+
+
 def _auth_error(msg: str = "Missing or invalid API key") -> Response:
     return JSONResponse({"success": False, "error": msg, "error_code": "AUTH_REQUIRED"}, status_code=401)
+
+
+def _qint(value: str | None, default: int) -> int:
+    """Parse an int from a query-string value, falling back to ``default``."""
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _sanitize_filename(name: str) -> str:
+    """Strip path separators and control chars for a safe depot filename."""
+    name = re.sub(r"[^\w.\-()\[\] ]", "_", name.strip())
+    name = name.strip(" ._-")
+    return name or "download.bin"
+
+
+def _filename_from_content_disposition(cd: str) -> str | None:
+    """Best-effort filename extraction from a Content-Disposition header."""
+    m = re.search(r'filename\*?="?([^";]+)', cd)
+    return m.group(1).strip().strip('"') if m else None
+
+
+# --- Obscura (headless) integration for JS-gated / anti-bot downloads ---
+# Cross-connect to the Obscura Rust engine (same one obscura-mcp wraps) so
+# Anna's Archive slow-mirror unlock pages can be rendered past the JS countdown
+# and the actual file downloaded (binary-safe via --dump original).
+
+
+def _obscura_bin() -> str | None:
+    for c in (
+        os.environ.get("RTORRENT_OBSCURA_BIN"),
+        r"D:\Dev\repos\external\obscura\target\release\obscura.exe",
+        r"D:\Dev\repos\external\obscura\target\debug\obscura.exe",
+        shutil.which("obscura"),
+    ):
+        if c and os.path.exists(c):
+            return c
+    return None
+
+
+def _obscura_available() -> bool:
+    if os.environ.get("RTORRENT_OBSCURA_FALLBACK", "").lower() in ("0", "false", "no", "off"):
+        return False
+    return _obscura_bin() is not None
+
+
+def _obscura_render(url: str, timeout: int = 45) -> str:
+    """Render a page past its JS unlock using the Obscura engine."""
+    binary = _obscura_bin()
+    if not binary:
+        raise FileNotFoundError("Obscura binary not found")
+    cmd = [binary, "fetch", url, "--dump", "html", "--wait-until", "networkidle0", "--stealth", "--timeout", str(timeout)]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 15)
+    return result.stdout or ""
+
+
+_FILE_EXT_RE = re.compile(r"\.(epub|pdf|mobi|azw3|txt|fb2|djv|cbr|cbz|zip)$", re.I)
+
+
+def _extract_file_url(html: str, base: str) -> str | None:
+    """Return the first direct file link in rendered HTML, else None."""
+    seen: set[str] = set()
+    for match in re.finditer(r'href=["\']([^"\']+)["\']', html):
+        href = match.group(1).strip()
+        if not href or href.startswith(("javascript:", "#", "mailto:")):
+            continue
+        if href in seen:
+            continue
+        seen.add(href)
+        if _FILE_EXT_RE.search(href) or "/slow_download/" in href or "/dl/" in href:
+            return href if href.startswith("http") else f"{base}{href}"
+    return None
+
+
+def _looks_like_html(path: Path, sample: int = 512) -> bool:
+    try:
+        with open(path, "rb") as fh:
+            head = fh.read(sample).lower()
+    except OSError:
+        return True
+    stripped = head.lstrip()
+    return stripped.startswith(b"<!doctype") or stripped.startswith(b"<html") or b"<?xml" in head[:256]
+
+
+def _obscura_download(url: str, dest: Path, timeout: int = 180) -> bool:
+    """Download ``url`` to ``dest`` binary-safely via Obscura. Returns True on success."""
+    binary = _obscura_bin()
+    if not binary:
+        return False
+    cmd = [binary, "fetch", url, "--dump", "original", "--stealth", "--timeout", str(timeout), "-o", str(dest)]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 20)
+    if result.returncode != 0:
+        return False
+    if not dest.exists() or dest.stat().st_size == 0:
+        return False
+    return not _looks_like_html(dest)
 
 
 def _check_auth(request: Request) -> bool:
@@ -43,6 +237,64 @@ def register_web_api(server: Any, *, app_version: str) -> None:
     if getattr(server, "_rtorrent_web_api_registered", False):
         return
     server._rtorrent_web_api_registered = True
+
+    @server.custom_route("/api/logs", methods=["GET"])
+    async def api_logs(request: Request) -> Response:
+        """Query the activity log ring buffer (webapp Logs page)."""
+        qp = request.query_params
+        return JSONResponse(
+            _activity_log.query(
+                limit=_qint(qp.get("limit"), 50),
+                offset=_qint(qp.get("offset"), 0),
+                level=qp.get("level"),
+                kind=qp.get("kind"),
+                search=qp.get("search"),
+                sort=qp.get("sort", "desc"),
+                after_id=qp.get("after_id"),
+            )
+        )
+
+    @server.custom_route("/api/logs/stats", methods=["GET"])
+    async def api_logs_stats(_request: Request) -> Response:
+        """Return per-level/per-kind log totals."""
+        return JSONResponse(_activity_log.stats())
+
+    @server.custom_route("/api/logs/export", methods=["GET"])
+    async def api_logs_export(request: Request) -> Response:
+        """Export logs as JSON or CSV attachment."""
+        qp = request.query_params
+        fmt = qp.get("format", "json")
+        result = _activity_log.query(
+            limit=_activity_log.max_entries,
+            level=qp.get("level"),
+            kind=qp.get("kind"),
+            search=qp.get("search"),
+        )
+        if fmt == "csv":
+            import csv
+            import io
+
+            buf = io.StringIO()
+            w = csv.writer(buf)
+            w.writerow(["id", "timestamp", "level", "kind", "detail", "meta"])
+            for e in result["entries"]:
+                w.writerow([e["id"], e["timestamp"], e["level"], e["kind"], e["detail"], json.dumps(e["meta"])])
+            return Response(
+                content=buf.getvalue(),
+                media_type="text/csv",
+                headers={"Content-Disposition": 'attachment; filename="logs.csv"'},
+            )
+        return Response(
+            content=json.dumps(result["entries"], indent=2),
+            media_type="application/json",
+            headers={"Content-Disposition": 'attachment; filename="logs.json"'},
+        )
+
+    @server.custom_route("/api/logs", methods=["DELETE"])
+    async def api_logs_clear(_request: Request) -> Response:
+        """Clear the activity log ring buffer."""
+        _activity_log.clear()
+        return JSONResponse({"success": True, "message": "Logs cleared."})
 
     @server.custom_route("/api/health", methods=["GET"])
     async def api_health(_request: Request) -> Response:
@@ -146,6 +398,9 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             c = await get_rtorrent_client()
             result = await c.add_torrent(magnet, category=category)
             ok = result.get("status") == "success"
+            _activity_log.info(
+                "torrent", f"add [{category}] {'OK' if ok else 'FAILED'}: {magnet[:40]}..."
+            )
             return JSONResponse(result, status_code=200 if ok else 502)
         except Exception:
             logger.exception("add magnet")
@@ -370,6 +625,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             from rtorrent_mcp.services.nyaa_search import search_nyaa_anime
 
             results = await search_nyaa_anime(query, resolution=resolution, group=group)
+            _activity_log.info("search", f"nyaa '{query}' -> {len(results)} results")
             return JSONResponse({"success": True, "query": query, "count": len(results), "results": results})
         except Exception as e:
             logger.exception("nyaa search endpoint failed")
@@ -390,6 +646,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             from rtorrent_mcp.services.piratebay_search import search_piratebay_tv
 
             results = await search_piratebay_tv(query, resolution=resolution, group=group)
+            _activity_log.info("search", f"piratebay '{query}' -> {len(results)} results")
             return JSONResponse({"success": True, "query": query, "count": len(results), "results": results})
         except Exception as e:
             logger.exception("piratebay search endpoint failed")
@@ -409,10 +666,266 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             from rtorrent_mcp.services.gutenberg_search import search_gutenberg
 
             results = await search_gutenberg(query, topic=topic)
+            _activity_log.info("search", f"gutenberg '{query}' -> {len(results)} results")
             return JSONResponse({"success": True, "query": query, "count": len(results), "results": results})
         except Exception as e:
             logger.exception("gutenberg search endpoint failed")
             return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    @server.custom_route("/api/search/annas", methods=["GET"])
+    async def api_search_annas(request: Request) -> Response:
+        """Search Anna's Archive for ebooks or papers."""
+        if not _check_auth(request):
+            return _auth_error()
+        query = request.query_params.get("query", "").strip()
+        if not query:
+            return JSONResponse({"success": False, "error": "Query parameter is required"}, status_code=400)
+        content_type = request.query_params.get("content_type", "books")
+        max_results = _qint(request.query_params.get("max_results"), 20)
+
+        try:
+            from rtorrent_mcp.services.annas_archive_search import search_annas_archive
+
+            results = await search_annas_archive(query, content_type=content_type, max_results=max_results)
+            _activity_log.info("search", f"annas '{query}' -> {len(results)} results")
+            return JSONResponse({"success": True, "query": query, "count": len(results), "results": results})
+        except Exception as e:
+            logger.exception("annas search endpoint failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    @server.custom_route("/api/search/annas/detail", methods=["GET"])
+    async def api_search_annas_detail(request: Request) -> Response:
+        """Fetch a single Anna's Archive book detail page (magnet links)."""
+        if not _check_auth(request):
+            return _auth_error()
+        book_url = request.query_params.get("book_url", "").strip()
+        if not book_url:
+            return JSONResponse({"success": False, "error": "book_url parameter is required"}, status_code=400)
+
+        try:
+            from rtorrent_mcp.services.annas_archive_search import get_annas_archive_detail
+
+            result = await get_annas_archive_detail(book_url)
+            _activity_log.info("search", f"annas detail {book_url[:60]}")
+            return JSONResponse({"success": True, "result": result})
+        except Exception as e:
+            logger.exception("annas detail endpoint failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    @server.custom_route("/api/annas/config", methods=["GET"])
+    async def api_annas_config(_request: Request) -> Response:
+        """Anna's Archive config + whether a session cookie is configured."""
+        from rtorrent_mcp.services.annas_archive_search import (
+            ANNAS_ARCHIVE_BASE,
+            ANNAS_ARCHIVE_MIRRORS,
+            get_annas_session_cookie_value,
+        )
+
+        return JSONResponse(
+            {
+                "success": True,
+                "base": ANNAS_ARCHIVE_BASE,
+                "mirrors": ANNAS_ARCHIVE_MIRRORS,
+                "authenticated": get_annas_session_cookie_value() is not None,
+            }
+        )
+
+    @server.custom_route("/api/annas/config", methods=["POST"])
+    async def api_annas_config_set(request: Request) -> Response:
+        """Set/clear the Anna's Archive session cookie (persisted, gitignored)."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            body: dict[str, Any] = await request.json()
+        except Exception:
+            return JSONResponse({"success": False, "error": "Invalid JSON body"}, status_code=400)
+        from rtorrent_mcp.services.annas_archive_search import (
+            get_annas_session_cookie_value,
+            set_annas_session_cookie,
+        )
+
+        value = str(body.get("session_cookie") or "").strip()
+        set_annas_session_cookie(value or None)
+        return JSONResponse(
+            {"success": True, "authenticated": get_annas_session_cookie_value() is not None}
+        )
+
+    @server.custom_route("/api/annas/download", methods=["POST"])
+    async def api_annas_download(request: Request) -> Response:
+        """Download a single Anna's Archive file directly to the depot (no rTorrent)."""
+        if not _check_auth(request):
+            return _auth_error()
+        try:
+            body: dict[str, Any] = await request.json()
+        except Exception:
+            return JSONResponse({"success": False, "error": "Invalid JSON body"}, status_code=400)
+        url = str(body.get("url") or "").strip()
+        if not url:
+            return JSONResponse({"success": False, "error": "url is required"}, status_code=400)
+        if not url.startswith("https://") or "annas-archive." not in url:
+            return JSONResponse(
+                {"success": False, "error": "Only annas-archive.org mirror URLs are allowed"}, status_code=400
+            )
+
+        name_hint = str(body.get("filename") or "").strip()
+        repo_root = Path(__file__).resolve().parents[3]
+        depot = Path(os.environ.get("RTORRENT_DEPOT_PATH") or str(repo_root / "downloads"))
+        depot.mkdir(parents=True, exist_ok=True)
+        max_bytes = int(os.environ.get("RTORRENT_DEPOT_MAX_BYTES", str(2 * 1024**3)))  # 2GB default
+
+        import aiohttp
+
+        from rtorrent_mcp.services.annas_archive_search import get_annas_cookie_header
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            )
+        }
+        if (cookie := get_annas_cookie_header()):
+            headers["Cookie"] = cookie
+
+        def _dedupe_target(depot: Path, fname: str) -> Path:
+            target = depot / fname
+            if target.exists():
+                from uuid import uuid4
+
+                target = depot / f"{target.stem}.{uuid4().hex[:6]}{target.suffix}"
+            return target
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, allow_redirects=True) as resp:
+                    if resp.status != 200:
+                        return JSONResponse(
+                            {"success": False, "error": f"Download returned HTTP {resp.status}"}, status_code=502
+                        )
+                    ctype = (resp.headers.get("Content-Type") or "").lower()
+                    if "text/html" in ctype or "application/xhtml" in ctype:
+                        # JS-gated slow mirror: hand off to the Obscura engine.
+                        if not _obscura_available():
+                            return JSONResponse(
+                                {
+                                    "success": False,
+                                    "error": (
+                                        "Mirror returned an HTML page (JS unlock / queue required). "
+                                        "Obscura not available to solve it - set RTORRENT_OBSCURA_BIN "
+                                        "or build the engine, or open the downloader link manually."
+                                    ),
+                                },
+                                status_code=502,
+                            )
+                        render = ""
+                        try:
+                            render = _obscura_render(url)
+                        except Exception as e:
+                            logger.exception("obscura render failed")
+                            return JSONResponse(
+                                {"success": False, "error": f"Obscura render failed: {e!s}"}, status_code=502
+                            )
+                        direct = _extract_file_url(render, url)
+                        if not direct:
+                            return JSONResponse(
+                                {
+                                    "success": False,
+                                    "error": (
+                                        "Obscura rendered the unlock page but found no direct file link. "
+                                        "The mirror may need a per-file click; open the downloader link manually."
+                                    ),
+                                },
+                                status_code=502,
+                            )
+                        fname = _sanitize_filename(
+                            _filename_from_content_disposition(resp.headers.get("Content-Disposition", ""))
+                            or name_hint
+                            or direct.rstrip("/").split("/")[-1]
+                            or "download.bin"
+                        )
+                        target = _dedupe_target(depot, fname)
+                        if not _obscura_download(direct, target):
+                            target.unlink(missing_ok=True)
+                            return JSONResponse(
+                                {"success": False, "error": "Obscura resolved a link but the file download failed."},
+                                status_code=502,
+                            )
+                        size = target.stat().st_size
+                        if size > max_bytes:
+                            target.unlink(missing_ok=True)
+                            return JSONResponse(
+                                {"success": False, "error": f"Refusing file larger than {max_bytes // (1024 ** 3)}GB."},
+                                status_code=413,
+                            )
+                        _activity_log.info("depot", f"downloaded {target.name} via obscura ({size} bytes)")
+                        return JSONResponse(
+                            {"success": True, "filename": target.name, "path": str(target), "size_bytes": size}
+                        )
+
+                    fname = (
+                        _filename_from_content_disposition(resp.headers.get("Content-Disposition", ""))
+                        or name_hint
+                        or url.rstrip("/").split("/")[-1]
+                        or "download.bin"
+                    )
+                    fname = _sanitize_filename(fname)
+                    target = _dedupe_target(depot, fname)
+
+                    size = 0
+                    with open(target, "wb") as fh:
+                        async for chunk in resp.content.iter_chunked(256 * 1024):
+                            size += len(chunk)
+                            if size > max_bytes:
+                                fh.close()
+                                target.unlink(missing_ok=True)
+                                return JSONResponse(
+                                    {
+                                        "success": False,
+                                        "error": (
+                                            f"Refusing file larger than {max_bytes // (1024 ** 3)}GB "
+                                            "(bulk dataset guard). Pick a single-book mirror."
+                                        ),
+                                    },
+                                    status_code=413,
+                                )
+                            fh.write(chunk)
+
+            _activity_log.info("depot", f"downloaded {fname} ({size} bytes)")
+            return JSONResponse(
+                {"success": True, "filename": fname, "path": str(target), "size_bytes": size}
+            )
+        except Exception as e:
+            logger.exception("annas download failed")
+            return JSONResponse({"success": False, "error": str(e)}, status_code=502)
+
+    @server.custom_route("/api/depot", methods=["GET"])
+    async def api_depot(request: Request) -> Response:
+        """List the download depot directory (output of completed media)."""
+        if not _check_auth(request):
+            return _auth_error()
+        repo_root = Path(__file__).resolve().parents[3]
+        base = os.environ.get("RTORRENT_DEPOT_PATH") or str(repo_root / "downloads")
+        depot = Path(base)
+        if not depot.is_dir():
+            return JSONResponse(
+                {"success": False, "error": f"Depot path not found: {base}", "depot_path": base},
+                status_code=404,
+            )
+        entries: list[dict[str, Any]] = []
+        for it in sorted(depot.iterdir(), key=lambda x: x.name.lower()):
+            try:
+                st = it.stat()
+                entries.append(
+                    {
+                        "name": it.name,
+                        "path": str(it),
+                        "type": "dir" if it.is_dir() else "file",
+                        "size_bytes": st.st_size if it.is_file() else None,
+                        "modified": datetime.fromtimestamp(st.st_mtime).isoformat(),
+                    }
+                )
+            except (OSError, PermissionError):
+                continue
+        return JSONResponse({"success": True, "depot_path": base, "count": len(entries), "entries": entries})
 
     @server.custom_route("/api/normalize/filename", methods=["POST"])
     async def api_normalize_filename(request: Request) -> Response:
@@ -514,4 +1027,6 @@ def register_web_api(server: Any, *, app_version: str) -> None:
         except Exception as e:
             logger.exception("plex ingest endpoint failed")
             return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    _activity_log.info("server", "HTTP REST API registered")
 

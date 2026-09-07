@@ -47,11 +47,11 @@ async def search_gutenberg(query: str, topic: str | None = None, max_results: in
             for item in data.get("results", [])[:max_results]:
                 book_id = item.get("id")
                 title = item.get("title", "Unknown Title")
-                
+
                 # Format authors string
                 authors = [a.get("name", "") for a in item.get("authors", []) if a.get("name")]
                 authors_str = ", ".join(authors) if authors else "Public Domain Author"
-                
+
                 # Formats mapping
                 formats = item.get("formats", {})
                 epub_url = (

@@ -130,6 +130,10 @@ site/
 .env.test
 .env.production
 
+# Anna's Archive session cookie (runtime data, never commit)
+data/
+*.cookie
+
 # Database files
 *.db
 *.sqlite

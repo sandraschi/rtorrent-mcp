@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Download, Pause, Play, Wrench } from "lucide-react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { normalizeFilename } from "@/lib/api";
 
@@ -82,7 +82,9 @@ export function Tools() {
 }
 
 function FilenameNormalizerTester() {
-  const [inputName, setInputName] = useState("[SubsPlease] Boku no Hero Academia - 139 (1080p) [C5819381].mkv");
+  const [inputName, setInputName] = useState(
+    "[SubsPlease] Boku no Hero Academia - 139 (1080p) [C5819381].mkv",
+  );
   const [category, setCategory] = useState("anime");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -142,7 +144,9 @@ function FilenameNormalizerTester() {
           <div className="rounded-md border border-slate-800 bg-slate-900/80 p-4 space-y-2 text-xs font-mono">
             <div className="text-slate-400">
               <span className="text-slate-500">Normalized File:</span>{" "}
-              <span className="text-green-400 font-semibold">{result.normalized_filename}</span>
+              <span className="text-green-400 font-semibold">
+                {result.normalized_filename}
+              </span>
             </div>
             <div className="text-slate-400">
               <span className="text-slate-500">Plex Target Path:</span>{" "}
