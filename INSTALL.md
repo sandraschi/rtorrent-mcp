@@ -1,5 +1,9 @@
 # Installation
 
+> **New here?** Read [`docs/ONBOARDING.md`](docs/ONBOARDING.md) first — it covers
+> starting the rTorrent container and (optional) registering an Anna's Archive
+> account so e-book searches and downloads work.
+
 ## 🚀 Quick Start (recommended)
 
 ```powershell
@@ -50,6 +54,43 @@ If you prefer not to use `just`:
    uv run uvicorn rtorrent_mcp.server:app --port 10910
    ```
 5. Open `http://localhost:10912` or the frontend URL.
+
+---
+
+## 🔌 Claude Desktop Configuration
+
+Add this to your `claude_desktop_config.json`
+(`%APPDATA%\Claude\claude_desktop_config.json` on Windows,
+`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS,
+`~/.config/Claude/claude_desktop_config.json` on Linux):
+
+```json
+{
+  "mcpServers": {
+    "rtorrent-mcp": {
+      "command": "uv",
+      "args": ["--directory", "C:\\path\\to\\rtorrent-mcp", "run", "rtorrent-mcp"],
+      "env": { "RTORRENT_HOST": "localhost", "RTORRENT_PORT": "12224" }
+    }
+  }
+}
+```
+
+Replace the path with your actual clone location, then restart Claude Desktop.
+Full variable list: [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+
+## 🤖 LLM for the agentic workflow (optional)
+
+`agentic_rtorrent_workflow` needs an LLM to plan multi-step tasks. Two tiers,
+pick one:
+
+| Tier | Setup | Config |
+|------|-------|--------|
+| **Local (Ollama)** — default | `winget install Ollama.Ollama` then `ollama pull llama3.2` | Nothing to set — defaults to `http://127.0.0.1:11434/v1` |
+| **Cloud / client LLM** | No local install needed | Set `RTORRENT_SAMPLING_USE_CLIENT_LLM=1` to use the MCP host's own LLM instead |
+
+Every other tool works with no LLM configured at all — this only affects the
+one agentic workflow tool.
 
 ---
 
