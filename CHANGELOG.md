@@ -1,5 +1,30 @@
 
-## [3.1.0] - 2026-08-25
+## [3.1.0] - 2026-08-25 (tagged 2026-09-08)
+
+### Fixed (2026-09-08 - first tagged native release)
+- **Backend never actually ran in any prior NSIS install**: `pyinstaller` was
+  never a project dependency, only a standalone `uv tool install` running in
+  its own isolated environment. `uv run pyinstaller` silently resolved there
+  instead of the project venv, so the frozen backend exe had no visibility
+  into fastmcp/uvicorn/starlette and crashed instantly with
+  `ModuleNotFoundError: No module named 'uvicorn'`. Fixed by adding
+  `pyinstaller` as a dev dependency; also fixed a `PermissionError` this
+  exposed in `rtorrent-mcp-backend.spec`'s metadata-copying step.
+- **Packaged app's dashboard always showed "Backend down"**: Chromium's
+  Private Network Access policy silently blocks `fetch()` from the app's
+  `https://tauri.localhost` origin to `http://127.0.0.1:10910` unless the
+  CORS preflight explicitly allows it. Fixed with
+  `allow_private_network=True` on the existing CORS middleware.
+- **Dashboard status was all-or-nothing**: `useRtorrentBridge` batched
+  health/rTorrent-status/torrents into one `Promise.all`, so rTorrent being
+  offline (its own Docker container not running) falsely reported the MCP
+  backend itself as down too. Switched to `Promise.allSettled`.
+- Added the fleet-mandatory `useZoom()` hook (Ctrl+Scroll/Ctrl+0), missing
+  from this repo's native shell entirely.
+
+First real end-to-end verification: `native/build.ps1` full pipeline +
+`python scripts/cua-smoke.py` (install -> launch -> health -> diagnostics ->
+nav walk -> uninstall), 11/11 phases passing.
 
 ### Added
 - **Dedicated Indexer Search Pages**:
@@ -153,7 +178,7 @@ All individual tools have been merged into portmanteau tools. No stragglers (exc
 `add`, `list`, `pause`, `resume`, `delete`, `status`, `info`,
 `check_completed`, `process`, `start_processing`, `stop_processing`, `normalize`
 
-#### **Search Management** (13 actions)  
+#### **Search Management** (13 actions)
 `anime`, `manga`, `japanese_tv`, `movies`, `tv_shows`, `tv_smart`,
 `ebooks_annas`, `ebooks_pb`, `comics`, `annas_detail`, `imdb`, `imdb_search`, `tvdb`
 
@@ -181,7 +206,7 @@ All individual tools have been merged into portmanteau tools. No stragglers (exc
 #### Portmanteau tools
 Individual tools were consolidated into five portmanteau tools (operation/action parameters). Aligns with FastMCP multi-action tool style.
 
-**Before:** 30+ individual tools  
+**Before:** 30+ individual tools
 **After:** 5 consolidated portmanteau tools
 
 #### **New Portmanteau Tools**
@@ -441,4 +466,3 @@ We use [Semantic Versioning](https://semver.org/):
 ---
 
 *This changelog is automatically updated via CI/CD pipeline.*
-
