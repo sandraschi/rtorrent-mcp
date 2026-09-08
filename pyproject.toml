@@ -70,22 +70,23 @@ dev = [
     "pytest>=8.3.4",
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.24.0",
-    
+
     # Linting & Type Checking
     "ruff>=0.16.0,<0.17",
     "pyright>=1.1.390",
     "mypy>=1.8.0",
     "pre-commit>=3.5.0",
-    
+
     # Security
     "bandit>=1.7.0",
     "safety>=3.0.0",
     "defusedxml>=0.7.1",
-    
+
     # Building & Publishing (CRITICAL - don't forget!)
     "build>=1.0.0",
     "twine>=5.0.0",
-    
+    "pyinstaller>=6.11.0",
+
     # Documentation
     "mkdocs>=1.4.3",
     "mkdocs-material>=9.1.18"
