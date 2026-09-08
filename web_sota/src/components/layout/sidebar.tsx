@@ -22,9 +22,10 @@ import { cn } from "@/common/utils";
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  zoomPercent?: number;
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, zoomPercent }: SidebarProps) {
   const location = useLocation();
 
   const navItems = [
@@ -98,6 +99,15 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         })}
       </nav>
 
+      {!collapsed && zoomPercent !== undefined && zoomPercent !== 100 && (
+        <div
+          className="border-t border-slate-800 px-3 py-1.5 text-center text-[11px] text-slate-300"
+          data-testid="zoom-indicator"
+        >
+          Zoom {zoomPercent}%{" "}
+          <span className="text-slate-500">(Ctrl+0 to reset)</span>
+        </div>
+      )}
       <div className="border-t border-slate-800 p-2">
         <button
           type="button"

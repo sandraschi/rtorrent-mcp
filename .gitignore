@@ -10,6 +10,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+cua-reports/
 eggs/
 .eggs/
 /lib/
@@ -168,4 +169,3 @@ remove_description_params.py
 # Native binaries build cache
 native/resources/
 native/binaries/
-

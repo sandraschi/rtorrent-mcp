@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useZoom } from "@/hooks/useZoom";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -10,6 +11,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { zoom } = useZoom();
 
   // Persist sidebar state
   useEffect(() => {
@@ -26,7 +28,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-50 font-sans selection:bg-emerald-500/30">
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar collapsed={collapsed} onToggle={handleToggle} />
+        <Sidebar
+          collapsed={collapsed}
+          onToggle={handleToggle}
+          zoomPercent={Math.round(zoom * 100)}
+        />
         <div className="flex flex-1 flex-col overflow-hidden">
           <Topbar />
           <main className="flex-1 overflow-y-auto p-6 scroll-smooth">

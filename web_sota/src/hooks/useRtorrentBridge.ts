@@ -36,26 +36,35 @@ export function useRtorrentBridge(pollMs = 8000) {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    setError(null);
-    try {
-      const [h, s, t] = await Promise.all([
+    // Each endpoint fails independently: rTorrent (the wrapped host app)
+    // being offline must not report our own backend as down too, and vice
+    // versa - they're separate failure domains (see docs/ONBOARDING.md).
+    const [healthResult, statusResult, torrentsResult] =
+      await Promise.allSettled([
         fetch(`${API_BASE}/api/health`).then((r) =>
           r.ok ? r.json() : Promise.reject(new Error(`health ${r.status}`)),
         ),
         fetch(`${API_BASE}/api/rtorrent/status`).then((r) => r.json()),
         fetch(`${API_BASE}/api/rtorrent/torrents`).then((r) => r.json()),
       ]);
-      setHealth(h);
-      setRtStatus(s);
-      setTorrents(t);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load bridge API");
-      setHealth(null);
-      setRtStatus(null);
-      setTorrents(null);
-    } finally {
-      setLoading(false);
+
+    setHealth(healthResult.status === "fulfilled" ? healthResult.value : null);
+    setRtStatus(
+      statusResult.status === "fulfilled" ? statusResult.value : null,
+    );
+    setTorrents(
+      torrentsResult.status === "fulfilled" ? torrentsResult.value : null,
+    );
+
+    if (healthResult.status === "rejected") {
+      const reason = healthResult.reason;
+      setError(
+        reason instanceof Error ? reason.message : "Failed to reach backend",
+      );
+    } else {
+      setError(null);
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
