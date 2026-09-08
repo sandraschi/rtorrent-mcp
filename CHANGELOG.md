@@ -1,4 +1,13 @@
 
+## [Unreleased]
+
+### Fixed
+- **Anna's Archive search was fabricating fake results (BUG-032)**: the site's own "No records found..." empty-state box matched a broad CSS fallback selector and had no real title link inside it, so the scraper fell back to `container.get_text(strip=True)[:200]` and scraped the empty-state copy as if it were a book title -- `success: true, count: 1` on a genuinely empty search. A second, always-true fake-success path ("query appears on page") also fabricated a placeholder result on every empty search, since Anna's Archive echoes the query in its results heading regardless of hit count. Both replaced with an honest `([], None)`; a container with no real title link is now skipped instead of scraped. Full writeup: [mcp-central-docs BUGS_DEPOT.md, BUG-032](../mcp-central-docs/troubleshooting/details/BUG-032_Annas_Archive_Selector_Rot_Fake_Success.md).
+
+### Added
+- **Obscura headless-browser fallback for bot-gated Anna's Archive mirrors**: split `_search_annas_on` into fetch (aiohttp, falling back to the Obscura Rust engine when a mirror looks bot-gated -- 403/503 or a known challenge-page marker) and parse (pure, no I/O, so the BUG-032 fix applies to both paths identically). Obscura helpers moved from `api/web_routes.py` into a new `services/obscura_bridge.py` so services code can use them without a backwards api-to-service import; `web_routes.py` re-exports under the original names, zero behavior change to the existing download flow.
+- **`.gl`/`.li` mirror scoping documented**: `docs/ANNAS_MIRROR_OBSCURA_FALLBACK_PLAN.md` records that `.gl` still fails Obscura's one-shot stealth render against DDoS-Guard's JS challenge (confirmed live, not assumed -- the raw output is the actual challenge page, not a false-positive marker match). Filed upstream: [h4ckf0r0day/obscura#925](https://github.com/h4ckf0r0day/obscura/issues/925).
+
 ## [3.1.0] - 2026-08-25 (tagged 2026-09-08)
 
 ### Fixed (2026-09-08 - first tagged native release)
