@@ -201,7 +201,16 @@ Tool output may include Austria-oriented risk context; users must verify local l
                 allow_credentials=True,
                 allow_methods=["*"],
                 allow_headers=["*"],
-            )
+                # WebView2 (Tauri on Windows) treats the packaged app's
+                # origin (https://tauri.localhost) as public and this
+                # backend's http://127.0.0.1:{port} as a private-network
+                # target. Chromium's Private Network Access policy blocks
+                # that fetch as a silent "Failed to fetch" unless the
+                # preflight allows it explicitly - without this, every
+                # fetch()-based status check in the packaged app fails
+                # while curl/direct HTTP to the same endpoint succeeds.
+                allow_private_network=True,
+            ),
         ]
 
 
