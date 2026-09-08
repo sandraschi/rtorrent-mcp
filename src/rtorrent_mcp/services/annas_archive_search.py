@@ -5,6 +5,7 @@ Anna's Archive is the gold standard for ebooks - 60M books, 50M papers, can have
 Very idiosyncratic UI, but we love Anna!
 """
 
+import asyncio
 import logging
 import os
 from pathlib import Path
@@ -14,7 +15,33 @@ from urllib.parse import quote_plus
 import aiohttp
 from bs4 import BeautifulSoup
 
+from rtorrent_mcp.services.obscura_bridge import obscura_available, obscura_render
+
 logger = logging.getLogger(__name__)
+
+# Anti-bot challenge markers seen on gated Anna's Archive mirrors (.gl:
+# DDoS-Guard, .li: Cloudflare). A plain aiohttp GET can't pass these -- they
+# require JS execution and/or an existing clearance cookie -- so their
+# presence triggers the Obscura headless-browser fallback instead of being
+# treated as "mirror has no results".
+_CHALLENGE_MARKERS = (
+    "ddos-guard",
+    "just a moment",
+    "attention required",
+    "checking your browser",
+    "cf-chl",
+    "cf_chl",
+)
+
+
+def _looks_bot_gated(status: int, html: str) -> bool:
+    """True if a response looks like an anti-bot challenge page rather than
+    real content -- 403/503, or a known challenge-page marker in the head."""
+    if status in (403, 503):
+        return True
+    head = html[:2000].lower()
+    return any(marker in head for marker in _CHALLENGE_MARKERS)
+
 
 # Anna's Archive base URL. Overridable via ANNAS_ARCHIVE_BASE env. The default
 # uses annas-archive.is (a live, non-Cloudflare-gated mirror). annas-archive.org
@@ -100,11 +127,171 @@ def get_annas_cookie_header() -> str | None:
     return f"{name}={raw}"
 
 
+async def _fetch_annas_html(
+    base: str, url: str, headers: dict[str, str], obscura_timeout: int = 20
+) -> tuple[str | None, str | None]:
+    """Fetch a mirror search URL. Falls back to the Obscura headless browser
+    when the plain response looks anti-bot-gated (see ``_looks_bot_gated``) --
+    e.g. ``.gl`` (DDoS-Guard) and ``.li`` (Cloudflare), which 403/503 a plain
+    ``aiohttp`` GET but render fine for a real (or stealth headless) browser.
+
+    Returns ``(html, error)``; ``error`` is None only when ``html`` holds a
+    genuine, non-gated page (empty results are still ``(html, None)`` --
+    "no error" means "the fetch succeeded", not "there were hits")."""
+    try:
+        async with aiohttp.ClientSession() as session, session.get(url, headers=headers) as response:
+            status = response.status
+            html = await response.text()
+    except aiohttp.ClientError as e:
+        return (None, f"Network error: {e!s}")
+
+    if not _looks_bot_gated(status, html):
+        if status != 200:
+            return (None, f"Anna's Archive ({base}) returned {status}")
+        return (html, None)
+
+    if not obscura_available():
+        return (
+            None,
+            f"Anna's Archive ({base}) returned {status} (bot-gated; Obscura not installed for fallback)",
+        )
+
+    logger.info(f"Anna's Archive ({base}) looks bot-gated (status {status}); retrying via Obscura")
+    try:
+        # obscura_render() shells out synchronously (subprocess.run); offload
+        # to a thread so a slow/gated mirror doesn't stall the event loop for
+        # other concurrent requests.
+        rendered = await asyncio.to_thread(obscura_render, url, obscura_timeout)
+    except Exception as e:
+        return (None, f"Obscura fallback failed: {e!s}")
+
+    if not rendered or _looks_bot_gated(200, rendered):
+        return (None, f"Anna's Archive ({base}) still bot-gated after Obscura render")
+
+    return (rendered, None)
+
+
+def _parse_annas_html(html: str, base: str, url: str, content_type: str, max_results: int) -> list[dict[str, Any]]:
+    """Extract book/paper results from an already-fetched Anna's Archive
+    search page. Pure parsing, no I/O -- used for both the plain-HTTP fast
+    path and the Obscura-rendered fallback, so the extraction logic (and any
+    future fix to it) only needs to exist once."""
+    soup = BeautifulSoup(html, "html.parser")
+    results: list[dict[str, Any]] = []
+
+    # Anna's Archive has a very idiosyncratic UI; the exact structure may
+    # vary, so we check multiple selector patterns.
+    result_containers = (
+        soup.select("div.bg-white.rounded-lg")
+        or soup.select("div.search-result")
+        or soup.select("div.result")
+        or soup.select('div[class*="result"]')
+        or soup.select('div[class*="search-result-item"]')
+        or soup.select("div.is-relative")
+        or soup.select("tr.search-result")
+        or soup.select("article")
+        or soup.select("div.book")
+        or soup.select("div.paper")
+    )
+
+    if not result_containers:
+        # Fallback: look for any links that might be to books/papers
+        all_links = (
+            soup.select('a[href*="/md5/"]') or soup.select('a[href*="/book/"]') or soup.select('a[href*="/paper/"]')
+        )
+        if not all_links:
+            logger.warning("No results found on Anna's Archive page")
+            return []
+
+        for link in all_links[:max_results]:
+            try:
+                title = link.text.strip()
+                href = str(link.get("href", "") or "")
+                full_url = f"{base}{href}" if href.startswith("/") else href
+                if title:
+                    results.append(
+                        {
+                            "title": title,
+                            "detail_url": full_url,
+                            "content_type": content_type,
+                            "size": "Unknown",  # Will need to visit detail page for full info
+                            "note": "Partial result - visit detail_url for full torrent info",
+                        }
+                    )
+            except Exception as e:
+                logger.warning(f"Error parsing Anna's Archive link: {e}")
+                continue
+        return results[:max_results]
+
+    for container in result_containers[:max_results]:
+        try:
+            title_elem = (
+                container.select_one("h2 a")
+                or container.select_one("h3 a")
+                or container.select_one('a[href*="/md5/"]')
+                or container.select_one('a[href*="/book/"]')
+                or container.select_one('a[href*="/paper/"]')
+                or container.select_one("a.title")
+            )
+
+            if title_elem is None:
+                # No real book/paper link inside this container -- it is not
+                # a result card (most commonly Anna's Archive's own "No
+                # records found..." empty-state box, which some of the broad
+                # fallback selectors above can also match). Scraping its raw
+                # text as a fabricated "title" produced fake positive hits;
+                # skip instead of guessing.
+                continue
+            title = title_elem.text.strip()
+            if not title:
+                continue
+
+            href = str(title_elem.get("href", "") or "")
+            detail_url = f"{base}{href}" if href.startswith("/") else href
+
+            author = ""
+            size = "Unknown"
+            format_type = "Unknown"
+
+            author_elem = container.select_one(".author") or container.select_one('[class*="author"]')
+            if author_elem:
+                author = author_elem.text.strip()
+
+            size_elem = container.select_one('[class*="size"]') or container.select_one(".size")
+            if size_elem:
+                size = size_elem.text.strip()
+
+            format_elem = container.select_one('[class*="format"]') or container.select_one(".format")
+            if format_elem:
+                format_type = format_elem.text.strip()
+
+            # For full torrent info (including magnet links), we'd need to
+            # visit the detail page. For now, return basic info with detail_url.
+            results.append(
+                {
+                    "title": title,
+                    "author": author,
+                    "detail_url": detail_url or url,
+                    "size": size,
+                    "format": format_type,
+                    "content_type": content_type,
+                    "note": "Visit detail_url for full torrent info (can be 100TB+!)",
+                }
+            )
+        except Exception as e:
+            logger.warning(f"Error parsing Anna's Archive result: {e}")
+            continue
+
+    return results[:max_results]
+
+
 async def _search_annas_on(
     base: str, query: str, content_type: str = "books", max_results: int = 20
 ) -> tuple[list[dict[str, Any]], str | None]:
     """Search one Anna's Archive mirror. Returns ``(results, error)`` where
-    ``error`` is None on a successful fetch (even if the result list is empty)."""
+    ``error`` is None on a successful fetch (even if the result list is empty).
+    Transparently retries via the Obscura headless browser when the mirror's
+    plain HTTP response looks anti-bot-gated."""
     try:
         headers = {
             "User-Agent": (
@@ -121,169 +308,20 @@ async def _search_annas_on(
         # Books: /search?q={query}
         # Papers: /search?q={query}&content={content_type}
         encoded_query = quote_plus(query)
-
         if content_type == "papers":
             url = f"{base}/search?q={encoded_query}&content=papers"
         else:
             url = f"{base}/search?q={encoded_query}"
 
-        async with aiohttp.ClientSession() as session, session.get(url, headers=headers) as response:
-            if response.status != 200:
-                logger.error(f"Anna's Archive ({base}) returned {response.status}")
-                return ([], f"Anna's Archive returned {response.status}")
+        html, fetch_error = await _fetch_annas_html(base, url, headers)
+        if fetch_error is not None:
+            logger.error(fetch_error)
+            return ([], fetch_error)
+        if html is None:
+            return ([], "Anna's Archive fetch returned no content")
 
-            html = await response.text()
-            soup = BeautifulSoup(html, "html.parser")
-
-            # Anna's Archive has a very idiosyncratic UI
-            # Look for result containers - typically in divs with class containing "search-result" or similar
-            # The exact structure may vary, so we'll try multiple selectors
-
-            results = []
-
-            # Try common selectors for search results
-            # Anna's Archive may use different structures, so we check multiple patterns
-            result_containers = (
-                soup.select("div.bg-white.rounded-lg")
-                or soup.select("div.search-result")
-                or soup.select("div.result")
-                or soup.select('div[class*="result"]')
-                or soup.select('div[class*="search-result-item"]')
-                or soup.select("div.is-relative")
-                or soup.select("tr.search-result")
-                or soup.select("article")
-                or soup.select("div.book")
-                or soup.select("div.paper")
-            )
-
-            if not result_containers:
-                # Fallback: look for any links that might be to books/papers
-                # Anna's Archive typically links to detail pages
-                all_links = (
-                    soup.select('a[href*="/md5/"]')
-                    or soup.select('a[href*="/book/"]')
-                    or soup.select('a[href*="/paper/"]')
-                )
-
-                if all_links:
-                    # Extract basic info from links
-                    for link in all_links[:max_results]:
-                        try:
-                            title = link.text.strip()
-                            href = str(link.get("href", "") or "")
-                            full_url = f"{base}{href}" if href.startswith("/") else href
-
-                            if title:
-                                results.append(
-                                    {
-                                        "title": title,
-                                        "detail_url": full_url,
-                                        "content_type": content_type,
-                                        "size": "Unknown",  # Will need to visit detail page for full info
-                                        "note": "Partial result - visit detail_url for full torrent info",
-                                    }
-                                )
-                        except Exception as e:
-                            logger.warning(f"Error parsing Anna's Archive link: {e}")
-                            continue
-
-                    return (results[:max_results] if results else [], None)
-                else:
-                    logger.warning("No results found on Anna's Archive page")
-                    # Check for "no results" message
-                    no_results = soup.find(
-                        string=lambda text: (
-                            bool(text) and ("no results" in text.lower() or "no matches" in text.lower())
-                        )
-                    )
-                    if no_results:
-                        return ([], None)
-                    return ([], None)
-
-            # Process result containers
-            for container in result_containers[:max_results]:
-                try:
-                    # Extract title
-                    title_elem = (
-                        container.select_one("h2 a")
-                        or container.select_one("h3 a")
-                        or container.select_one('a[href*="/md5/"]')
-                        or container.select_one('a[href*="/book/"]')
-                        or container.select_one('a[href*="/paper/"]')
-                        or container.select_one("a.title")
-                    )
-
-                    title = title_elem.text.strip() if title_elem else container.get_text(strip=True)[:200]
-                    if not title:
-                        continue
-
-                    # Get detail URL
-                    detail_url = None
-                    if title_elem:
-                        href = str(title_elem.get("href", "") or "")
-                        detail_url = f"{base}{href}" if href.startswith("/") else href
-
-                    # Extract metadata if available
-                    # Anna's Archive may show author, size, format, etc. in the container
-                    author = ""
-                    size = "Unknown"
-                    format_type = "Unknown"
-
-                    # Try to extract author
-                    author_elem = container.select_one(".author") or container.select_one('[class*="author"]')
-                    if author_elem:
-                        author = author_elem.text.strip()
-
-                    # Try to extract size
-                    size_elem = container.select_one('[class*="size"]') or container.select_one(".size")
-                    if size_elem:
-                        size = size_elem.text.strip()
-
-                    # Try to extract format
-                    format_elem = container.select_one('[class*="format"]') or container.select_one(".format")
-                    if format_elem:
-                        format_type = format_elem.text.strip()
-
-                    # For full torrent info (including magnet links), we'd need to visit the detail page
-                    # For now, return basic info with detail URL
-                    results.append(
-                        {
-                            "title": title,
-                            "author": author,
-                            "detail_url": detail_url or url,
-                            "size": size,
-                            "format": format_type,
-                            "content_type": content_type,
-                            "note": "Visit detail_url for full torrent info (can be 100TB+!)",
-                        }
-                    )
-
-                except Exception as e:
-                    logger.warning(f"Error parsing Anna's Archive result: {e}")
-                    continue
-
-            # If we got results from containers, return them
-            if results:
-                return (results[:max_results], None)
-
-            # Last resort: check if page loaded but structure is different
-            # Return minimal result indicating search was performed
-            page_text = soup.get_text()
-            if query.lower() in page_text.lower():
-                # Query appears on page, might be a results page with different structure
-                return (
-                    [
-                        {
-                            "title": f"Search performed for: {query}",
-                            "detail_url": url,
-                            "content_type": content_type,
-                            "note": "Anna's Archive UI may have changed - check detail_url manually",
-                        }
-                    ],
-                    None,
-                )
-
-            return ([], None)
+        results = _parse_annas_html(html, base, url, content_type, max_results)
+        return (results, None)
 
     except aiohttp.ClientError as e:
         logger.error(f"Anna's Archive network error: {e}")

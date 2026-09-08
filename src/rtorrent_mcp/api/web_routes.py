@@ -12,8 +12,6 @@ import json
 import logging
 import os
 import re
-import shutil
-import subprocess
 import time
 from collections import deque
 from datetime import datetime
@@ -150,46 +148,19 @@ def _filename_from_content_disposition(cd: str) -> str | None:
 # Cross-connect to the Obscura Rust engine (same one obscura-mcp wraps) so
 # Anna's Archive slow-mirror unlock pages can be rendered past the JS countdown
 # and the actual file downloaded (binary-safe via --dump original).
-
-
-def _obscura_bin() -> str | None:
-    for c in (
-        os.environ.get("RTORRENT_OBSCURA_BIN"),
-        r"D:\Dev\repos\external\obscura\target\release\obscura.exe",
-        r"D:\Dev\repos\external\obscura\target\debug\obscura.exe",
-        shutil.which("obscura"),
-    ):
-        if c and os.path.exists(c):
-            return c
-    return None
-
-
-def _obscura_available() -> bool:
-    if os.environ.get("RTORRENT_OBSCURA_FALLBACK", "").lower() in ("0", "false", "no", "off"):
-        return False
-    return _obscura_bin() is not None
-
-
-def _obscura_render(url: str, timeout: int = 45) -> str:
-    """Render a page past its JS unlock using the Obscura engine."""
-    binary = _obscura_bin()
-    if not binary:
-        raise FileNotFoundError("Obscura binary not found")
-    cmd = [
-        binary,
-        "fetch",
-        url,
-        "--dump",
-        "html",
-        "--wait-until",
-        "networkidle0",
-        "--stealth",
-        "--timeout",
-        str(timeout),
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 15)
-    return result.stdout or ""
-
+# Implementation lives in services/obscura_bridge.py so services/ code (e.g.
+# annas_archive_search.py's mirror fallback) can use it without a backwards
+# api-to-service import; re-exported here under the original names so the
+# call sites below are unchanged.
+from rtorrent_mcp.services.obscura_bridge import (
+    obscura_available as _obscura_available,
+)
+from rtorrent_mcp.services.obscura_bridge import (
+    obscura_download as _obscura_download,
+)
+from rtorrent_mcp.services.obscura_bridge import (
+    obscura_render as _obscura_render,
+)
 
 _FILE_EXT_RE = re.compile(r"\.(epub|pdf|mobi|azw3|txt|fb2|djv|cbr|cbz|zip)$", re.I)
 
@@ -207,30 +178,6 @@ def _extract_file_url(html: str, base: str) -> str | None:
         if _FILE_EXT_RE.search(href) or "/slow_download/" in href or "/dl/" in href:
             return href if href.startswith("http") else f"{base}{href}"
     return None
-
-
-def _looks_like_html(path: Path, sample: int = 512) -> bool:
-    try:
-        with open(path, "rb") as fh:
-            head = fh.read(sample).lower()
-    except OSError:
-        return True
-    stripped = head.lstrip()
-    return stripped.startswith(b"<!doctype") or stripped.startswith(b"<html") or b"<?xml" in head[:256]
-
-
-def _obscura_download(url: str, dest: Path, timeout: int = 180) -> bool:
-    """Download ``url`` to ``dest`` binary-safely via Obscura. Returns True on success."""
-    binary = _obscura_bin()
-    if not binary:
-        return False
-    cmd = [binary, "fetch", url, "--dump", "original", "--stealth", "--timeout", str(timeout), "-o", str(dest)]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 20)
-    if result.returncode != 0:
-        return False
-    if not dest.exists() or dest.stat().st_size == 0:
-        return False
-    return not _looks_like_html(dest)
 
 
 def _check_auth(request: Request) -> bool:
