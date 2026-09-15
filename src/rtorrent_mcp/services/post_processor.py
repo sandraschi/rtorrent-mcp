@@ -275,19 +275,19 @@ class PostProcessor:
                         logger.info(f"Hardlinked {file_path.name} → {dest_path}")
                     except Exception as le:
                         logger.warning(f"Hardlink failed ({le}), falling back to copy: {file_path.name}")
-                        shutil.copy2(str(file_path), str(dest_path))
+                        await asyncio.to_thread(shutil.copy2, str(file_path), str(dest_path))
                 elif link_mode == "symlink":
                     try:
                         dest_path.symlink_to(file_path)
                         logger.info(f"Symlinked {file_path.name} → {dest_path}")
                     except Exception as se:
                         logger.warning(f"Symlink failed ({se}), falling back to copy: {file_path.name}")
-                        shutil.copy2(str(file_path), str(dest_path))
+                        await asyncio.to_thread(shutil.copy2, str(file_path), str(dest_path))
                 elif link_mode == "copy":
-                    shutil.copy2(str(file_path), str(dest_path))
+                    await asyncio.to_thread(shutil.copy2, str(file_path), str(dest_path))
                     logger.info(f"Copied {file_path.name} → {dest_path}")
                 else:  # move
-                    shutil.move(str(file_path), str(dest_path))
+                    await asyncio.to_thread(shutil.move, str(file_path), str(dest_path))
                     logger.info(f"Moved {file_path.name} → {dest_path}")
 
                 moved_files.append(str(dest_path))
