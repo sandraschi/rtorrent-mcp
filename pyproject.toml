@@ -192,6 +192,7 @@ known-first-party = ["rtorrent_mcp"]
 "src/rtorrent_mcp/__main__.py" = ["T20"]
 # Standalone test runners print results when executed directly.
 "tests/**/*.py" = ["T20"]
+"scripts/**" = ["T20", "S310"]
 
 [tool.ruff.format]
 quote-style = "double"
