@@ -5,11 +5,12 @@
     BackendPort  = 10910
     FrontendPort = 10911
     HealthPath   = '/api/health'
-    WebRoot      = 'D:\Dev\repos\rtorrent-mcp\web_sota'
+    WebRoot      = 'web_sota'
     Backend = @{
         Kind          = 'uvicorn'
         UvicornTarget = 'rtorrent_mcp.server:app'
         SyncExtras    = @('dev')
+        SyncOnStart  = $true
         Env           = @{ WEB_PORT = '10910' }
     }
     Frontend = @{
