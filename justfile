@@ -21,18 +21,15 @@ fix:
 
 # Execute Bandit security audit
 check-sec:
-    Set-Location '{{justfile_directory()}}'
     uv run bandit -r src/
 
 # Execute safety audit of dependencies
 audit-deps:
-    Set-Location '{{justfile_directory()}}'
     uv run safety check
 
 # --- rtorrent-mcp  common tasks  install https just systems ---
 
 stats:
-    Set-Location '{{justfile_directory()}}'
     uv run python tools/repo_stats.py
 
 sync:
@@ -54,6 +51,26 @@ run-stdio:
 
 run-http:
     uv run python -m rtorrent_mcp.server --transport http
+
+# Format Python (ruff format) — pairs with lint
+fmt:
+    uv run ruff format .
+
+# Serve the HTTP API backend (port 10910, fleet engine contract: server:app ASGI)
+serve:
+    uv run uvicorn rtorrent_mcp.server:app --host 127.0.0.1 --port 10910
+
+# Local five-gate CI: ruff + format-check + pytest + tsc + biome + pyright
+ci:
+    uv run ruff check .
+    uv run ruff format . --check
+    uv run pytest tests/ -q
+    uv run pyright src/
+    Set-Location '{{justfile_directory()}}\web_sota'; npx tsc --noEmit; npx @biomejs/biome ci src
+
+# Playwright e2e (needs backend on :10910 + frontend dev)
+e2e:
+    Set-Location '{{justfile_directory()}}\web_sota'; npx playwright test
 
 # Bootstrap: install dev deps + pre-commit hook
 bootstrap:

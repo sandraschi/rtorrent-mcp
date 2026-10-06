@@ -159,8 +159,8 @@ export function AnnasSearchPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-6" data-testid="annas-page">
+      <div data-testid="annas-header">
         <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-slate-100">
           <Library className="h-7 w-7 text-amber-400" />
           Anna&apos;s Archive

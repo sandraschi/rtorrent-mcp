@@ -72,10 +72,14 @@ export function Apps() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+        data-testid="apps-grid"
+      >
         {SHORTCUTS.map((app) => (
           <Card
             key={app.name}
+            data-testid="app-card"
             className="border-slate-800 bg-slate-950/50 hover:bg-slate-900/50 transition-colors group cursor-pointer"
             onClick={() =>
               window.open(`http://127.0.0.1:${app.port}`, "_blank")
