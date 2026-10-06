@@ -371,4 +371,3 @@ class TestPlexRoutes:
         assert r.status_code == 200
         assert r.json()["success"] is True
         assert r.json()["completed_found"] == 0
-

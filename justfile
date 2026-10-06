@@ -61,9 +61,10 @@ serve:
     uv run uvicorn rtorrent_mcp.server:app --host 127.0.0.1 --port 10910
 
 # Local five-gate CI: ruff + format-check + pytest + tsc + biome + pyright
+# (format scoped to code dirs: ruff also rewrites md code fences repo-wide)
 ci:
-    uv run ruff check .
-    uv run ruff format . --check
+    uv run ruff check src/ tests/ run_server.py scripts/ tools/
+    uv run ruff format src/ tests/ --check
     uv run pytest tests/ -q
     uv run pyright src/
     Set-Location '{{justfile_directory()}}\web_sota'; npx tsc --noEmit; npx @biomejs/biome ci src

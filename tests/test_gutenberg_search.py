@@ -5,6 +5,7 @@ Unit tests for Gutenberg search functionality.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from rtorrent_mcp.services.gutenberg_search import search_gutenberg
 
 
