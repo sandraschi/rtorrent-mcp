@@ -1,56 +1,61 @@
+# Managed by mcp-central-docs/scripts/set_fleet_dependabot.py (GITHUB_TRIAGE_STANDARD.md):
+# weekly, grouped, low noise. Edit the generator, not this file.
 version: 2
 updates:
-  # Enable version updates for Python dependencies
+
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "${{ github.repository_owner }}"
-    assignees:
-      - "${{ github.repository_owner }}"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    open-pull-requests-limit: 3
+    groups:
+      pip-updates:
+        applies-to: version-updates
+        patterns: ["*"]
+      pip-security:
+        applies-to: security-updates
+        patterns: ["*"]
+    labels: ["dependencies"]
     commit-message:
-      prefix: "deps"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "python"
+      prefix: "chore(deps)"
 
-  # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "${{ github.repository_owner }}"
-    assignees:
-      - "${{ github.repository_owner }}"
+      time: "05:00"
+      timezone: "Europe/Vienna"
+    open-pull-requests-limit: 3
+    groups:
+      github-actions-updates:
+        applies-to: version-updates
+        patterns: ["*"]
+      github-actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
+    labels: ["dependencies"]
     commit-message:
-      prefix: "ci"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "github-actions"
+      prefix: "chore(ci)"
 
-  # Enable version updates for npm (for MCPB CLI)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Europe/Vienna"
     open-pull-requests-limit: 3
-    reviewers:
-      - "${{ github.repository_owner }}"
-    assignees:
-      - "${{ github.repository_owner }}"
+    groups:
+      npm-updates:
+        applies-to: version-updates
+        patterns: ["*"]
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
+    labels: ["dependencies"]
     commit-message:
-      prefix: "deps"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "npm"
+      prefix: "chore(deps)"
