@@ -61,12 +61,13 @@ serve:
     uv run uvicorn rtorrent_mcp.server:app --host 127.0.0.1 --port 10910
 
 # Local five-gate CI: ruff + format-check + pytest + tsc + biome + pyright
-# (format scoped to code dirs: ruff also rewrites md code fences repo-wide)
+# (format scoped to code dirs: ruff also rewrites md code fences repo-wide;
+# pyright runs via python -m: the console script is absent in this env)
 ci:
     uv run ruff check src/ tests/ run_server.py scripts/ tools/
     uv run ruff format src/ tests/ --check
     uv run pytest tests/ -q
-    uv run pyright src/
+    $env:PYRIGHT_PYTHON_FORCE_VERSION='latest'; uv run python -m pyright src/
     Set-Location '{{justfile_directory()}}\web_sota'; npx tsc --noEmit; npx @biomejs/biome ci src
 
 # Playwright e2e (needs backend on :10910 + frontend dev)
