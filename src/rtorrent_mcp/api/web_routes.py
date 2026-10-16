@@ -23,7 +23,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from rtorrent_mcp.config.settings import settings
-from rtorrent_mcp.services.rtorrent_client import get_rtorrent_client
+from rtorrent_mcp.services.torrent_backend import get_torrent_client
 
 logger = logging.getLogger(__name__)
 
@@ -281,25 +281,18 @@ def register_web_api(server: Any, *, app_version: str) -> None:
         if not _check_auth(request):
             return _auth_error()
         try:
-            c = await get_rtorrent_client()
+            c = await get_torrent_client()
             ok = await c.connect()
-            return JSONResponse(
-                {
-                    "connected": ok,
-                    "host": settings.RTORRENT_HOST,
-                    "port": settings.RTORRENT_PORT,
-                    "rpc_path": "/RPC2",
-                }
-            )
+            info = c.describe()
+            info["connected"] = ok
+            return JSONResponse(info)
         except Exception:
             logger.exception("rtorrent status check")
             return JSONResponse(
                 {
                     "connected": False,
-                    "host": settings.RTORRENT_HOST,
-                    "port": settings.RTORRENT_PORT,
-                    "error": "Failed to connect to rTorrent",
-                    "error_code": "RTORRENT_UNREACHABLE",
+                    "error": "Failed to connect to torrent backend",
+                    "error_code": "BACKEND_UNREACHABLE",
                 },
                 status_code=503,
             )
@@ -309,7 +302,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
         if not _check_auth(request):
             return _auth_error()
         try:
-            c = await get_rtorrent_client()
+            c = await get_torrent_client()
             if not await c.connect():
                 return JSONResponse(
                     {
@@ -353,7 +346,7 @@ def register_web_api(server: Any, *, app_version: str) -> None:
             )
         category = str(body.get("category") or "anime")
         try:
-            c = await get_rtorrent_client()
+            c = await get_torrent_client()
             result = await c.add_torrent(magnet, category=category)
             ok = result.get("status") == "success"
             _activity_log.info("torrent", f"add [{category}] {'OK' if ok else 'FAILED'}: {magnet[:40]}...")

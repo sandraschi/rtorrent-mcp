@@ -228,6 +228,30 @@ class QBittorrentClient:
             logger.error("Error enforcing no-seed: %s", e)
             return {"status": "error", "message": str(e)}
 
+    def describe(self) -> dict[str, Any]:
+        """Connection info for status callers (no secrets)."""
+        return {
+            "backend": "qbittorrent",
+            "base_url": self.base_url,
+            "auth": "api-key" if self.api_key else ("login" if self.username else "none"),
+        }
+
+    async def get_torrent_category(self, torrent_hash: str) -> str:
+        """Routing category from the torrent's qBittorrent category."""
+        try:
+            for t in await self.get_torrents():
+                if t.get("hash") == torrent_hash:
+                    return str(t.get("category") or "")
+            return ""
+        except Exception as e:
+            logger.error("Error getting category for %s: %s", torrent_hash, e)
+            return ""
+
+    async def erase_torrent(self, torrent_hash: str) -> dict[str, Any]:
+        """Delete the entry AND its original data (files were already
+        moved/linked to ingestion by post-processing)."""
+        return await self.delete_torrent(torrent_hash, delete_files=True)
+
     async def app_version(self) -> str:
         """WebUI app version (capability probe, e.g. 'v5.1.4')."""
         r = await self._req("GET", "/api/v2/app/version")

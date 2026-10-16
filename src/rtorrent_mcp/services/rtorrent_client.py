@@ -214,6 +214,35 @@ class RTorrentClient:
             "detail": "stop-on-complete in config/rtorrent.rc + DELETE_TORRENT_AFTER_COMPLETE",
         }
 
+    def describe(self) -> dict[str, Any]:
+        """Connection info for status callers (no secrets)."""
+        return {"backend": "rtorrent", "host": self.host, "port": self.port}
+
+    async def get_torrent_category(self, torrent_hash: str) -> str:
+        """Routing category from the custom1 field (set at add time)."""
+        if not self.connected:
+            await self.connect()
+        try:
+            loop = asyncio.get_running_loop()
+            category = await loop.run_in_executor(None, self.server.d.custom1.get, torrent_hash)
+            return str(category or "")
+        except Exception as e:
+            logger.error(f"Error getting category for {torrent_hash}: {e}")
+            return ""
+
+    async def erase_torrent(self, torrent_hash: str) -> dict[str, Any]:
+        """Close + erase: remove the entry and its original data (files were
+        already moved/linked to ingestion by post-processing)."""
+        if not self.connected:
+            await self.connect()
+        try:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, self.server.d.close, torrent_hash)
+            await loop.run_in_executor(None, self.server.d.erase, torrent_hash)
+            return {"status": "success", "hash": torrent_hash}
+        except Exception as e:
+            return {"status": "error", "hash": torrent_hash, "message": str(e)}
+
 
 # Global client instance
 _rt_client = None

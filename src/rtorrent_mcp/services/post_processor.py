@@ -11,7 +11,7 @@ from typing import Any
 
 from .filename_normalizer import FilenameNormalizer
 from .media_integrator import MediaIntegrator
-from .rtorrent_client import RTorrentClient, get_rtorrent_client
+from .torrent_backend import TorrentBackend, get_torrent_client
 
 _HAS_MEDIA_INTEGRATOR = True
 
@@ -36,7 +36,7 @@ class PostProcessor:
         self.config = config
         self.processed_hashes: set[str] = set()
         self._processed_lock = asyncio.Lock()
-        self.client: RTorrentClient | None = None
+        self.client: TorrentBackend | None = None
         self.running = False
         self._media_integrator: MediaIntegrator | None = (
             MediaIntegrator(config)
@@ -59,8 +59,8 @@ class PostProcessor:
             return torrent_hash in self.processed_hashes
 
     async def initialize(self):
-        """Initialize rTorrent client"""
-        self.client = await get_rtorrent_client()
+        """Initialize the configured torrent backend client"""
+        self.client = await get_torrent_client()
 
     async def check_completed_downloads(self) -> list[dict[str, Any]]:
         """Check for completed downloads by polling rTorrent
@@ -148,8 +148,7 @@ class PostProcessor:
             return []
 
         try:
-            loop = asyncio.get_running_loop()
-            base_path = await loop.run_in_executor(None, client.server.d.get_base_path, torrent_hash)
+            base_path = await client.get_torrent_base_path(torrent_hash)
 
             if not base_path:
                 return []
@@ -212,11 +211,10 @@ class PostProcessor:
         if not torrent_hash:
             return {"status": "error", "message": "No torrent hash"}
 
-        # Get category from torrent custom field
+        # Get category from the backend (rTorrent custom1 / qBittorrent category)
         try:
             if self.client:
-                loop = asyncio.get_running_loop()
-                category = await loop.run_in_executor(None, self.client.server.d.custom1.get, torrent_hash) or "anime"
+                category = await self.client.get_torrent_category(torrent_hash) or "anime"
             else:
                 category = "anime"
         except Exception:
@@ -333,20 +331,16 @@ class PostProcessor:
         return result
 
     async def _delete_torrent(self, torrent_hash: str) -> dict[str, Any]:
-        """Delete torrent from rTorrent (files already moved to ingestion)."""
+        """Delete torrent via the backend (files already moved to ingestion)."""
         client = self.client
         if client is None:
             await self.initialize()
             client = self.client
         if client is None:
-            return {"status": "error", "hash": torrent_hash, "message": "rTorrent client unavailable"}
+            return {"status": "error", "hash": torrent_hash, "message": "Torrent client unavailable"}
 
         try:
-            loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, client.server.d.close, torrent_hash)
-            await loop.run_in_executor(None, client.server.d.erase, torrent_hash)
-
-            return {"status": "success", "hash": torrent_hash}
+            return await client.erase_torrent(torrent_hash)
         except Exception as e:
             return {"status": "error", "hash": torrent_hash, "message": str(e)}
 

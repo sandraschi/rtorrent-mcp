@@ -12,7 +12,7 @@ from typing import Any, Literal
 from fastmcp import FastMCP
 
 from ...services.post_processor import PostProcessor
-from ...services.rtorrent_client import get_rtorrent_client
+from ...services.torrent_backend import get_torrent_client
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +158,7 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
                 }
 
             logger.info(f"Executing torrent management action: {action}")
-            client = await get_rtorrent_client()
+            client = await get_torrent_client()
 
             if action == "add":
                 if not magnet_link:
@@ -244,16 +244,12 @@ def register_torrent_management_tool(mcp: FastMCP, settings) -> None:
             if action == "status":
                 if not client.connected:
                     await client.connect()
-                return {
-                    "success": True,
-                    "action": action,
-                    "data": {
-                        "connected": client.connected,
-                        "host": client.host,
-                        "port": client.port,
-                        "message": "Connected to rTorrent" if client.connected else "Not connected",
-                    },
-                }
+                info = client.describe()
+                info["connected"] = client.connected
+                info["message"] = (
+                    f"Connected to {info.get('backend')}" if client.connected else "Not connected"
+                )
+                return {"success": True, "action": action, "data": info}
 
             if action == "info":
                 if not torrent_hash:
