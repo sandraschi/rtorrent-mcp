@@ -114,3 +114,19 @@ documented, not apologized for).
    **Answered: no. qBittorrent runs as a native Windows exe; a compose
    variant would add Docker awkwardness back for zero benefit. P2 covers
    native only.**
+
+## 8. P2 live proof (2026-10-16, maintainer's v5.1.4 @ 127.0.0.1:18080)
+
+Proven end to end with a Debian 13.7.0 netinst torrent (lawful, ~700 MB):
+
+- `enforce_no_seed()`: global `max_seeding_time` 3 → 1 min, read-back verified.
+- Upload-add of `.torrent` bytes → hash found → completed in 30 s.
+- Post-complete state went `stalledUP` → `stoppedUP` **60 s after
+  completion** — the 1-minute cap firing exactly on schedule. No-seed lag: 60 s.
+- `delete_torrent(delete_files=True)` → client empty again.
+
+Two findings baked in: (a) qBittorrent URL-adds fail on picky hosts
+(archive.org 401s its fetcher while browsers pass) — `.torrent` file
+upload is the robust path, and `add_torrent` callers should prefer it;
+(b) in-download piece uploads are protocol, not policy — the caps govern
+only the post-completion tail, exactly as documented.
