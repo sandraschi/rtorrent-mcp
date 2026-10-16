@@ -15,7 +15,18 @@ household downloaders. The built-in `legal_management` tool's risk model
 assumes this context. "Tolerated in practice" is not "lawful" — it is
 forbearance, and forbearance can change.
 
-## Germany
+**The German Abmahnung machine never crossed the border.** No
+mass-Abmahnung industry ever developed in Austria, for structural reasons:
+Austrian ISPs face strict hurdles on disclosing subscriber data, without
+which the mass-letter business model (pennies per letter, profit on the
+settlement rate) cannot function. Sporadic individual cases exist — a
+€2,000 letter via provider disclosure made the press in 2020 — but they
+are anecdotes, not an industry. An Austrian Plexer is, practically
+speaking, home free: the enforcement apparatus that makes German
+torrenting a contact sport simply does not exist here. That holds unless
+the law changes massively (EU-wide disclosure rules or a domestic
+enforcement shift would be the tripwires to watch — this is what the
+TorrentFreak feed in [safety](SAFETY_TORRENTING.md) §0 is for).
 
 ## Germany
 
@@ -29,6 +40,21 @@ included). The mechanism is unchanged: swarm monitoring → court-ordered ISP
 disclosure → letter to the account holder. Even short seeding counts.
 Operating a client for infringing content in Germany without serious
 precautions remains the highest-risk ordinary-user scenario in Europe.
+
+**Settlement dynamics (specifically German).** The €850–2,500 figure is an
+opening bid, not a price. The industry runs on settlement rate: mass
+letters at low marginal cost, a fraction of recipients paying a few
+hundred euros to make it go away, funding the next wave. Litigating a
+single download to judgment would not pencil out — which is precisely why
+almost nobody should pay the headline figure, sign the attached
+Unterlassungserklärung unmodified (it sets up contract penalties for any
+repeat), or respond at all before a lawyer looks at the letter. Standard
+German defense practice: ignore the deadline panic, have counsel file a
+modified declaration (modifizierte Unterlassungserklärung), negotiate the
+sum down to a fraction. None of this is legal advice — it is a description
+of how the machine observably works. And note what this implies in
+reverse: the machine needs its 5–10% payers. It gets them, every year,
+which is why the letters are still being mailed in 2026.
 
 ## USA
 
