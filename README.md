@@ -7,6 +7,15 @@
   <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.4-7c5cfc?style=flat-square" alt="FastMCP"></a>
 </p>
 
+> # ⛔ Not for piracy.
+> **This software does not help with copyright infringement — no infringing
+> sources, no sourcing help, no configuration for infringing purposes.**
+> BitTorrent is neutral infrastructure with real lawful uses; this repo is
+> for those. Read first: [Legal notice](docs/LEGAL_NOTICE.md) ·
+> [Lawful sourcing](docs/LEGAL_SOURCING.md) · [Safety](docs/SAFETY_TORRENTING.md) ·
+> [Country specifics](docs/LEGAL_COUNTRIES.md).
+> Sourcing questions in issues are respectfully declined and closed.
+
 Talk to Claude to add torrents, search anime/manga/movies/ebooks across half
 a dozen sites, and get finished downloads renamed and sorted into Plex or
 Jellyfin automatically.
@@ -69,12 +78,17 @@ That's it — no Python, git, or terminal required. Other install methods
 | [Extended Search Guide](docs/EXTENDED_SEARCH_GUIDE.md) | Full guide to manga, movies, ebooks, comics, metadata search |
 | [*arr Integration](docs/ARR_RTORRENT_SETUP.md) | Wiring rTorrent as a Radarr/Sonarr download client |
 | [Product Requirements](docs/PRD.md) | Background and product rationale |
+| [Legal notice](docs/LEGAL_NOTICE.md) | **Not-for-piracy stance, what this software is, issue policy** |
+| [Lawful sourcing](docs/LEGAL_SOURCING.md) | What you may lawfully put through a client |
+| [Torrenting safety](docs/SAFETY_TORRENTING.md) | Swarm visibility, VPN limits, malware, seeding liability |
+| [Country specifics](docs/LEGAL_COUNTRIES.md) | Austria, Germany, USA, UK, Japan enforcement |
 
 ### Austrian context
 
 This tool is built around the Austrian legal context, where personal
 downloading is generally tolerated, and includes AT-oriented risk hints on
-search results. Users in other jurisdictions should research local copyright
+search results. Full picture (beyond Austria): [Country specifics](docs/LEGAL_COUNTRIES.md).
+Users in other jurisdictions should research local copyright
 law — high-risk countries (e.g. Germany, Japan) warrant extra caution. This
 is not legal advice.
 

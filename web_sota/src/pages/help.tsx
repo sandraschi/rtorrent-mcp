@@ -1,4 +1,4 @@
-import { Book, Cable, Database, Info, Server } from "lucide-react";
+import { Book, Cable, Database, Info, Server, ShieldAlert } from "lucide-react";
 import { ShellHonestyBanner } from "@/components/layout/shell-honesty-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -6,6 +6,54 @@ export function Help() {
   return (
     <div className="space-y-6 max-w-4xl">
       <ShellHonestyBanner />
+      <Card
+        className="border-red-900/60 bg-red-950/30"
+        data-testid="legal-stance-banner"
+      >
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="h-5 w-5 text-red-400" />
+            <CardTitle className="text-white">Not for piracy</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-slate-400 space-y-2">
+          <p>
+            <strong className="text-slate-200">
+              This software does not help with copyright infringement.
+            </strong>{" "}
+            No infringing sources, no sourcing help, no configuration for
+            infringing purposes. BitTorrent is neutral infrastructure with real
+            lawful uses — this repo is for those.
+          </p>
+          <p>
+            Read first:{" "}
+            <code className="text-xs text-slate-300">docs/LEGAL_NOTICE.md</code>{" "}
+            (stance + issue policy) ·{" "}
+            <code className="text-xs text-slate-300">
+              docs/LEGAL_SOURCING.md
+            </code>{" "}
+            (lawful uses) ·{" "}
+            <code className="text-xs text-slate-300">
+              docs/SAFETY_TORRENTING.md
+            </code>{" "}
+            (swarm visibility, VPN limits, seeding liability) ·{" "}
+            <code className="text-xs text-slate-300">
+              docs/LEGAL_COUNTRIES.md
+            </code>{" "}
+            (Austria, Germany, USA, UK, Japan).
+          </p>
+          <p>
+            In-app risk help: the{" "}
+            <code className="text-xs text-slate-300">legal_management</code>{" "}
+            tool (<code className="text-xs text-slate-300">risk</code>,{" "}
+            <code className="text-xs text-slate-300">check</code>,{" "}
+            <code className="text-xs text-slate-300">advice</code>,{" "}
+            <code className="text-xs text-slate-300">status</code>) describes
+            download risk with Austrian context. It describes risk — it does not
+            grant permission.
+          </p>
+        </CardContent>
+      </Card>
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-white">
           Help — rTorrent &amp; BitTorrent
@@ -150,6 +198,27 @@ export function Help() {
             <li>
               <code className="text-xs text-slate-300">README.md</code> —
               install, MCP config, legal context (Austria).
+            </li>
+            <li>
+              <code className="text-xs text-slate-300">
+                docs/LEGAL_NOTICE.md
+              </code>{" "}
+              — not-for-piracy stance, lawful-use scope, sourcing-question issue
+              policy.
+            </li>
+            <li>
+              <code className="text-xs text-slate-300">
+                docs/LEGAL_SOURCING.md
+              </code>{" "}
+              ·{" "}
+              <code className="text-xs text-slate-300">
+                docs/SAFETY_TORRENTING.md
+              </code>{" "}
+              ·{" "}
+              <code className="text-xs text-slate-300">
+                docs/LEGAL_COUNTRIES.md
+              </code>{" "}
+              — lawful uses, safety, country specifics.
             </li>
           </ul>
         </CardContent>
