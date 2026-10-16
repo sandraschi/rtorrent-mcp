@@ -54,6 +54,50 @@ export function Help() {
           </p>
         </CardContent>
       </Card>
+      <Card
+        className="border-slate-800 bg-slate-950/50"
+        data-testid="noseed-mode-card"
+      >
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Info className="h-5 w-5 text-amber-500" />
+            <CardTitle className="text-white">No-seed mode (default)</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-slate-400 space-y-2">
+          <p>
+            This stack does not seed. Two settings enforce it: rTorrent stops
+            every torrent the instant it completes (
+            <code className="text-xs text-slate-300">
+              method.set_key =
+              event.download.finished,stop_completed,&quot;d.stop=&quot;
+            </code>{" "}
+            in{" "}
+            <code className="text-xs text-slate-300">config/rtorrent.rc</code>
+            ), and the post-processor removes the stopped torrent after handling
+            files (
+            <code className="text-xs text-slate-300">
+              DELETE_TORRENT_AFTER_COMPLETE=true
+            </code>
+            ). A finished download therefore never sits seeding while waiting
+            for processing.
+          </p>
+          <p>
+            Honest limit: piece-uploads <em>during</em> the download are
+            unavoidable — that is the protocol, not a setting. Small files
+            barely upload before finishing; multi-GB packs measurably do.
+            Details:{" "}
+            <code className="text-xs text-slate-300">
+              docs/POST_PROCESSING_SETUP.md
+            </code>{" "}
+            and{" "}
+            <code className="text-xs text-slate-300">
+              docs/SAFETY_TORRENTING.md
+            </code>{" "}
+            §3.
+          </p>
+        </CardContent>
+      </Card>
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-white">
           Help — rTorrent &amp; BitTorrent
