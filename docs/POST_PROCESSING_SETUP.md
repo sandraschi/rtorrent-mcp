@@ -72,6 +72,26 @@ When `DELETE_TORRENT_AFTER_COMPLETE=true`:
 - Uses `d.close()` then `d.erase()` - files already moved, so no sharing
 - This ensures no seeding/uploading of your downloads
 
+### Stop-on-complete (no-seed mode, rTorrent side)
+
+Removal happens after post-processing, which polls — a finished torrent
+would otherwise keep seeding during that window. `config/rtorrent.rc`
+therefore also stops every torrent the instant it completes:
+
+```
+method.set_key = event.download.finished,stop_completed,"d.stop="
+```
+
+The pair (stop at finish + delete after processing) means a completed
+download never sits in the seeding state. If you use one of the alternate
+`.rtorrent.rc` files instead of `config/rtorrent.rc`, add the same line
+there manually. To re-enable classic seeding, comment it out. Honest
+limit, stated plainly: nothing stops piece-uploads *during* the download
+(the protocol requires them) — this kills only the post-completion tail,
+which is where notice/Abmahnung exposure overwhelmingly comes from. Small
+anime episodes barely upload before finishing; multi-GB packs upload
+measurably; see [safety](SAFETY_TORRENTING.md).
+
 ### Filename Normalization
 
 When `NORMALIZE_FILENAMES=true`:
