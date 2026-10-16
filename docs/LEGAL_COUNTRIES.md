@@ -105,6 +105,21 @@ BREIN, which spends its budget on uploaders, site operators, and Usenet —
 not on household downloaders. No German-style letter industry. The 2016-era
 announcements about pursuing individual downloaders never became a machine.
 
+**BREIN deserves its own paragraph: more smoke than fire, but dogged.**
+Stichting BREIN files annual reports, wins ex parte court orders against
+uploaders, ground down the illegal Usenet scene over years, and corralled
+Dutch ISPs into a collective site-blocking covenant (2021). It announces
+individual-downloader campaigns periodically — notably the 2020 "seeders
+keep the exchange alive" push threatening to pursue heavy seeders — and
+then largely doesn't, because the economics don't work at Dutch scale the
+way they do in Germany. Take it seriously as an institution (it has ended
+services you may remember) and unseriously as a personal threat model —
+until that changes, which is exactly the kind of shift the TorrentFreak
+feed exists to catch.
+
+VPNs shift the visible swarm IP and defeat casual monitoring — full
+writeup, provider comparison, and limits in [VPN privacy](VPN_PRIVACY.md).
+
 **Switzerland — the famous exception, with a catch.** Private-use
 downloading (and streaming) is expressly lawful even from unlawful
 sources — reaffirmed as recently as September 2026 — but software and games

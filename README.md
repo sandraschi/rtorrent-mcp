@@ -81,7 +81,8 @@ That's it — no Python, git, or terminal required. Other install methods
 | [Legal notice](docs/LEGAL_NOTICE.md) | **Not-for-piracy stance, what this software is, issue policy** |
 | [Lawful sourcing](docs/LEGAL_SOURCING.md) | What you may lawfully put through a client |
 | [Torrenting safety](docs/SAFETY_TORRENTING.md) | Swarm visibility, VPN limits, malware, seeding liability |
-| [Country specifics](docs/LEGAL_COUNTRIES.md) | Austria, Germany, USA, UK, Japan enforcement |
+| [Country specifics](docs/LEGAL_COUNTRIES.md) | Austria, Germany, USA, UK, Japan enforcement (+ EMEA: FR/IT/NL/CH/ES) |
+| [VPN privacy](docs/VPN_PRIVACY.md) | Justified uses, dual use, criteria, named providers, what fails |
 
 ### Austrian context
 
