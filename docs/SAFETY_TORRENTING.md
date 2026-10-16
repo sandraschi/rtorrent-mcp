@@ -55,6 +55,15 @@ defaults *before* the first download: global ratio limits, per-torrent
 seeding caps, and scheduler behavior. "I only wanted to download" does not
 describe a client that uploaded 3 GB overnight.
 
+**Client equivalents of no-seed mode.** rTorrent side: the
+`event.download.finished,stop_completed` line in `config/rtorrent.rc`
+(shipped default) plus `DELETE_TORRENT_AFTER_COMPLETE` on the MCP side.
+qBittorrent side (for those dogfooding qBittorrent instead): Preferences →
+BitTorrent → seeding limits — set "seed torrents until their ratio
+reaches" to `0.00` (or "seed for 1 minute"), action "pause the torrent."
+Same honest limit applies everywhere: nothing prevents piece-uploads
+*during* the download; these settings kill only the post-completion tail.
+
 ## 4. Malware and fakes
 
 Executables from untrusted swarms are a classic infection vector; fake
