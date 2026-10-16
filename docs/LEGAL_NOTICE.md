@@ -24,7 +24,7 @@ tool and the docs describe risk; they do not grant permission.
 | Doc | Contents |
 |---|---|
 | [Lawful sourcing](LEGAL_SOURCING.md) | What you may lawfully put through a client: FOSS, public domain, CC works, your own files |
-| [Torrenting safety](SAFETY_TORRENTING.md) | Swarm visibility, VPN limits, malware, seeding liability, containerization |
+| [Torrenting safety](SAFETY_TORRENTING.md) | Swarm visibility, VPN limits, malware, seeding liability, containerization (+ TorrentFreak news feed) |
 | [Country specifics](LEGAL_COUNTRIES.md) | Austria, Germany, USA, UK, Japan — and why your jurisdiction is the only one that matters |
 | [BitTorrent guide (plex-mcp)](../../plex-mcp/docs/BITTORRENT_GUIDE.md) | Protocol explainer, rtorrent-mcp setup, the same issue policy from the Plex side |
 

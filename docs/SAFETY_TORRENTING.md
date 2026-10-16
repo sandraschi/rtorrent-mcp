@@ -5,6 +5,20 @@ you download — some apply *especially* to lawful users moving valuable data.
 
 > **Not legal advice.** General information for orientation only.
 
+## 0. Staying informed: TorrentFreak
+
+[TorrentFreak](https://torrentfreak.com/) (torrentfreak.com) is a news site
+covering file-sharing, copyright enforcement, VPNs, and platform policy —
+journalism, entirely lawful to read, running since 2005. Despite the name,
+it is not a torrent index and hosts no downloads. For collection builders
+it is the most useful metainfo feed in the space: indexer shutdowns and
+domain churn (so you stop trusting dead bookmarks), new enforcement laws
+and court rulings by country (which feed directly into
+[country specifics](LEGAL_COUNTRIES.md)), VPN provider ownership changes
+and logging scandals (which feed §2 below), and scam/malware waves riding
+on popular releases. Check it monthly, or whenever a familiar site stops
+resolving — the answer is usually reported there within days.
+
 ## 1. Swarm visibility: your IP is public
 
 Every peer in a swarm sees your IP address, and so does anyone passively
