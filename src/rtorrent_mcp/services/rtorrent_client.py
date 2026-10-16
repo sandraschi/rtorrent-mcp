@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 class RTorrentClient:
     """Async rTorrent XMLRPC client"""
 
+    backend_name = "rtorrent"
+
     def __init__(self, host: str = DEFAULT_RTORRENT_HOST, port: int = DEFAULT_RTORRENT_PORT):
         self.host = host
         self.port = port
@@ -201,6 +203,16 @@ class RTorrentClient:
         except Exception as e:
             logger.error(f"Error checking completion for {torrent_hash}: {e}")
             return False
+
+    async def enforce_no_seed(self) -> dict[str, Any]:
+        """rTorrent no-seed enforcement lives server-side (stop-on-complete
+        event in config/rtorrent.rc + DELETE_TORRENT_AFTER_COMPLETE). Nothing
+        to push at runtime; report the contract for status callers."""
+        return {
+            "status": "success",
+            "mode": "server-config",
+            "detail": "stop-on-complete in config/rtorrent.rc + DELETE_TORRENT_AFTER_COMPLETE",
+        }
 
 
 # Global client instance

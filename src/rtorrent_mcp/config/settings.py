@@ -30,6 +30,16 @@ class Settings(BaseSettings):
     RTORRENT_PORT: int = 12224  # XMLRPC through nginx (maps to container port 8000)
     RTORRENT_PATH: str = "/var/lib/rtorrent/session"
 
+    # Torrent backend selection: "rtorrent" (Docker, default) or "qbittorrent"
+    # (native exe via WebUI API). See docs/DUAL_BACKEND_SPEC.md.
+    TORRENT_BACKEND: str = "rtorrent"
+
+    # qBittorrent settings (WebUI API; used when TORRENT_BACKEND=qbittorrent)
+    QBITTORRENT_URL: str = "http://localhost:18080"  # WebUI base, no trailing /api
+    QBITTORRENT_API_KEY: str = ""  # Preferred (qBittorrent >= v5.2.0 only)
+    QBITTORRENT_USERNAME: str = ""  # Fallback: cookie session, lazy login
+    QBITTORRENT_PASSWORD: str = ""
+
     # Nyaa.si settings
     NYAA_BASE_URL: str = "https://nyaa.si"
     NYAA_ASW_USERNAME: str = "AkihitoSubsWeeklies"
