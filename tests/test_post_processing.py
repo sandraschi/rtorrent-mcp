@@ -165,8 +165,7 @@ class TestPostProcessingIntegration:
     """Integration tests for post-processing workflow"""
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.services.post_processor.RTorrentClient")
-    async def test_process_completed_torrent(self, mock_client_class):
+    async def test_process_completed_torrent(self):
         """Test processing a completed torrent"""
         import tempfile
         from pathlib import Path
@@ -182,9 +181,9 @@ class TestPostProcessingIntegration:
             test_file = download_dir / "[ASW] Test Anime.mkv"
             test_file.write_text("test content")
 
-            # Mock client
+            # Mock backend client (protocol seam, not rTorrent internals)
             mock_client = MagicMock()
-            mock_client.server.d.custom1.get.return_value = "anime"
+            mock_client.get_torrent_category = AsyncMock(return_value="anime")
             mock_client.get_torrent_base_path.return_value = str(download_dir)
             mock_client.get_torrent_directory.return_value = str(download_dir)
             mock_client.is_torrent_complete.return_value = True

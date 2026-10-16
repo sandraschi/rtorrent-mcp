@@ -133,7 +133,7 @@ class TestPostProcessorErrorHandling:
         processor = PostProcessor(config)
 
         # Should handle missing client gracefully
-        with patch("rtorrent_mcp.services.post_processor.get_rtorrent_client") as mock_get_client:
+        with patch("rtorrent_mcp.services.post_processor.get_torrent_client") as mock_get_client:
             mock_get_client.side_effect = Exception("Client unavailable")
             results = await processor.check_completed_downloads()
             assert isinstance(results, list)

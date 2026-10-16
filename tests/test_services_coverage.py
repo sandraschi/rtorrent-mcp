@@ -478,7 +478,7 @@ class TestPostProcessorCoverage:
 
         processor = PostProcessor(config)
         # Client not initialized, should initialize automatically
-        with patch("rtorrent_mcp.services.post_processor.get_rtorrent_client") as mock_get_client:
+        with patch("rtorrent_mcp.services.post_processor.get_torrent_client") as mock_get_client:
             mock_client = MagicMock()
             mock_client.get_torrents = AsyncMock(return_value=[])
             mock_get_client.return_value = mock_client

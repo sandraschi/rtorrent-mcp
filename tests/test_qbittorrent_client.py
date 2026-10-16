@@ -192,6 +192,24 @@ async def test_enforce_no_seed_posts_prefs():
     assert "max_seeding_time" in posted[0]
 
 
+@pytest.mark.asyncio
+async def test_describe_category_erase():
+    def handler(request):
+        if request.url.path.endswith("/login"):
+            return httpx.Response(200, text="Ok.")
+        if request.url.path.endswith("/torrents/delete"):
+            return httpx.Response(200, text="Ok.")
+        return ok_json(TORRENTS)
+
+    client, _ = make_client(handler)
+    info = client.describe()
+    assert info["backend"] == "qbittorrent" and "base_url" in info
+    assert await client.get_torrent_category("abc123") == "anime"
+    assert await client.get_torrent_category("nope") == ""
+    out = await client.erase_torrent("abc123")
+    assert out["status"] == "success"
+
+
 class FakeSettings:
     def __init__(self, **kw):
         defaults = {
@@ -226,3 +244,22 @@ def test_factory_qbittorrent():
 def test_factory_invalid_raises():
     with pytest.raises(ValueError, match="qbittorrent"):
         get_torrent_backend(FakeSettings(TORRENT_BACKEND="utorrent"))
+
+
+@pytest.mark.asyncio
+async def test_env_singleton_factory(monkeypatch):
+    from rtorrent_mcp.services import torrent_backend as tb
+
+    tb.reset_torrent_client()
+    monkeypatch.setenv("TORRENT_BACKEND", "qbittorrent")
+    backend = await tb.get_torrent_client()
+    assert backend.backend_name == "qbittorrent"
+    tb.reset_torrent_client()
+    monkeypatch.delenv("TORRENT_BACKEND")
+    backend = await tb.get_torrent_client()
+    assert backend.backend_name == "rtorrent"
+    tb.reset_torrent_client()
+    monkeypatch.setenv("TORRENT_BACKEND", "bogus")
+    with pytest.raises(ValueError, match="rtorrent, qbittorrent"):
+        await tb.get_torrent_client()
+    tb.reset_torrent_client()

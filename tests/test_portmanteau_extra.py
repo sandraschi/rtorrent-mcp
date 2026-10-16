@@ -29,7 +29,7 @@ async def _call(mcp, name, **kwargs):
 
 class TestTorrentManagementActions:
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_torrent_client")
     async def test_pause(self, mock_get):
         mock_client = MagicMock()
         mock_client.pause_torrent = AsyncMock(return_value={"status": "success", "hash": "h1", "action": "paused"})
@@ -39,7 +39,7 @@ class TestTorrentManagementActions:
         mock_client.pause_torrent.assert_awaited_once_with("h1")
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_torrent_client")
     async def test_resume(self, mock_get):
         mock_client = MagicMock()
         mock_client.resume_torrent = AsyncMock(return_value={"status": "success", "hash": "h1", "action": "resumed"})
@@ -48,7 +48,7 @@ class TestTorrentManagementActions:
         assert result.get("success") is True
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_torrent_client")
     async def test_delete(self, mock_get):
         mock_client = MagicMock()
         mock_client.delete_torrent = AsyncMock(return_value={"status": "success", "hash": "h1"})
@@ -58,7 +58,7 @@ class TestTorrentManagementActions:
         mock_client.delete_torrent.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_torrent_client")
     async def test_status(self, mock_get):
         mock_client = MagicMock()
         mock_client.connect = AsyncMock(return_value=True)
@@ -67,7 +67,7 @@ class TestTorrentManagementActions:
         assert result.get("success") is True
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_torrent_client")
     async def test_info(self, mock_get):
         mock_client = MagicMock()
         mock_client.get_torrents = AsyncMock(return_value=[{"hash": "h1", "name": "Test"}])

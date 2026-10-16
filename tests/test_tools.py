@@ -71,7 +71,7 @@ class TestTorrentManagementTool:
     """Test torrent_management portmanteau behavior."""
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_torrent_client")
     async def test_add_action_calls_client(self, mock_get_client):
         """The add action calls the rTorrent client."""
         mock_client = MagicMock()
@@ -89,7 +89,7 @@ class TestTorrentManagementTool:
         mock_client.add_torrent.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_rtorrent_client")
+    @patch("rtorrent_mcp.tools.portmanteau.torrent_management.get_torrent_client")
     async def test_list_action_returns_torrents(self, mock_get_client):
         """The list action returns torrents from the client."""
         mock_client = MagicMock()

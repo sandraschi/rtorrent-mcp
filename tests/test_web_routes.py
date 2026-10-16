@@ -183,17 +183,18 @@ class TestAIChat:
 
 class TestRTorrentRoutes:
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.api.web_routes.get_rtorrent_client")
+    @patch("rtorrent_mcp.api.web_routes.get_torrent_client")
     async def test_status_connected(self, mock_get, client):
         mock_client = MagicMock()
         mock_client.connect = AsyncMock(return_value=True)
+        mock_client.describe = MagicMock(return_value={"backend": "rtorrent"})
         mock_get.return_value = mock_client
         r = client.get("/api/rtorrent/status")
         assert r.status_code == 200
         assert r.json()["connected"] is True
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.api.web_routes.get_rtorrent_client")
+    @patch("rtorrent_mcp.api.web_routes.get_torrent_client")
     async def test_status_unreachable(self, mock_get, client):
         mock_client = MagicMock()
         mock_client.connect = AsyncMock(side_effect=Exception("down"))
@@ -203,7 +204,7 @@ class TestRTorrentRoutes:
         assert r.json()["connected"] is False
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.api.web_routes.get_rtorrent_client")
+    @patch("rtorrent_mcp.api.web_routes.get_torrent_client")
     async def test_torrents_list(self, mock_get, client):
         mock_client = MagicMock()
         mock_client.connect = AsyncMock(return_value=True)
@@ -216,7 +217,7 @@ class TestRTorrentRoutes:
         assert len(body["torrents"]) == 1
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.api.web_routes.get_rtorrent_client")
+    @patch("rtorrent_mcp.api.web_routes.get_torrent_client")
     async def test_torrents_unreachable(self, mock_get, client):
         mock_client = MagicMock()
         mock_client.connect = AsyncMock(return_value=False)
@@ -225,7 +226,7 @@ class TestRTorrentRoutes:
         assert r.status_code == 503
 
     @pytest.mark.asyncio
-    @patch("rtorrent_mcp.api.web_routes.get_rtorrent_client")
+    @patch("rtorrent_mcp.api.web_routes.get_torrent_client")
     async def test_magnet_success(self, mock_get, client):
         mock_client = MagicMock()
         mock_client.add_torrent = AsyncMock(return_value={"status": "success", "hash": "h1"})
