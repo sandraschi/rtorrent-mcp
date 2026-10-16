@@ -73,9 +73,54 @@ sporadic but the legal position is strict on paper.
 
 The strictest of the listed countries for downloaders: criminal penalties
 for knowing infringing downloads (up to 2 years imprisonment on paper),
-ISP cooperation, and active enforcement. **Do not torrent infringing
+ISP cooperation, and active enforcement — substantially motivated by
+protecting the domestic manga/anime industry. **Do not torrent infringing
 content in Japan.** Lawful uses (FOSS, public domain) are unaffected —
 the protocol is legal; the content rules are what bite.
+
+## EMEA: the rest that matters
+
+**France — the Hadopi machine just died (April 2026).** The graduated
+response (three-strikes warnings → fines up to €1,500) ran from 2010 until
+the Conseil d'État struck it down on 30 April 2026 over surveillance
+overreach. What remains: Arcom (the merged Hadopi/CSA regulator) pursuing
+intermediaries and site blocking instead of downloaders. France went, in
+one ruling, from Europe's most systematic downloader-chaser to a country
+with no functioning individual enforcement — verify it stays that way
+before relying on it.
+
+**Italy — enforcement aimed upward, not at you.** AGCOM's Piracy Shield
+(2024, expanded since) forces intermediaries to block flagged domains/IPs
+within 30 minutes — it targets ISPs, DNS resolvers, CDNs, and VPNs, not
+household downloaders. The headline case: a €14.2M fine against Cloudflare
+(January 2026, appealed) for refusing to play along, with collateral
+over-blocking of legitimate sites in the mix. No Italian mass-letter
+industry exists; individual risk is low, while the blocking itself makes
+familiar sites and resolvers intermittently unreachable from Italian IPs.
+
+**Netherlands — illegal on paper, uploaders in practice.** Downloading
+from unlawful sources has been illegal since April 2014 (CJEU ruling ended
+the old private-copying tolerance). But enforcement is civil and run by
+BREIN, which spends its budget on uploaders, site operators, and Usenet —
+not on household downloaders. No German-style letter industry. The 2016-era
+announcements about pursuing individual downloaders never became a machine.
+
+**Switzerland — the famous exception, with a catch.** Private-use
+downloading (and streaming) is expressly lawful even from unlawful
+sources — reaffirmed as recently as September 2026 — but software and games
+are excluded, and *uploading* (seeding) remains illegal. Since BitTorrent
+uploads while downloading, ordinary torrenting still exposes you on the
+upload side. Privacy protections around connection data are strong, which
+is why no enforcement machine developed — but the upload half of every
+torrent is unlawful there too.
+
+**Spain — decriminalized downloading, levy-compensated.** The 2015 reform
+keeps non-commercial personal downloading out of criminal law; enforcement
+runs against sites (blocking) and uploaders instead. A private-copying levy
+("canon digital," reintroduced 2017) compensates rights-holders the way
+Austria's does. Civil claims against downloaders are theoretically possible
+and practically unheard of. (Lower research confidence here than the four
+above — verify locally if Spain is where you sit.)
 
 ## The rule behind the table
 
