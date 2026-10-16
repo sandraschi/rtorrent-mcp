@@ -17,12 +17,18 @@ forbearance, and forbearance can change.
 
 ## Germany
 
-The Abmahnung industry: law firms systematically monitor swarms, identify
-account holders via court-ordered ISP disclosure, and send
-cease-and-desist-plus-fee letters (typically hundreds of euros per title).
-Even short seeding counts. Operating a client for infringing content in
-Germany without serious precautions is the highest-risk ordinary-user
-scenario in Europe.
+## Germany
+
+The Abmahnindustrie is **not** defunct — rumors of its death are stale.
+As of late 2026, Frommer Legal (formerly Waldorf Frommer, Munich) is still
+actively sending filesharing Abmahnungen, alongside firms like Nimrod and
+IPPC Law, with demands typically €850–2,500 per title (damages plus costs,
+capped by §97a UrhG). Recent developments: firms have diversified beyond
+classic P2P, and decade-old cases resurface as lawsuits (limitation games
+included). The mechanism is unchanged: swarm monitoring → court-ordered ISP
+disclosure → letter to the account holder. Even short seeding counts.
+Operating a client for infringing content in Germany without serious
+precautions remains the highest-risk ordinary-user scenario in Europe.
 
 ## USA
 

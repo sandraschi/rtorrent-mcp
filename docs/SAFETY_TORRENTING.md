@@ -19,6 +19,14 @@ and logging scandals (which feed §2 below), and scam/malware waves riding
 on popular releases. Check it monthly, or whenever a familiar site stops
 resolving — the answer is usually reported there within days.
 
+**How to read it.** Most "downloader arrested in [country]" stories are
+nothinburgers for anyone else: single cases with specific aggravating
+circumstances (commercial scale, prior warnings, unrelated charges) that
+don't change the risk picture. Read those as anecdotes. Read structural
+news — new laws, standing rulings, ISP disclosure precedents, a major firm
+opening a new front — as signal. One changes nothing for you; the other
+rewrites the table in [country specifics](LEGAL_COUNTRIES.md).
+
 ## 1. Swarm visibility: your IP is public
 
 Every peer in a swarm sees your IP address, and so does anyone passively
