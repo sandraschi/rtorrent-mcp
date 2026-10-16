@@ -22,17 +22,25 @@ Jellyfin automatically.
 
 ## What this wraps
 
-rtorrent-mcp drives **rTorrent**, a lightweight BitTorrent client, over its
-XML-RPC/SCGI interface — it does not scrape a generic download site and it is
-not a qBittorrent client. rTorrent itself is not bundled; the easiest way to
-get one running is the included Docker Compose stack (see
-[Quick Install](#quick-install) below). Full setup, plugins, and
-troubleshooting: [docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md).
+rtorrent-mcp drives a torrent client over its automation interface — it
+does not scrape a generic download site. Two backends, one tool surface
+(`TORRENT_BACKEND`, default `rtorrent`):
+
+- **rTorrent** over XML-RPC/SCGI (not bundled; easiest via the included
+  Docker Compose stack — see [Quick Install](#quick-install) below).
+- **qBittorrent** over its WebUI API v2 (native exe, no Docker needed).
+  Set `TORRENT_BACKEND=qbittorrent` plus `QBITTORRENT_URL` (and
+  `QBITTORRENT_API_KEY` on ≥ v5.2.0, else username/password).
+
+Full rTorrent setup, plugins, and troubleshooting:
+[docs/RTORRENT_SETUP.md](docs/RTORRENT_SETUP.md). Backend design, client
+coverage, and no-seed proof gates: [docs/DUAL_BACKEND_SPEC.md](docs/DUAL_BACKEND_SPEC.md).
 
 ## What You Can Do
 
-**How it runs**: talks to your rTorrent instance (Docker recommended) over
-XML-RPC; ships a small companion web dashboard (`web_sota/`) as a lightweight
+**How it runs**: talks to your torrent backend (rTorrent over XML-RPC,
+Docker recommended; or native qBittorrent over its WebUI API) plus a small
+companion web dashboard (`web_sota/`) as a lightweight
 alternative to the full ruTorrent WebUI bundled in the same Docker image.
 
 | Direction | Artifacts | Notes |

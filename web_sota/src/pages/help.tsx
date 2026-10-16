@@ -105,12 +105,48 @@ export function Help() {
         <p className="text-slate-400 mt-1">
           Repository <strong className="text-slate-200">rtorrent-mcp</strong>{" "}
           (Python import{" "}
-          <code className="text-xs text-slate-300">rtorrent_mcp</code>). The old
-          name <code className="text-xs text-slate-500">rtorrent-mcp</code> -
-          qBittorrent prototype is{" "}
-          <strong className="text-amber-200/90">historic only</strong>.
+          <code className="text-xs text-slate-300">rtorrent_mcp</code>). Dual
+          backend since v3.1:{" "}
+          <code className="text-xs text-slate-300">
+            TORRENT_BACKEND=rtorrent
+          </code>{" "}
+          (Docker, default) or{" "}
+          <code className="text-xs text-slate-300">qbittorrent</code> (native
+          exe via WebUI API — the old prototype is back, properly this time).
         </p>
       </div>
+
+      <Card
+        className="border-slate-800 bg-slate-950/50"
+        data-testid="backend-card"
+      >
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Server className="h-5 w-5 text-emerald-500" />
+            <CardTitle className="text-white">Torrent backend</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm text-slate-400 space-y-2">
+          <p>
+            One tool surface, two clients.{" "}
+            <strong className="text-slate-200">rTorrent</strong> (XML-RPC
+            through the Docker stack) is the default;{" "}
+            <strong className="text-slate-200">qBittorrent</strong> (native
+            WebUI API v2, cookie session with re-login, API-key ready for ≥
+            v5.2.0) is selected with{" "}
+            <code className="text-xs text-slate-300">
+              TORRENT_BACKEND=qbittorrent
+            </code>{" "}
+            plus <code className="text-xs text-slate-300">QBITTORRENT_URL</code>{" "}
+            and credentials. Post-processing, Plex handoff, and no-seed
+            enforcement work identically above either backend. Details:{" "}
+            <code className="text-xs text-slate-300">
+              docs/DUAL_BACKEND_SPEC.md
+            </code>
+            .
+          </p>
+        </CardContent>
+      </Card>
 
       <Card className="border-slate-800 bg-slate-950/50">
         <CardHeader>

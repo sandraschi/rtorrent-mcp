@@ -94,7 +94,9 @@ RTORRENT_SAMPLING_MODEL=llama3.2
 
 ## Notes
 
-- **History**: Started as a qBittorrent prototype (`qbtmcp`); pivoted to rTorrent (see CHANGELOG).
+- **History**: Started as a qBittorrent prototype (`qbtmcp`); pivoted to rTorrent (see CHANGELOG);
+  returned full-circle with dual-backend (`TORRENT_BACKEND=rtorrent|qbittorrent`, see `docs/DUAL_BACKEND_SPEC.md`).
+  Tools program against `services/torrent_backend.py`, never raw XML-RPC/WebUI.
   For new clones: `git clone https://github.com/sandraschi/rtorrent-mcp.git`.
 - **Sampling**: Defaults to Ollama on localhost (`llama3.2`). Set
   `RTORRENT_SAMPLING_USE_CLIENT_LLM=1` to prefer the MCP host's LLM.
