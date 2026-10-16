@@ -102,6 +102,15 @@ documented, not apologized for).
 ## 7. Open questions for the maintainer (answer before P0)
 
 1. qBittorrent version + WebUI credentials on your machine (API key
-   available, or user/pass)?
-2. Default backend stays `rtorrent`? (Recommended: yes.)
-3. Docker Compose qBittorrent variant wanted in P2, or later?
+   available, or user/pass)? — **Answered 2026-10-16: v5.1.4 native exe
+   (`C:\Program Files\qBittorrent\qbittorrent.exe`), not currently running.
+   v5.1.x predates API-key auth (needs ≥ v5.2.0) → P0 implements cookie
+   session with lazy login + re-auth on 403; API-key path added when the
+   maintainer upgrades past 5.2. Still needed before P0 live tests: WebUI
+   port (default 8080?) + credentials in local `.env` (never in chat).
+2. Default backend stays `rtorrent`? (Recommended: yes.) — **Answered:
+   yes, stays for now.**
+3. Docker Compose qBittorrent variant wanted in P2, or later? —
+   **Answered: no. qBittorrent runs as a native Windows exe; a compose
+   variant would add Docker awkwardness back for zero benefit. P2 covers
+   native only.**
