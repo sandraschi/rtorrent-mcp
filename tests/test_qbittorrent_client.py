@@ -210,6 +210,58 @@ async def test_describe_category_erase():
     assert out["status"] == "success"
 
 
+@pytest.mark.asyncio
+async def test_search_and_rss():
+    def handler(request):
+        path = request.url.path
+        if path.endswith("/login"):
+            return httpx.Response(200, text="Ok.")
+        if path.endswith("/search/start"):
+            return ok_json({"id": 7})
+        if path.endswith("/search/status"):
+            return ok_json([{"id": 7, "status": "Stopped", "total": 2}])
+        if path.endswith("/search/results"):
+            return ok_json(
+                {
+                    "status": "Stopped",
+                    "total": 2,
+                    "results": [
+                        {
+                            "fileName": "Show S01E01",
+                            "fileSize": 400,
+                            "nb_seeders": 10,
+                            "nb_leechers": 1,
+                            "siteUrl": "http://x",
+                            "descrLink": "http://x/d",
+                            "engineName": "eng",
+                        }
+                    ],
+                }
+            )
+        if path.endswith("/search/plugins"):
+            return ok_json([{"name": "eng", "enabled": True}])
+        if path.endswith("/rss/items"):
+            return ok_json({"feed1": {"articles": []}})
+        if path.endswith("/rss/rules"):
+            return ok_json({"rule1": {"enabled": True}})
+        return httpx.Response(200, text="Ok.")
+
+    client, calls = make_client(handler)
+    assert await client.search_start("query") == 7
+    status = await client.search_status(7)
+    assert status == {"status": "Stopped", "total": 2}
+    page = await client.search_results(7)
+    assert page["results"][0]["title"] == "Show S01E01"
+    assert page["results"][0]["seeders"] == 10
+    await client.search_stop(7)
+    await client.search_delete(7)
+    assert await client.search_plugins() == [{"name": "eng", "enabled": True}]
+    assert await client.rss_items() == {"feed1": {"articles": []}}
+    assert await client.rss_rules() == {"rule1": {"enabled": True}}
+    paths = [p for _, p in calls]
+    assert "/api/v2/search/stop" in paths and "/api/v2/search/delete" in paths
+
+
 class FakeSettings:
     def __init__(self, **kw):
         defaults = {

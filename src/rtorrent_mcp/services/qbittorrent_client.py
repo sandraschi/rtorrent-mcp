@@ -256,3 +256,85 @@ class QBittorrentClient:
         """WebUI app version (capability probe, e.g. 'v5.1.4')."""
         r = await self._req("GET", "/api/v2/app/version")
         return r.text.strip()
+
+    # --- Search plugins (dormant until plugins are installed) ---
+
+    async def search_start(self, pattern: str, category: str = "all") -> int:
+        """Start a search job; returns the job id. Raises on failure."""
+        r = await self._req(
+            "POST",
+            "/api/v2/search/start",
+            data={"pattern": pattern, "category": category, "plugins": "enabled"},
+        )
+        return int(r.json().get("id", -1))
+
+    async def search_status(self, job_id: int) -> dict[str, Any]:
+        """Status rows for a job (or all jobs when known)."""
+        r = await self._req("GET", "/api/v2/search/status", params={"id": job_id})
+        rows = r.json()
+        if isinstance(rows, list):
+            for row in rows:
+                if isinstance(row, dict) and int(row.get("id", -1)) == job_id:
+                    return {"status": row.get("status"), "total": int(row.get("total", 0))}
+        return {"status": "Unknown", "total": 0}
+
+    async def search_results(self, job_id: int, offset: int = 0) -> dict[str, Any]:
+        """Fetch one result page; normalized to title/size/seeders/leechers."""
+        r = await self._req("GET", "/api/v2/search/results", params={"id": job_id, "offset": offset})
+        data = r.json()
+        items = []
+        for e in data.get("results", []) or []:
+            items.append(
+                {
+                    "title": e.get("fileName") or "",
+                    "size_bytes": int(e.get("fileSize") or 0),
+                    "seeders": int(e.get("nb_seeders") or 0),
+                    "leechers": int(e.get("nb_leechers") or 0),
+                    "site_url": e.get("siteUrl") or "",
+                    "desc_link": e.get("descrLink") or "",
+                    "engine": e.get("engineName") or e.get("engine") or "",
+                }
+            )
+        return {"status": data.get("status"), "total": int(data.get("total", 0)), "results": items}
+
+    async def search_stop(self, job_id: int) -> None:
+        try:
+            await self._req("POST", "/api/v2/search/stop", data={"id": job_id})
+        except Exception as e:
+            logger.debug("search stop failed (non-fatal): %s", e)
+
+    async def search_delete(self, job_id: int) -> None:
+        try:
+            await self._req("POST", "/api/v2/search/delete", data={"id": job_id})
+        except Exception as e:
+            logger.debug("search delete failed (non-fatal): %s", e)
+
+    async def search_plugins(self) -> list[dict[str, Any]]:
+        """Installed search plugins (empty until the user adds some)."""
+        try:
+            r = await self._req("GET", "/api/v2/search/plugins")
+            data = r.json()
+            return data if isinstance(data, list) else []
+        except Exception as e:
+            logger.error("Error listing search plugins: %s", e)
+            return []
+
+    # --- RSS (dormant until feeds/rules are configured) ---
+
+    async def rss_items(self) -> dict[str, Any]:
+        try:
+            r = await self._req("GET", "/api/v2/rss/items")
+            data = r.json()
+            return data if isinstance(data, dict) else {}
+        except Exception as e:
+            logger.error("Error listing RSS items: %s", e)
+            return {}
+
+    async def rss_rules(self) -> dict[str, Any]:
+        try:
+            r = await self._req("GET", "/api/v2/rss/rules")
+            data = r.json()
+            return data if isinstance(data, dict) else {}
+        except Exception as e:
+            logger.error("Error listing RSS rules: %s", e)
+            return {}

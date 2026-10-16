@@ -130,3 +130,21 @@ Two findings baked in: (a) qBittorrent URL-adds fail on picky hosts
 upload is the robust path, and `add_torrent` callers should prefer it;
 (b) in-download piece uploads are protocol, not policy — the caps govern
 only the post-completion tail, exactly as documented.
+
+## 9. P3 search + RSS (2026-10-16, implemented)
+
+`search_start/status/results/stop/delete`, `search_plugins`, `rss_items`,
+`rss_rules` on the client; `qbittorrent_search`,
+`qbittorrent_search_plugins`, `qbittorrent_rss_items`,
+`qbittorrent_rss_rules` actions on `search_management` (start → poll ≤60 s
+→ fetch → stop+delete cleanup, sorted by seeders). Requires
+`TORRENT_BACKEND=qbittorrent`; anything else gets an explicit switch-backend
+error, not a traceback.
+
+Live-verified on the maintainer's plugin-less instance: empty surfaces
+return clean empties (`[]`/`{}`), `search_start` creates a real job id that
+runs with 0 results and cleans up — no crash, nothing installed, nothing
+changed. No plugins were installed for testing (not our call to make).
+Usenet/BREIN-specific tooling: BREIN is covered in
+docs/LEGAL_COUNTRIES.md; no Usenet surface exists in this repo, so there
+was nothing to wire. Compose variant: ruled out in §7, stays out.

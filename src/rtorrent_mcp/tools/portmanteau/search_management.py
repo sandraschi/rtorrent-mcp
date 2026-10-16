@@ -6,6 +6,7 @@ Consolidates all search operations into a single tool with action-based interfac
 Supports anime, manga, movies, TV shows, ebooks, comics, and metadata searches.
 """
 
+import asyncio
 import logging
 from typing import Any, Literal
 
@@ -38,6 +39,10 @@ SEARCH_ACTIONS = {
     "imdb": "Get IMDb metadata for movie/TV show",
     "imdb_search": "Search IMDb for multiple title matches",
     "tvdb": "Get TVDB metadata for TV show (requires subscription)",
+    "qbittorrent_search": "Search via qBittorrent plugins (needs TORRENT_BACKEND=qbittorrent + plugins)",
+    "qbittorrent_search_plugins": "List installed qBittorrent search plugins",
+    "qbittorrent_rss_items": "List qBittorrent RSS feeds/items",
+    "qbittorrent_rss_rules": "List qBittorrent RSS auto-download rules",
 }
 
 
@@ -61,6 +66,10 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
             "imdb",
             "imdb_search",
             "tvdb",
+            "qbittorrent_search",
+            "qbittorrent_search_plugins",
+            "qbittorrent_rss_items",
+            "qbittorrent_rss_rules",
         ],
         query: str | None = None,
         resolution: str = "720p",
@@ -71,6 +80,7 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
         content_type: str = "books",
         max_results: int = 20,
         limit: int = 20,
+        qb_category: str = "all",
         book_url: str | None = None,
         title: str | None = None,
         year: int | None = None,
@@ -109,6 +119,10 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                 - "imdb": Get IMDb metadata (requires: title, optional: year, imdb_id)
                 - "imdb_search": Search IMDb (requires: title, optional: year)
                 - "tvdb": Get TVDB metadata (requires: title, optional: year, tvdb_id)
+                - "qbittorrent_search": Search via qBittorrent plugins (requires: query, optional: qb_category, max_results; needs TORRENT_BACKEND=qbittorrent)
+                - "qbittorrent_search_plugins": List installed qBittorrent search plugins
+                - "qbittorrent_rss_items": List qBittorrent RSS feeds/items
+                - "qbittorrent_rss_rules": List qBittorrent RSS auto-download rules
 
             query (str | None): Search query for torrent searches.
                 Required for: anime, manga, japanese_tv, movies, ebooks_annas, ebooks_pb, comics
@@ -156,6 +170,9 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                 Optional for: imdb, imdb_search, tvdb (uses env vars if not provided)
 
             pin (str | None): TVDB PIN. Optional for: tvdb
+
+            qb_category (str): qBittorrent search category. Used by: qbittorrent_search.
+                Default: "all". Valid: "all", "movies", "tv", "music", "games", "software"
 
         Returns:
             dict[str, Any]: Dictionary containing:
@@ -377,6 +394,62 @@ def register_search_management_tool(mcp: FastMCP, settings) -> None:
                 tvdb_pin = pin or getattr(settings, "TVDB_PIN", None)
                 result = await get_tvdb_metadata(title, year, tvdb_id, tvdb_key, tvdb_pin)
                 return {"success": True, "action": action, "data": result}
+
+            # qBittorrent search + RSS (needs TORRENT_BACKEND=qbittorrent;
+            # search plugins / feeds are dormant until configured in qBittorrent)
+            if action in (
+                "qbittorrent_search",
+                "qbittorrent_search_plugins",
+                "qbittorrent_rss_items",
+                "qbittorrent_rss_rules",
+            ):
+                from ...services.torrent_backend import get_torrent_client
+
+                client = await get_torrent_client()
+                if getattr(client, "backend_name", "") != "qbittorrent":
+                    return {
+                        "success": False,
+                        "action": action,
+                        "error": "qBittorrent backend not active (TORRENT_BACKEND=qbittorrent required)",
+                    }
+                if action == "qbittorrent_search_plugins":
+                    plugins = await client.search_plugins()
+                    return {"success": True, "action": action, "data": plugins, "count": len(plugins)}
+                if action == "qbittorrent_rss_items":
+                    items = await client.rss_items()
+                    return {"success": True, "action": action, "data": items, "count": len(items)}
+                if action == "qbittorrent_rss_rules":
+                    rules = await client.rss_rules()
+                    return {"success": True, "action": action, "data": rules, "count": len(rules)}
+                # qbittorrent_search: start, poll up to ~60s, fetch, cleanup
+                if not query:
+                    return {
+                        "success": False,
+                        "action": action,
+                        "error": "query is required for 'qbittorrent_search' action",
+                    }
+                try:
+                    job_id = await client.search_start(query, category=qb_category)
+                except Exception as e:
+                    return {
+                        "success": False,
+                        "action": action,
+                        "error": f"Search did not start (plugins installed? error: {e})",
+                    }
+                results: list[dict[str, Any]] = []
+                try:
+                    for _ in range(20):
+                        await asyncio.sleep(3)
+                        status = await client.search_status(job_id)
+                        page = await client.search_results(job_id)
+                        results = page.get("results", [])
+                        if status.get("status") == "Stopped" or len(results) >= max_results:
+                            break
+                finally:
+                    await client.search_stop(job_id)
+                    await client.search_delete(job_id)
+                results = sorted(results, key=lambda r: r.get("seeders", 0), reverse=True)[:max_results]
+                return {"success": True, "action": action, "data": results, "count": len(results)}
 
             return {
                 "success": False,
