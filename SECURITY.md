@@ -1,57 +1,22 @@
 # Security Policy
 
-## [ALERT] Reporting Security Vulnerabilities
+## Reporting a vulnerability
 
-We take security seriously. If you discover a security vulnerability in RTorrent MCP Server, please help us by reporting it responsibly.
+Please report security problems **privately** through GitHub's private vulnerability reporting:
 
-### How to Report
+1. Open the repository's **Security** tab.
+2. Click **Report a vulnerability**.
 
-**Please DO NOT report security vulnerabilities through public GitHub issues.**
+Direct link: https://github.com/sandraschi/rtorrent-mcp/security/advisories/new
 
-Instead, please report security vulnerabilities by emailing:
-- **Email**: security@sandraschi.dev
-- **Subject**: `[SECURITY] RTorrent MCP Server Vulnerability Report`
+Please do **not** open a public issue, discussion or pull request for a security problem, and do not include working exploits or real secrets in anything public.
 
-### ⏰ Response Timeline
+## What happens next
 
-- **Initial Response**: Within 24 hours of receiving your report
-- **Vulnerability Assessment**: Within 72 hours
-- **Fix Development**: Within 1-2 weeks for critical issues
-- **Public Disclosure**: After fix is deployed and tested
+- You will get an acknowledgement in the private advisory thread.
+- Confirmed issues are fixed and published as a GitHub Security Advisory (with a CVE where appropriate), crediting you unless you prefer otherwise.
+- We follow coordinated disclosure and are happy to agree on a timeline with you.
 
-### What to Include
+## Scope
 
-Please include the following information in your report:
-
-1. **Description**: A clear description of the vulnerability
-2. **Impact**: Potential impact and severity
-3. **Steps to Reproduce**: Detailed steps to reproduce the issue
-4. **Proof of Concept**: If available, include PoC code
-5. **Environment**: Your setup (OS, Python version, etc.)
-6. **Contact Information**: How we can reach you for follow-up
-
-### Severity Levels
-
-- **Critical**: System compromise, data breach, remote code execution
-- **High**: Privilege escalation, significant data exposure
-- **Medium**: Limited data exposure, denial of service
-- **Low**: Minor information disclosure, cosmetic issues
-
-### Scope
-
-This security policy applies to:
-- RTorrent MCP Server core functionality
-- All official extensions and tools
-- Associated documentation and build scripts
-
-### Recognition
-
-We appreciate security researchers who help keep our users safe. With your permission, we'd like to acknowledge your contribution in our release notes and security advisories.
-
-### Legal
-
-This project follows responsible disclosure practices. Please give us reasonable time to fix issues before public disclosure. We will work with you to ensure proper attribution and coordination.
-
----
-
-**Last Updated**: September 23, 2025
+These projects are mostly MCP servers and tools that run locally with the privileges of the user who starts them. Issues that let a client, an agent or prompt-injected content reach beyond a tool's intended scope (for example file access outside a configured directory, command execution, or credential exposure) are in scope.
